@@ -1,0 +1,22 @@
+{
+	"name": "merlin-viz",
+	"private": true,
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^2.0.0",
+		"@sveltejs/kit": "^1.5.0",
+		"@types/plotly.js-dist-min": "^2.3.1",
+		"svelte": "^3.54.0",
+		"svelte-virtual-list-ce": "^3.1.0-beta.2",
+		"vite": "^4.5.0"
+	},
+	"type": "module",
+	"dependencies": {
+		"@sveltejs/adapter-node": "^1.3.1",
+		"plotly.js-dist-min": "^2.23.2"
+	}
+}

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+exclude = ["start_dev.sh"]
+
+[tool.hatch.build.hooks.custom]
+
+[tool.hatch.build.targets.wheel.force-include]
+"frontend/build" = "merlin/frontend/build"
+"frontend/package.json" = "merlin/frontend/package.json"
+
+[project]
+name = "merlin"
+version = "0.2.0"
+authors = [
+  { name="Aaron Langham", email="alangham@mit.edu" },
+]
+description = "Platform for high- and low-dimensional NILM data visualization"
+requires-python = ">=3.9"
+dependencies = ["joule", "fastapi", "numpy", "sqlalchemy", "orjson", "scikit-learn", "uvicorn"]
+
+[project.scripts]
+merlin-viz = "merlin.main:run"
+merlin-process-events = "merlin.event_processor:main"
