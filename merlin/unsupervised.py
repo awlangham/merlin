@@ -1,11 +1,11 @@
 import numpy as np
-from sklearn.cluster import DBSCAN, HDBSCAN
+from sklearn.cluster import HDBSCAN
 from sklearn.preprocessing import MinMaxScaler
 from merlin import async_run, get_node
 
 
 @async_run
-async def get_clusters(event_stream_name):
+async def clusters(event_stream_name):
     async with get_node() as node:
         events = await node.event_stream_read(event_stream_name)
 
@@ -19,7 +19,6 @@ async def get_clusters(event_stream_name):
     scaler = MinMaxScaler()
     scaled_features = scaler.fit_transform(features)
 
-    # dbscan = DBSCAN(eps=0.01).fit(scaled_features)
     hdbscan = HDBSCAN(min_cluster_size=25, store_centers='medoid').fit(scaled_features)
     cluster_labels = list(set(hdbscan.labels_))
     exemplars = scaler.inverse_transform(hdbscan.medoids_)
@@ -32,7 +31,6 @@ async def get_clusters(event_stream_name):
         cluster_indices = np.where(hdbscan.labels_ == cluster_label)[0]
         cluster_data = features[cluster_indices]
 
-        # cluster_mean = np.mean(cluster_data, axis=0)
         output.append({
             'index': cluster_label,
             'size': len(cluster_data),

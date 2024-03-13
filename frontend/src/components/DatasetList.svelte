@@ -1,21 +1,21 @@
 <script>
     export let selected_stream_name;
 
-    const eventStreamListPromise = fetch("api/events/sources").then(
+    const datasetListPromise = fetch("api/datasets").then(
         (response) => response.json()
     );
 </script>
 
-{#await eventStreamListPromise}
-    <!-- Loading event stream list... -->
+{#await datasetListPromise}
+    <!-- Loading dataset list... -->
 {:then data}
     <select
         class="stream-select"
         bind:value={selected_stream_name}
     >
         <option hidden value="">-- select a stream --</option>
-        {#each data.stream_names as stream_name}
-            <option value={stream_name}>{stream_name}</option>
+        {#each data.dataset_names as dataset_name}
+            <option value={dataset_name}>{dataset_name}</option>
         {/each}
     </select>
     <!-- {:catch error} -->

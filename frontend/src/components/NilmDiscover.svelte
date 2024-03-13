@@ -1,5 +1,5 @@
 <script>
-    import EventStreamList from "./EventStreamList.svelte";
+    import DatasetList from "./DatasetList.svelte";
     import TransientViewer from "./transients/TransientViewer.svelte";
     import DownloadData from "./DownloadData.svelte";
     import FeaturePlots from "./features/FeaturePlots.svelte";
@@ -100,7 +100,7 @@
     </div>
     <div class="top-bar">
         <div class="event-stream-list">
-            <EventStreamList bind:selected_stream_name={selectedStreamName} />
+            <DatasetList bind:selected_stream_name={selectedStreamName} />
             {#if showLoading}
                 Loading...
             {/if}

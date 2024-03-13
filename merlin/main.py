@@ -5,13 +5,12 @@ import uvicorn
 from importlib.resources import files
 
 import merlin
-from merlin.endpoints import features, mds, transient, download, label
-from merlin.endpoints.events import sources
+from merlin.endpoints import datasets, features, mds, transient, download, label
 
 
 app = FastAPI()
 
-app.include_router(sources.router, prefix='/api')
+app.include_router(datasets.router, prefix='/api')
 app.include_router(features.router, prefix='/api')
 app.include_router(transient.router, prefix='/api')
 app.include_router(download.router, prefix='/api')

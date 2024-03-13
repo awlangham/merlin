@@ -4,8 +4,8 @@ from merlin.utilities import search_for_stream
 router = APIRouter()
 
 
-@router.get('/events/sources')
-def get_event_sources():
+@router.get('/datasets')
+def get_datasets():
     return {
-        'stream_names': search_for_stream('events')
+        'dataset_names': search_for_stream('events')
     }
