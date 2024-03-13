@@ -1,12 +1,12 @@
 import numpy as np
 from sklearn.cluster import HDBSCAN
 from sklearn.preprocessing import MinMaxScaler
-from merlin import async_run, get_node
+from merlin.utilities import async_run, get_joule_node
 
 
 @async_run
-async def clusters(event_stream_name):
-    async with get_node() as node:
+async def list_clusters(event_stream_name):
+    async with get_joule_node() as node:
         events = await node.event_stream_read(event_stream_name)
 
     feature_names = ['P_ss', 'Q_ss', 'P_pk', 'Q_pk']
@@ -29,11 +29,10 @@ async def clusters(event_stream_name):
             continue
 
         cluster_indices = np.where(hdbscan.labels_ == cluster_label)[0]
-        cluster_data = features[cluster_indices]
 
         output.append({
             'index': cluster_label,
-            'size': len(cluster_data),
+            'size': len(cluster_indices),
             'exemplar': exemplars[index].tolist()
         })
 

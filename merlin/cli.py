@@ -3,7 +3,7 @@ import numpy as np
 import configparser
 from tabulate import tabulate
 from merlin.utilities import search_for_stream, create_event_stream
-from merlin.unsupervised import clusters
+from merlin.unsupervised import list_clusters
 
 
 @click.group()
@@ -73,14 +73,14 @@ def init() -> None:
 
 @main.command(name='clusters')
 @click.argument('event_stream')
-def clusters(event_stream) -> None:
+def cli_clusters(event_stream) -> None:
     """
     Extract significant clusters from EVENT_STREAM.
 
     Clusters with fewer than 25 data points are excluded.
     """
 
-    clusters = clusters(event_stream)
+    clusters = list_clusters(event_stream)
 
     headers = ['Index', 'Size', 'P_ss', 'Q_ss', 'P_pk', 'Q_pk']
     table = [
