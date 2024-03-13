@@ -76,17 +76,17 @@
             });
     }
 
-    const deleteEvent = () => {
-        if (confirmDelete) {
-            fetch(
-                "/api/delete/" + selectedStreamName + "/" + selectedEventID,
-            ).then(() => {
-                dispatch("update_events");
-            });
-        } else {
-            confirmDelete = true;
-        }
-    };
+    // const deleteEvent = () => {
+    //     if (confirmDelete) {
+    //         fetch(
+    //             "/api/delete/" + selectedStreamName + "/" + selectedEventID,
+    //         ).then(() => {
+    //             dispatch("update_events");
+    //         });
+    //     } else {
+    //         confirmDelete = true;
+    //     }
+    // };
 
     let virtualListStart, virtualListEnd;
     $: if (virtualListStart && virtualListEnd) {
@@ -114,8 +114,6 @@
                     {transientData}
                     selected={selectedEventID === item.id}
                     {transientPromise}
-                    {confirmDelete}
-                    {deleteEvent}
                     on:selected={() => {
                         if (selectedEventID === item.id) {
                             selectedEventID = -1;

@@ -22,5 +22,6 @@ requires-python = ">=3.9"
 dependencies = ["joule", "fastapi", "numpy", "sqlalchemy", "orjson", "scikit-learn", "uvicorn"]
 
 [project.scripts]
+merlin = "merlin.cli:main"
 merlin-viz = "merlin.main:run"
 merlin-process-events = "merlin.event_processor:main"

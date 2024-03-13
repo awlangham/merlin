@@ -1,7 +1,7 @@
 <script>
     export let selected_stream_name;
 
-    const eventStreamListPromise = fetch("api/event_stream_list").then(
+    const eventStreamListPromise = fetch("api/events/sources").then(
         (response) => response.json()
     );
 </script>

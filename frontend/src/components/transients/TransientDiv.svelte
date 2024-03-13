@@ -6,9 +6,7 @@
     export let eventData,
         transientData,
         transientPromise,
-        selected,
-        confirmDelete,
-        deleteEvent;
+        selected;
 
     const dispatch = createEventDispatcher();
 
@@ -65,13 +63,6 @@
                     <Plot data={transientData} {layout} {config} />
                 </div>
                 <div class="event-buttons-div">
-                    <button on:click={deleteEvent} class="delete-event-btn">
-                        {#if confirmDelete}
-                            Really?
-                        {:else}
-                            Delete Event
-                        {/if}
-                    </button>
                 </div>
             </div>
         {/await}
@@ -130,9 +121,5 @@
 
     .event-buttons-div {
         text-align: right;
-    }
-
-    .delete-event-btn {
-        margin-right: 20px;
     }
 </style>
