@@ -1,4 +1,6 @@
 import joule
+from joule.api import EventStream
+from joule.errors import ApiError
 from contextlib import asynccontextmanager
 import asyncio
 
@@ -13,31 +15,22 @@ async def get_node():
 
 
 def async_run(func):
-    def wrapper():
-        return asyncio.run(func())
+    def wrapper(*args, **kwargs):
+        return asyncio.run(func(*args, **kwargs))
     return wrapper
 
 
 @async_run
-async def list_event_sources():
+async def search_for_stream(stream_name) -> list:
     stream_names, path = [], []
 
     def traverse_folder(folder):
         for child in folder.children:
             path.append(child.name)
 
-            prep_exists, events_exists = False, False
-
-            for data_stream in child.data_streams:
-                if data_stream.name == 'prep':
-                    prep_exists = True
-
-            for event_stream in child.event_streams:
-                if event_stream.name == 'events':
-                    events_exists = True
-
-            if prep_exists and events_exists:
-                stream_names.append('/' + '/'.join(path))
+            for stream in child.event_streams + child.data_streams:
+                if stream.name == stream_name:
+                    stream_names.append('/' + '/'.join(path))
 
             traverse_folder(child)
             path.pop()
@@ -49,3 +42,23 @@ async def list_event_sources():
     await node.close()
 
     return stream_names
+
+
+def list_event_sources():
+    return search_for_stream('events')
+
+
+def list_transient_sources():
+    return search_for_stream('transients')
+
+
+@async_run
+async def create_event_stream(path):
+    async with get_node() as node:
+        try:
+            await node.event_stream_get(f'{path}/events')
+            return False
+        except ApiError:
+            new_stream = EventStream(name='events')
+            await node.event_stream_create(new_stream, path)
+            return True

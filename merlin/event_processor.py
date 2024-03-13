@@ -10,6 +10,7 @@ class EventProcessor(FilterModule):
     def custom_args(self, parser):
         grp = parser.add_argument_group('Merlin', 'Module-specific arguments')
         grp.add_argument('--output', type=str, required=True, help='Output event stream name')
+        grp.add_argument('--method', type=str, required=True, help='Learning method')
 
     async def _get_output_stream(self, output_stream_path: str) -> EventStream:
         event_stream_name = output_stream_path.split('/')[-1]
