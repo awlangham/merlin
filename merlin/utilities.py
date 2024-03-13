@@ -6,7 +6,12 @@ import asyncio
 
 
 @asynccontextmanager
-async def get_node():
+async def get_joule_node():
+    """
+    Context manager for a Joule node handle.
+    Automatically handles closing network resources.
+    """
+
     node = joule.api.get_node()
     try:
         yield node
@@ -15,13 +20,39 @@ async def get_node():
 
 
 def async_run(func):
+    """
+    Decorator to run a coroutine and block until done.
+    """
+    
     def wrapper(*args, **kwargs):
         return asyncio.run(func(*args, **kwargs))
     return wrapper
 
 
 @async_run
+async def create_event_stream(path):
+    """
+    Create new event stream at [path]/events and return True.
+    If one already exists, do nothing and return False.
+    """
+    
+    async with get_joule_node() as node:
+        try:
+            await node.event_stream_get(f'{path}/events')
+            return False
+        except ApiError:
+            new_stream = EventStream(name='events')
+            await node.event_stream_create(new_stream, path)
+            return True
+
+
+@async_run
 async def search_for_stream(stream_name) -> list:
+    """
+    Return list of Joule folder paths that include a stream named [stream_name].
+    Checks both data streams and event streams.
+    """
+
     stream_names, path = [], []
 
     def traverse_folder(folder):
@@ -35,30 +66,10 @@ async def search_for_stream(stream_name) -> list:
             traverse_folder(child)
             path.pop()
 
-    async with get_node() as node:
+    async with get_joule_node() as node:
         root = await node.folder_root()
         traverse_folder(root)
 
     await node.close()
 
     return stream_names
-
-
-def list_event_sources():
-    return search_for_stream('events')
-
-
-def list_transient_sources():
-    return search_for_stream('transients')
-
-
-@async_run
-async def create_event_stream(path):
-    async with get_node() as node:
-        try:
-            await node.event_stream_get(f'{path}/events')
-            return False
-        except ApiError:
-            new_stream = EventStream(name='events')
-            await node.event_stream_create(new_stream, path)
-            return True

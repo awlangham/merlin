@@ -1,13 +1,12 @@
 from fastapi import APIRouter
-
-from merlin import get_node
+from merlin.utilities import get_joule_node
 
 router = APIRouter()
 
 
 @router.get('/transient')
 async def transients(stream_name: str, start_ts: int, end_ts: int):
-    async with get_node() as node:
+    async with get_joule_node() as node:
         pipe = await node.data_read(stream_name + '/prep', start=start_ts, end=end_ts)
         sarray = await pipe.read_all()
 

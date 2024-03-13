@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Response
 import orjson
 from joule.utilities import timestamp_to_human as ts2h
-from merlin import get_node
+from merlin.utilities import get_joule_node
 
 router = APIRouter()
 
 
 @router.get('/features')
 async def features(stream_name: str):
-    async with get_node() as node:
+    async with get_joule_node() as node:
         events = await node.event_stream_read(stream_name + '/events')
 
     range_start, range_end = events[0].start_time, events[-1].end_time

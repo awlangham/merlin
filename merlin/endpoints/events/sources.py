@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from merlin import list_event_sources
+from merlin.utilities import search_for_stream
 
 router = APIRouter()
 
@@ -7,5 +7,5 @@ router = APIRouter()
 @router.get('/events/sources')
 def get_event_sources():
     return {
-        'stream_names': list_event_sources()
+        'stream_names': search_for_stream('events')
     }

@@ -2,7 +2,7 @@ import click
 import numpy as np
 import configparser
 from tabulate import tabulate
-from merlin import list_transient_sources, list_event_sources, create_event_stream
+from merlin.utilities import search_for_stream, create_event_stream
 from merlin.unsupervised import get_clusters
 
 
@@ -14,19 +14,23 @@ def main() -> None:
 
 @main.command(name='datasets')
 def datasets() -> None:
-    for dataset in list_event_sources():
+    """
+    List all event datasets.
+    """
+
+    for dataset in search_for_stream('events'):
         click.echo(dataset)
 
 
 @main.command(name='init')
-def init():
+def init() -> None:
     """
     Set up a Merlin event processor on a given transient stream.
     """
 
     click.echo('Select a transient source:')
 
-    sources_list = list_transient_sources()
+    sources_list = search_for_stream('transients')
     for index, source in enumerate(sources_list):
         click.echo(f'  {index + 1}) {source}')
 
@@ -69,7 +73,7 @@ def init():
 
 @main.command(name='clusters')
 @click.argument('event_stream')
-def clusters(event_stream):
+def clusters(event_stream) -> None:
     """
     Extract significant clusters from EVENT_STREAM.
 
