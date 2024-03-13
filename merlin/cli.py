@@ -1,6 +1,9 @@
 import click
+import numpy as np
 import configparser
+from tabulate import tabulate
 from merlin import list_transient_sources, list_event_sources, create_event_stream
+from merlin.unsupervised import get_clusters
 
 
 @click.group()
@@ -9,14 +12,18 @@ def main() -> None:
     pass
 
 
-@main.command(name='sources')
-def sources() -> None:
-    for source in list_event_sources():
-        click.echo(source)
+@main.command(name='datasets')
+def datasets() -> None:
+    for dataset in list_event_sources():
+        click.echo(dataset)
 
 
 @main.command(name='init')
 def init():
+    """
+    Set up a Merlin event processor on a given transient stream.
+    """
+
     click.echo('Select a transient source:')
 
     sources_list = list_transient_sources()
@@ -58,3 +65,21 @@ def init():
         config.write(configfile)
 
     click.echo(f'\nCreated {filename}')
+
+
+@main.command(name='clusters')
+@click.argument('event_stream')
+def clusters(event_stream):
+    """
+    Extract significant clusters from EVENT_STREAM.
+
+    Clusters with fewer than 25 data points are excluded.
+    """
+
+    clusters = get_clusters(event_stream)
+
+    headers = ['Index', 'Size', 'P_ss', 'Q_ss', 'P_pk', 'Q_pk']
+    table = [
+        [cluster['index'] + 1, cluster['size'], *[np.round(m, 1) for m in cluster['exemplar']]]
+        for cluster in clusters if cluster['index'] != -1]
+    click.echo(tabulate(table, headers=headers))

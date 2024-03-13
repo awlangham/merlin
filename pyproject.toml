@@ -19,7 +19,7 @@ authors = [
 ]
 description = "Platform for high- and low-dimensional NILM data visualization"
 requires-python = ">=3.9"
-dependencies = ["joule", "fastapi", "numpy", "sqlalchemy", "orjson", "scikit-learn", "uvicorn"]
+dependencies = ["joule", "fastapi", "numpy", "sqlalchemy", "orjson", "scikit-learn", "uvicorn", "tabulate"]
 
 [project.scripts]
 merlin = "merlin.cli:main"
