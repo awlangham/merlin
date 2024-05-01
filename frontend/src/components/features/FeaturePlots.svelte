@@ -2,7 +2,12 @@
     import FeatureViewer from "./FeatureViewer.svelte";
     import BrushMap from "../BrushMap.svelte";
 
-    export let featureData, selectedEventID, mode, brushedPoints, selectedStreamName;
+    export let featureData,
+        selectedEventID,
+        mode,
+        brushedPoints,
+        selectedStreamName,
+        clusterData;
 
     let hasSelection1 = false,
         hasSelection2 = false,
@@ -47,6 +52,7 @@
         bind:selectedEventID
         mode={mode === "mds" ? "crossbrush" : mode}
         brushedPoints={brushedPoints1}
+        {clusterData}
         on:brush={(d) => {
             brushedPoints = d.detail;
             hasSelection1 = true;
@@ -68,6 +74,7 @@
             bind:selectedEventID
             sequence={1}
             {mode}
+            {clusterData}
             brushedPoints={brushedPoints2}
             on:brush={(d) => {
                 brushedPoints = d.detail;

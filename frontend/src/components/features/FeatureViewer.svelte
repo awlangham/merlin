@@ -8,7 +8,8 @@
         selectedEventID,
         sequence = 0,
         mode,
-        brushedPoints;
+        brushedPoints,
+        clusterData;
 
     let x_feature, y_feature;
 
@@ -21,7 +22,12 @@
         y_feature = "Steady-State Q";
     }
 
-    const power_features = ["Steady-State P", "Steady-State Q", "Peak P", "Peak Q"];
+    const power_features = [
+        "Steady-State P",
+        "Steady-State Q",
+        "Peak P",
+        "Peak Q",
+    ];
     const labels = {
         "Steady-State P": "Steady-State Active Power (W)",
         "Steady-State Q": "Steady-State Reactive Power (Var)",
@@ -59,6 +65,7 @@
         y_data={featureData[y_feature]}
         y_label={labels[y_feature]}
         ids={featureData["id"]}
+        clusters={clusterData}
         bind:selectedEventID
         {brushedPoints}
         {mode}

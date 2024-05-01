@@ -15,7 +15,8 @@
         brushedPoints,
         featurePlots,
         newLabelName,
-        filterType;
+        filterType,
+        clusterData;
 
     // events: array of objects with props {timestamp, start_ts, end_ts, P_ss, Q_ss, P_pk, Q_pk}
     let events = [];
@@ -31,6 +32,16 @@
                 events = j.events;
                 showLoading = false;
                 featurePlots.clearBrushedSelection();
+            });
+    };
+
+    const getClusters = () => {
+        showLoading = true;
+        fetch("api/clusters?stream_name=" + selectedStreamName)
+            .then((response) => response.json())
+            .then((j) => {
+                clusterData = j.labels;
+                showLoading = false;
             });
     };
 
@@ -116,6 +127,7 @@
             <label id="auto-refresh-label" for="auto-refresh-checkbox">
                 Auto Refresh
             </label>
+            <button on:click={getClusters}>Cluster</button>
         {/if}
 
         {#if range_start && range_end}
@@ -187,6 +199,7 @@
         {mode}
         bind:brushedPoints
         {selectedStreamName}
+        {clusterData}
     />
 </div>
 
