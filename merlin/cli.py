@@ -2,7 +2,7 @@ import click
 import numpy as np
 import configparser
 from tabulate import tabulate
-from merlin.utilities import search_for_stream, create_event_stream
+from merlin.utilities import search_for_stream, create_event_stream, clear_stream
 from merlin.unsupervised import list_clusters
 
 
@@ -87,3 +87,13 @@ def cli_clusters(event_stream) -> None:
         [cluster['index'] + 1, cluster['size'], *[np.round(m, 1) for m in cluster['exemplar']]]
         for cluster in clusters if cluster['index'] != -1]
     click.echo(tabulate(table, headers=headers))
+
+
+@main.command(name='clear')
+@click.argument('event_stream')
+def cli_clear(event_stream) -> None:
+    """
+    Remove all events from EVENT_STREAM.
+    """
+
+    clear_stream(event_stream)

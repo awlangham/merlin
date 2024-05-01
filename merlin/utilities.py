@@ -23,7 +23,7 @@ def async_run(func):
     """
     Decorator to run a coroutine and block until done.
     """
-    
+
     def wrapper(*args, **kwargs):
         return asyncio.run(func(*args, **kwargs))
     return wrapper
@@ -35,7 +35,7 @@ async def create_event_stream(path):
     Create new event stream at [path]/events and return True.
     If one already exists, do nothing and return False.
     """
-    
+
     async with get_joule_node() as node:
         try:
             await node.event_stream_get(f'{path}/events')
@@ -73,3 +73,9 @@ async def search_for_stream(stream_name) -> list:
     await node.close()
 
     return stream_names
+
+
+@async_run
+async def clear_stream(stream_name) -> None:
+    async with get_joule_node() as node:
+        await node.event_stream_remove(stream_name + '/events')
