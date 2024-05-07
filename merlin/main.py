@@ -1,6 +1,5 @@
-import os
 from fastapi import FastAPI
-import subprocess
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 from importlib.resources import files
 
@@ -20,7 +19,6 @@ app.include_router(clusters.router, prefix='/api')
 
 
 def run():
-    new_env = os.environ.copy()
-    new_env['PORT'] = '8050'
-    with subprocess.Popen(['node', 'build'], cwd=files(merlin).joinpath('frontend'), env=new_env):
-        uvicorn.run('merlin.main:app', host='', port=8051)
+    static_path = files(merlin).joinpath('static')
+    app.mount('/', StaticFiles(directory=static_path, html=True), name='static')
+    uvicorn.run('merlin.main:app', host='', port=8050)

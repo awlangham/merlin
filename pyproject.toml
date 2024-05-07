@@ -8,12 +8,11 @@ exclude = ["start_dev.sh"]
 [tool.hatch.build.hooks.custom]
 
 [tool.hatch.build.targets.wheel.force-include]
-"frontend/build" = "merlin/frontend/build"
-"frontend/package.json" = "merlin/frontend/package.json"
+"frontend/build" = "merlin/static"
 
 [project]
 name = "merlin"
-version = "0.2.0"
+version = "0.3.0"
 authors = [
   { name="Aaron Langham", email="alangham@mit.edu" },
 ]
