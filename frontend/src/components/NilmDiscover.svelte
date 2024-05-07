@@ -107,7 +107,7 @@
 
 <div class="main">
     <div class="logo-bar">
-        <span class="logo"> ⚡️ Merlin Viz </span>
+        <span class="logo"> ⚡️ Merlin </span>
     </div>
     <div class="top-bar">
         <div class="event-stream-list">
