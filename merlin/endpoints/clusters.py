@@ -5,8 +5,8 @@ router = APIRouter()
 
 
 @router.get('/clusters')
-def get_clusters(stream_name: str):
-    labels, _ = cluster_data(stream_name)
+async def get_clusters(stream_name: str):
+    labels, _ = await cluster_data(stream_name)
 
     return {
         'labels': labels.tolist()
