@@ -96,12 +96,16 @@
         featureData["Peak P"] = events.map(({ P_pk }) => P_pk);
         featureData["Peak Q"] = events.map(({ Q_pk }) => Q_pk);
         featureData["id"] = events.map(({ id }) => id);
+        featureData["start_ts"] = events.map(({ start_ts }) => start_ts);
+        featureData["end_ts"] = events.map(({ end_ts }) => end_ts);
     } else {
         featureData["Steady-State P"] = filteredEvents.map(({ P_ss }) => P_ss);
         featureData["Steady-State Q"] = filteredEvents.map(({ Q_ss }) => Q_ss);
         featureData["Peak P"] = filteredEvents.map(({ P_pk }) => P_pk);
         featureData["Peak Q"] = filteredEvents.map(({ Q_pk }) => Q_pk);
         featureData["id"] = filteredEvents.map(({ id }) => id);
+        featureData["start_ts"] = filteredEvents.map(({ start_ts }) => start_ts);
+        featureData["end_ts"] = filteredEvents.map(({ end_ts }) => end_ts);
     }
 </script>
 

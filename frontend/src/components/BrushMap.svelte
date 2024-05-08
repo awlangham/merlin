@@ -1,39 +1,37 @@
 <script>
     import Plot from "./Plot.svelte";
 
-    export let selectedEventID, brushedPointsIDs, selectedStreamName;
+    export let selectedEventID,
+        brushedPointsIDs,
+        brushedPointsIntervals,
+        selectedStreamName;
 
-    let sortedIDs,
-        mds0 = [],
-        mds1 = [];
+    let mds_x = [],
+        mds_y = [];
 
-    $: if (brushedPointsIDs) {
-        sortedIDs = [...brushedPointsIDs].sort((a, b) => a - b);
-    }
-
-    $: if (brushedPointsIDs && brushedPointsIDs.length > 0) {
+    $: if (brushedPointsIntervals && brushedPointsIntervals.length > 0) {
         selectedEventID = -1;
-        mds0 = [];
-        mds1 = [];
+        mds_x = [];
+        mds_y = [];
 
-        fetch("api/" + selectedStreamName + "/mds", {
+        fetch("api/mds?stream_name=" + selectedStreamName, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ids: sortedIDs }),
+            body: JSON.stringify({ intervals: brushedPointsIntervals }),
         })
             .then((response) => response.json())
             .then((j) => {
-                mds0 = j.data0;
-                mds1 = j.data1;
+                mds_x = j.data0;
+                mds_y = j.data1;
             });
     }
 
     $: data = [
         {
-            x: mds0,
-            y: mds1,
+            x: mds_x,
+            y: mds_y,
             text: matchText,
-            ids: sortedIDs,
+            ids: brushedPointsIDs,
             type: "scattergl",
             mode: "markers",
             marker: { size: 10, opacity: 0.3 },
@@ -68,15 +66,16 @@
 
     let matchText = [];
 
-    $: if (sortedIDs && selectedEventID != -1) {
-        const selectedIndex = sortedIDs.findIndex(
-            (id) => id === selectedEventID
+    $: if (brushedPointsIDs && selectedEventID != -1) {
+        const selectedIndex = brushedPointsIDs.findIndex(
+            (id) => id === selectedEventID,
         );
 
-        matchText = mds0.map((x, i) => {
-            const y = mds1[i];
+        matchText = mds_x.map((x, i) => {
+            const y = mds_y[i];
             const distance = Math.sqrt(
-                (mds0[selectedIndex] - x) ** 2 + (mds1[selectedIndex] - y) ** 2
+                (mds_x[selectedIndex] - x) ** 2 +
+                    (mds_y[selectedIndex] - y) ** 2,
             );
 
             const percentMatch = (1 - distance) * 100;
@@ -90,8 +89,8 @@
                 xsizemode: "pixel",
                 ysizemode: "pixel",
                 fillcolor: "#1f77b4",
-                xanchor: mds0[selectedIndex],
-                yanchor: mds1[selectedIndex],
+                xanchor: mds_x[selectedIndex],
+                yanchor: mds_y[selectedIndex],
 
                 x0: -selectedRadius / 2,
                 x1: selectedRadius / 2,

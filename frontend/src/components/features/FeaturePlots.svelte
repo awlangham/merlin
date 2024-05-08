@@ -36,13 +36,12 @@
         brushedPoints = undefined;
     };
 
-    const indexToID = (index) => {
-        return featureData["id"][index];
-    };
-
-    let brushedPointsIDs;
+    let brushedPointsIntervals;
     $: if (brushedPoints) {
-        brushedPointsIDs = brushedPoints.map((point) => indexToID(point));
+        brushedPointsIntervals = brushedPoints.map((point) => [
+            featureData["start_ts"][point],
+            featureData["end_ts"][point],
+        ]);
     }
 </script>
 
@@ -65,7 +64,8 @@
     {#if mode === "mds"}
         <BrushMap
             bind:selectedEventID
-            {brushedPointsIDs}
+            brushedPointsIDs={brushedPoints}
+            {brushedPointsIntervals}
             {selectedStreamName}
         />
     {:else}
