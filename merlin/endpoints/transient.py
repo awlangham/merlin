@@ -7,8 +7,7 @@ router = APIRouter()
 @router.get('/transient')
 async def transients(stream_name: str, start_ts: int, end_ts: int):
     async with get_joule_node() as node:
-        pipe = await node.data_read(stream_name + '/prep', start=start_ts, end=end_ts)
-        sarray = await pipe.read_all()
+        sarray = await node.data_read_array(stream_name + '/prep', start=start_ts, end=end_ts)
 
     timestamps, data = sarray['timestamp'], sarray['data']
     timestamps -= timestamps[0]

@@ -9,6 +9,7 @@ router = APIRouter()
 @router.get('/features')
 async def features(stream_name: str):
     async with get_joule_node() as node:
+        # TODO: Fix limit parameter
         events = await node.event_stream_read(stream_name + '/events')
 
     range_start, range_end = events[0].start_time, events[-1].end_time
