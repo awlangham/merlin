@@ -1,5 +1,12 @@
 <script>
-    import { colors, power_features, labels } from "../../utilities.js";
+    import {
+        unclusteredColor,
+        selectedColor,
+        colors,
+        powerFeatures,
+        labels,
+    } from "../../utilities.js";
+
     import Plot from "../Plot.svelte";
     import { createEventDispatcher } from "svelte";
 
@@ -16,16 +23,16 @@
 
     // Set default views upon page load
     if (sequence == 1) {
-        x_feature = "Steady-State P";
-        y_feature = "Peak P";
+        x_feature = powerFeatures[0];
+        y_feature = powerFeatures[2];
     } else {
-        x_feature = "Steady-State P";
-        y_feature = "Steady-State Q";
+        x_feature = powerFeatures[0];
+        y_feature = powerFeatures[1];
     }
 
     $: if (clusterData && data) {
-        data[0].marker.color = clusterData.map((c) =>
-            c === -1 ? "#000000" : colors[c],
+        data[0].marker.color = clusterData.map((cluster) =>
+            cluster === -1 ? unclusteredColor : colors[cluster],
         );
     }
 
@@ -66,7 +73,7 @@
                 selected: {
                     marker: {
                         size: 12,
-                        color: "orange",
+                        color: selectedColor,
                         opacity: 0.8,
                     },
                 },
@@ -117,13 +124,13 @@
 
 <div>
     <select bind:value={y_feature}>
-        {#each power_features as power_feature}
+        {#each powerFeatures as power_feature}
             <option>{power_feature}</option>
         {/each}
     </select>
     vs.
     <select bind:value={x_feature}>
-        {#each power_features as power_feature}
+        {#each powerFeatures as power_feature}
             <option>{power_feature}</option>
         {/each}
     </select>

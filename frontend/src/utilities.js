@@ -1,3 +1,7 @@
+export const unclusteredColor = "#000000";
+
+export const selectedColor = "orange";
+
 export const colors = [
     "#5778a4",
     "#e49444",
@@ -11,7 +15,7 @@ export const colors = [
     "#b8b0ac",
 ];
 
-export const power_features = [
+export const powerFeatures = [
     "Steady-State P",
     "Steady-State Q",
     "Peak P",
