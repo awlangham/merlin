@@ -1,19 +1,15 @@
 from fastapi import APIRouter, Request
 
-from nilmevents import get_connection
+from merlin.utilities import label_data
+
 
 router = APIRouter()
 
-# @router.get('/{event_set_name}/labels')
-# async def labels(event_set_name: str, request: Request):
-#     eventDB = request.app.eventDB
-#     label_list = eventDB.get_labels(event_set_name)
-#     return {
-#         'label_list': label_list
-#     }
 
-@router.put('/{event_set_name}/label/{label_name}')
-async def label(event_set_name: str, label_name: str, request: Request):
-    eventDB = get_connection(event_set_name)
-    ids = (await request.json())['ids']
-    eventDB.label(ids, label_name)
+@router.put('/label')
+async def label(stream_name: str, request: Request):
+    request_json = await request.json()
+    intervals = request_json['intervals']
+    label_name = request_json['label']
+
+    await label_data(stream_name, intervals, label_name)

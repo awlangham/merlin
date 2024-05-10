@@ -127,3 +127,16 @@ async def get_transients(stream_name, intervals):
             events.append(sarray.T)
 
     return events
+
+
+async def label_data(stream_name, intervals, label_name):
+    new_events = []
+    async with get_joule_node() as node:
+        for interval in intervals:
+            old_events = await node.event_stream_read(stream_name + '/events', start=interval[0], end=interval[1])
+            new_event = old_events[0]
+            new_event.content['label'] = label_name
+            new_events.append(new_event)
+            # await node.event_stream_remove(stream_name + '/events', start=interval[0], end=interval[1])
+
+        await node.event_stream_write(stream_name + '/events', new_events)

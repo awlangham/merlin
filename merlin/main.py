@@ -4,7 +4,7 @@ import uvicorn
 from importlib.resources import files
 
 import merlin
-from merlin.endpoints import datasets, features, mds, transient, download, label, clusters
+from merlin.endpoints import datasets, features, transient, download, mds, label, clusters
 
 
 app = FastAPI()

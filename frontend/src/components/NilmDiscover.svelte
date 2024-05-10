@@ -53,11 +53,15 @@
             return;
         }
 
-        fetch("api/" + selectedStreamName + "/label/" + newLabelName, {
+        fetch("api/label?stream_name=" + selectedStreamName, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                ids: brushedPoints.map((p) => filteredEvents[p].id),
+                label: newLabelName,
+                intervals: brushedPoints.map((point) => [
+                    featureData["start_ts"][point],
+                    featureData["end_ts"][point],
+                ]),
             }),
         })
             .then((response) => response.json())
