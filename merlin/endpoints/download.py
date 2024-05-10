@@ -2,18 +2,16 @@ from fastapi import APIRouter, Request, Response
 import numpy as np
 from io import BytesIO
 
-from nilmevents import get_connection
+from merlin.utilities import get_transients
 
-router = APIRouter(prefix='/download')
+router = APIRouter()
 
 
-@router.post('/{event_set_name}')
-async def download(event_set_name: str, request: Request):
-    ids = (await request.json())['ids']
-    ids.sort()
-
-    eventDB = get_connection(event_set_name)    
-    transients = eventDB.get_multiple_transients(ids)
+@router.post('/download')
+async def download(stream_name: str, request: Request):
+    intervals = (await request.json())['intervals']
+    transients = await get_transients(stream_name, intervals)
+    ids = range(len(transients))
 
     buffer = BytesIO()
     transient_kwargs = {

@@ -96,10 +96,10 @@ def mapping(x):
 
 def trainola(a, b):
     # Compute trainola score for two waveforms a and b.
-    
+
     # a and b are 2-D arrays with the same number of rows,
     # but they do not need to have the same number of columns.
-    
+
     # Returns a score within [0, infinity] such that
     # 0 indicates a match, 1 indicates no correlation,
     # and infinity indicates negative correlation
@@ -117,3 +117,13 @@ def trainola(a, b):
     corr_scores = np.sum(circular_corr / (max(np.linalg.norm(a), np.linalg.norm(b)) ** 2), axis=0)
     mapped_scores = mapping(corr_scores)
     return max(min(mapped_scores), 0)
+
+
+async def get_transients(stream_name, intervals):
+    async with get_joule_node() as node:
+        events = []
+        for interval in intervals:
+            sarray = await node.data_read_array(stream_name + '/transients', start=interval[0], end=interval[1], flatten=True)
+            events.append(sarray.T)
+
+    return events

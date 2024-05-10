@@ -104,7 +104,9 @@
         featureData["Peak P"] = filteredEvents.map(({ P_pk }) => P_pk);
         featureData["Peak Q"] = filteredEvents.map(({ Q_pk }) => Q_pk);
         featureData["id"] = filteredEvents.map(({ id }) => id);
-        featureData["start_ts"] = filteredEvents.map(({ start_ts }) => start_ts);
+        featureData["start_ts"] = filteredEvents.map(
+            ({ start_ts }) => start_ts,
+        );
         featureData["end_ts"] = filteredEvents.map(({ end_ts }) => end_ts);
     }
 </script>
@@ -183,7 +185,10 @@
                     </button>
                     <DownloadData
                         stream={selectedStreamName}
-                        ids={brushedPoints.map((p) => filteredEvents[p].id)}
+                        intervals={brushedPoints.map((point) => [
+                            featureData["start_ts"][point],
+                            featureData["end_ts"][point],
+                        ])}
                     />
                 </div>
             {/if}
