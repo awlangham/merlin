@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build]
-exclude = ["start_dev.sh"]
+exclude = ["start_dev.sh", "start_dev.py"]
 
 [tool.hatch.build.hooks.custom]
 
