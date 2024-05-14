@@ -12,4 +12,4 @@ async def label(stream_name: str, request: Request):
     intervals = request_json['intervals']
     label_name = request_json['label']
 
-    await label_data(stream_name, intervals, label_name)
+    await label_data(request.app.node, stream_name, intervals, label_name)

@@ -7,8 +7,8 @@ from sklearn.preprocessing import MinMaxScaler
 from merlin.utilities import get_joule_node, trainola
 
 
-async def cluster_data(event_stream_name):
-    async with get_joule_node() as node:
+async def cluster_data(node_name, event_stream_name):
+    async with get_joule_node(node_name) as node:
         events = await node.event_stream_read(event_stream_name + '/events')
 
     feature_names = ['P_ss', 'Q_ss', 'P_pk', 'Q_pk']
@@ -25,8 +25,8 @@ async def cluster_data(event_stream_name):
     return hdbscan.labels_, scaler.inverse_transform(hdbscan.medoids_)
 
 
-def list_clusters(event_stream_name):
-    cluster_labels, exemplars = asyncio.run(cluster_data(event_stream_name))
+def list_clusters(node_name, event_stream_name):
+    cluster_labels, exemplars = asyncio.run(cluster_data(node_name, event_stream_name))
     distinct_labels = list(set(cluster_labels))
 
     output = []
@@ -45,8 +45,8 @@ def list_clusters(event_stream_name):
     return output
 
 
-async def mds_data(stream_name, intervals):
-    async with get_joule_node() as node:
+async def mds_data(node_name, stream_name, intervals):
+    async with get_joule_node(node_name) as node:
         mds_events = []
         for interval in intervals:
             sarray = await node.data_read_array(stream_name + '/transients', start=interval[0], end=interval[1], flatten=True)

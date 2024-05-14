@@ -10,7 +10,7 @@ router = APIRouter()
 @router.post('/download')
 async def download(stream_name: str, request: Request):
     intervals = (await request.json())['intervals']
-    transients = await get_transients(stream_name, intervals)
+    transients = await get_transients(request.app.node, stream_name, intervals)
     ids = range(len(transients))
 
     buffer = BytesIO()

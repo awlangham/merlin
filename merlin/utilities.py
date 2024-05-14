@@ -7,13 +7,13 @@ import asyncio
 
 
 @asynccontextmanager
-async def get_joule_node():
+async def get_joule_node(node_name):
     """
     Context manager for a Joule node handle.
     Automatically handles closing network resources.
     """
 
-    node = joule.api.get_node()
+    node = joule.api.get_node(node_name)
     try:
         yield node
     finally:
@@ -31,13 +31,13 @@ def async_run(func):
 
 
 @async_run
-async def create_event_stream(path):
+async def create_event_stream(node_name, path):
     """
     Create new event stream at [path]/events and return True.
     If one already exists, do nothing and return False.
     """
 
-    async with get_joule_node() as node:
+    async with get_joule_node(node_name) as node:
         try:
             await node.event_stream_get(f'{path}/events')
             return False
@@ -48,7 +48,7 @@ async def create_event_stream(path):
 
 
 @async_run
-async def search_for_stream(stream_name) -> list:
+async def search_for_stream(node_name, stream_name) -> list:
     """
     Return list of Joule folder paths that include a stream named [stream_name].
     Checks both data streams and event streams.
@@ -67,7 +67,7 @@ async def search_for_stream(stream_name) -> list:
             traverse_folder(child)
             path.pop()
 
-    async with get_joule_node() as node:
+    async with get_joule_node(node_name) as node:
         root = await node.folder_root()
         traverse_folder(root)
 
@@ -77,8 +77,8 @@ async def search_for_stream(stream_name) -> list:
 
 
 @async_run
-async def clear_stream(stream_name) -> None:
-    async with get_joule_node() as node:
+async def clear_stream(node_name, stream_name) -> None:
+    async with get_joule_node(node_name) as node:
         await node.event_stream_remove(stream_name + '/events')
 
 
@@ -119,8 +119,8 @@ def trainola(a, b):
     return max(min(mapped_scores), 0)
 
 
-async def get_transients(stream_name, intervals):
-    async with get_joule_node() as node:
+async def get_transients(node_name, stream_name, intervals):
+    async with get_joule_node(node_name) as node:
         events = []
         for interval in intervals:
             sarray = await node.data_read_array(stream_name + '/transients', start=interval[0], end=interval[1], flatten=True)
@@ -129,9 +129,9 @@ async def get_transients(stream_name, intervals):
     return events
 
 
-async def label_data(stream_name, intervals, label_name):
+async def label_data(node_name, stream_name, intervals, label_name):
     new_events = []
-    async with get_joule_node() as node:
+    async with get_joule_node(node_name) as node:
         for interval in intervals:
             old_events = await node.event_stream_read(stream_name + '/events', start=interval[0], end=interval[1])
             new_event = old_events[0]

@@ -8,29 +8,41 @@ from merlin.unsupervised import list_clusters
 
 @click.group()
 @click.version_option()
-def main() -> None:
-    pass
+@click.option('--node', '-n', default='', help='Joule node to use')
+@click.pass_context
+def main(context, node) -> None:
+    context.ensure_object(dict)
+    context.obj['NODE'] = node
+
+
+def pass_node_name(func):
+    @click.pass_context
+    def new_func(context, *args, **kwargs):
+        return func(context.obj['NODE'], *args, **kwargs)
+    return new_func
 
 
 @main.command(name='datasets')
-def datasets() -> None:
+@pass_node_name
+def datasets(node) -> None:
     """
     List all event datasets.
     """
 
-    for dataset in search_for_stream('events'):
+    for dataset in search_for_stream(node, 'events'):
         click.echo(dataset)
 
 
 @main.command(name='init')
-def init() -> None:
+@pass_node_name
+def init(node) -> None:
     """
     Set up a Merlin event processor on a given transient stream.
     """
 
     click.echo('Select a transient source:')
 
-    sources_list = search_for_stream('transients')
+    sources_list = search_for_stream(node, 'transients')
     for index, source in enumerate(sources_list):
         click.echo(f'  {index + 1}) {source}')
 
@@ -39,7 +51,7 @@ def init() -> None:
     selected_folder = sources_list[value - 1]
     click.echo(f'\nTransient source stream: [{selected_folder}/transients]')
 
-    if create_event_stream(selected_folder):
+    if create_event_stream(node, selected_folder):
         click.echo(f'Created event stream [{selected_folder}/events]')
     else:
         click.echo(f'Event stream [{selected_folder}/events] already exists')
@@ -73,14 +85,15 @@ def init() -> None:
 
 @main.command(name='clusters')
 @click.argument('event_stream')
-def cli_clusters(event_stream) -> None:
+@pass_node_name
+def cli_clusters(node, event_stream) -> None:
     """
     Extract significant clusters from EVENT_STREAM.
 
     Clusters with fewer than 25 data points are excluded.
     """
 
-    clusters = list_clusters(event_stream)
+    clusters = list_clusters(node, event_stream)
 
     headers = ['Index', 'Size', 'P_ss', 'Q_ss', 'P_pk', 'Q_pk']
     table = [
@@ -91,9 +104,10 @@ def cli_clusters(event_stream) -> None:
 
 @main.command(name='clear')
 @click.argument('event_stream')
-def cli_clear(event_stream) -> None:
+@pass_node_name
+def cli_clear(node, event_stream) -> None:
     """
     Remove all events from EVENT_STREAM.
     """
 
-    clear_stream(event_stream)
+    clear_stream(node, event_stream)

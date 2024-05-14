@@ -7,7 +7,7 @@ router = APIRouter()
 @router.post('/mds')
 async def mds(stream_name: str, request: Request):
     intervals = (await request.json())['intervals']
-    transformed_data = await mds_data(stream_name, intervals)
+    transformed_data = await mds_data(request.app.node, stream_name, intervals)
 
     return {
         'data0': transformed_data[:, 0].tolist(),

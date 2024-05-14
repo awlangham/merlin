@@ -2,12 +2,14 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 from importlib.resources import files
+import click
 
 import merlin
 from merlin.endpoints import datasets, features, transient, download, mds, label, clusters
 
 
 app = FastAPI()
+app.node = ''
 
 app.include_router(datasets.router, prefix='/api')
 app.include_router(features.router, prefix='/api')
@@ -18,7 +20,10 @@ app.include_router(label.router, prefix='/api')
 app.include_router(clusters.router, prefix='/api')
 
 
-def run():
+@click.command()
+@click.option('--node', '-n', default='', help='Joule node to use')
+def run(node):
+    app.node = node
     static_path = files(merlin).joinpath('static')
     app.mount('/', StaticFiles(directory=static_path, html=True), name='static')
     uvicorn.run('merlin.main:app', host='', port=8050)
