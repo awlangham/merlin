@@ -4,12 +4,16 @@ import asyncio
 from sklearn.cluster import HDBSCAN
 from sklearn.manifold import MDS
 from sklearn.preprocessing import MinMaxScaler
+
 from merlin.utilities import get_joule_node, trainola
 
 
 async def cluster_data(node_name, event_stream_name):
     async with get_joule_node(node_name) as node:
         events = await node.event_stream_read(event_stream_name + '/events')
+
+    if len(events) == 0:
+        return [], []
 
     feature_names = ['P_ss', 'Q_ss', 'P_pk', 'Q_pk']
     features = np.array([

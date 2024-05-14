@@ -21,7 +21,7 @@ app.include_router(clusters.router, prefix='/api')
 
 
 @click.command()
-@click.option('--node', '-n', default='', help='Joule node to use')
+@click.option('--node', '-n', default='', help='Joule node to use (uses default if unspecified)')
 def run(node):
     app.node = node
     static_path = files(merlin).joinpath('static')
