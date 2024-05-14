@@ -2,9 +2,11 @@ import click
 from tabulate import tabulate
 import numpy as np
 import asyncio
+from merlin.loads import load_file
 
 from merlin.cli.decorators import pass_node_name
 from merlin.unsupervised.clustering import cluster_data
+
 
 def list_clusters(node_name, event_stream_name):
     cluster_labels, exemplars = asyncio.run(cluster_data(node_name, event_stream_name))
@@ -25,10 +27,12 @@ def list_clusters(node_name, event_stream_name):
 
     return output
 
+
 @click.command(name='clusters')
 @click.argument('event_stream')
+@click.option('--export', '-e', is_flag=True, default=False, help='Export clusters to load configuration')
 @pass_node_name
-def cli_clusters(node, event_stream) -> None:
+def cli_clusters(node, event_stream, export) -> None:
     """
     Extract significant clusters from EVENT_STREAM.
 
@@ -42,3 +46,10 @@ def cli_clusters(node, event_stream) -> None:
         [cluster['index'] + 1, cluster['size'], *[np.round(m, 1) for m in cluster['exemplar']]]
         for cluster in clusters if cluster['index'] != -1]
     click.echo(tabulate(table, headers=headers))
+
+    if export:
+        with load_file() as loads_json:
+            for cluster in clusters:
+                if cluster['index'] != -1:
+                    index = int(cluster['index'])
+                    loads_json[index] = {'ss': cluster['exemplar']}
