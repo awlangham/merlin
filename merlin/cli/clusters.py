@@ -1,9 +1,29 @@
 import click
 from tabulate import tabulate
 import numpy as np
+import asyncio
 
 from merlin.cli.decorators import pass_node_name
-from merlin.unsupervised import list_clusters
+from merlin.unsupervised.clustering import cluster_data
+
+def list_clusters(node_name, event_stream_name):
+    cluster_labels, exemplars = asyncio.run(cluster_data(node_name, event_stream_name))
+    distinct_labels = list(set(cluster_labels))
+
+    output = []
+    for index, cluster_label in enumerate(distinct_labels):
+        if cluster_label < 0:
+            continue
+
+        cluster_indices = np.where(cluster_labels == cluster_label)[0]
+
+        output.append({
+            'index': cluster_label,
+            'size': len(cluster_indices),
+            'exemplar': exemplars[index].tolist()
+        })
+
+    return output
 
 @click.command(name='clusters')
 @click.argument('event_stream')

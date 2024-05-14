@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from merlin.unsupervised import mds_data
+from merlin.unsupervised.mds import mds_data
 
 router = APIRouter()
 

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request
-from merlin.unsupervised import cluster_data
+
+from merlin.unsupervised.clustering import cluster_data
 
 router = APIRouter()
 
