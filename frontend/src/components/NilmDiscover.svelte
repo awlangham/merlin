@@ -27,8 +27,10 @@
             .then((response) => response.json())
             .then((j) => {
                 selectedEventID = -1;
-                range_start = new Date(j.range_start / 1000);
-                range_end = new Date(j.range_end / 1000);
+                range_start = j.range_start
+                    ? new Date(j.range_start / 1000)
+                    : null;
+                range_end = j.range_end ? new Date(j.range_end / 1000) : null;
                 events = j.events;
                 showLoading = false;
                 featurePlots.clearBrushedSelection();
@@ -140,14 +142,14 @@
             <button on:click={getClusters}>Cluster</button>
         {/if}
 
-        {#if range_start && range_end}
-            <span id="date-range-span">
+        <span id="date-range-span">
+            {#if range_start && range_end}
                 {range_start.toLocaleString(undefined, { hour12: false })} to {range_end.toLocaleString(
                     undefined,
                     { hour12: false },
                 )}
-            </span>
-        {/if}
+            {/if}
+        </span>
     </div>
     <div class="left-column">
         <div id="tool-div">

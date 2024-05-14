@@ -12,6 +12,9 @@ async def features(request: Request, stream_name: str):
         # TODO: Fix limit parameter
         events = await node.event_stream_read(stream_name + '/events')
 
+    if len(events) == 0:
+        return {'range_start': None, 'range_end': None, 'events': []}
+
     range_start, range_end = events[0].start_time, events[-1].end_time
 
     result = {
