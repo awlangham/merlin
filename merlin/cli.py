@@ -2,6 +2,8 @@ import click
 import numpy as np
 import configparser
 from tabulate import tabulate
+from functools import wraps
+
 from merlin.utilities import search_for_stream, create_event_stream, clear_stream
 from merlin.unsupervised import list_clusters
 
@@ -16,6 +18,7 @@ def main(context, node) -> None:
 
 
 def pass_node_name(func):
+    @wraps(func)
     @click.pass_context
     def new_func(context, *args, **kwargs):
         return func(context.obj['NODE'], *args, **kwargs)
