@@ -1,5 +1,5 @@
 <script>
-    export let selected_stream_name;
+    export let selectedStreamName;
 
     const datasetListPromise = fetch("api/datasets").then(
         (response) => response.json()
@@ -11,7 +11,7 @@
 {:then data}
     <select
         class="stream-select"
-        bind:value={selected_stream_name}
+        bind:value={selectedStreamName}
     >
         <option hidden value="">-- select a stream --</option>
         {#each data.dataset_names as dataset_name}

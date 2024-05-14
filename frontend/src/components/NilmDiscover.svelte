@@ -123,7 +123,7 @@
     </div>
     <div class="top-bar">
         <div class="event-stream-list">
-            <DatasetList bind:selected_stream_name={selectedStreamName} />
+            <DatasetList bind:selectedStreamName />
             {#if showLoading}
                 Loading...
             {/if}
