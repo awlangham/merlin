@@ -29,6 +29,7 @@ async def features(request: Request, stream_name: str):
             'Q_ss': event.content['Q_ss'],
             'P_pk': event.content['P_pk'],
             'Q_pk': event.content['Q_pk'],
+            'type': event.content['type'],
             'label': event.content['label'] if 'label' in event.content else None
         } for idx, event in enumerate(events)]
     }

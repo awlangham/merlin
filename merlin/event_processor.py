@@ -3,6 +3,8 @@ from joule import FilterModule
 from joule.api import Event, EventStream
 from joule.errors import ApiError
 
+from merlin.loads import load_file
+
 
 class EventProcessor(FilterModule):
     gap_time = 0.5 * 1e6  # microseconds
@@ -44,16 +46,37 @@ class EventProcessor(FilterModule):
             P_pk = np.max(P) - np.mean(P[:5])
             Q_pk = np.max(Q) - np.mean(Q[:5])
 
-            start_ts, end_ts = timestamps[0], timestamps[-1]
+            features_ss = np.array([P_ss, Q_ss, P_pk, Q_pk])
 
+            # Find closest matching exemplar
+            best_error = np.inf
+            matching_load = None
+            with load_file() as loads_json:
+                for load_name in loads_json:
+                    exemplar_ss = np.array(loads_json[load_name]['ss'])
+                    error = np.linalg.norm(features_ss - exemplar_ss)
+                    if error < best_error:
+                        best_error = error
+                        matching_load = load_name
+
+            event_content = {
+                'P_ss': float(P_ss),
+                'Q_ss': float(Q_ss),
+                'P_pk': float(P_pk),
+                'Q_pk': float(Q_pk)
+            }
+
+            if matching_load is not None:
+                event_content['label'] = matching_load
+
+
+            # Determine if event is ON or OFF
+            event_content['type'] = 'ON' if P_ss > 0 else 'OFF'
+
+            start_ts, end_ts = timestamps[0], timestamps[-1]
             new_event = Event(start_time=start_ts,
                               end_time=end_ts,
-                              content={
-                                  'P_ss': float(P_ss),
-                                  'Q_ss': float(Q_ss),
-                                  'P_pk': float(P_pk),
-                                  'Q_pk': float(Q_pk)
-                              }
+                              content=event_content
                               )
 
             await self.node.event_stream_write(out_event_stream, [new_event])

@@ -47,7 +47,7 @@
         </div>
         <div class="load-type">{eventData.load_type}</div>
         <div class="event-type">
-            {eventData.event_type ? eventData.event_type : "---"}
+            {eventData.type ? eventData.type : "---"}
         </div>
         <div class="event-label">
             {eventData.label ? eventData.label : "unlabeled"}
