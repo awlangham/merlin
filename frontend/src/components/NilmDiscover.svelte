@@ -124,13 +124,15 @@
     <div class="top-bar">
         <div class="event-stream-list">
             <DatasetList bind:selectedStreamName />
-            {#if showLoading}
-                Loading...
-            {/if}
         </div>
 
-        {#if events}
-            <button on:click={getEvents}>Refresh</button>
+        {#if selectedStreamName != ""}
+            {#if showLoading}
+                Loading...
+            {:else}
+                <button on:click={getEvents}>Refresh</button>
+            {/if}
+
             <input
                 id="auto-refresh-checkbox"
                 type="checkbox"

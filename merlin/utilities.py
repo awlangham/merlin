@@ -75,6 +75,11 @@ async def search_for_stream(node_name, stream_name) -> list:
 
     return stream_names
 
+@async_run
+async def connection_info(node_name):
+    async with get_joule_node(node_name) as node:
+        return node.name
+
 
 @async_run
 async def clear_stream(node_name, stream_name) -> None:
