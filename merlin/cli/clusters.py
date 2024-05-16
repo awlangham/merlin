@@ -51,5 +51,5 @@ def cli_clusters(node, event_stream, export) -> None:
         with load_file() as loads_json:
             for cluster in clusters:
                 if cluster['index'] != -1:
-                    index = int(cluster['index'])
+                    index = str(cluster['index'])
                     loads_json[index] = {'ss': cluster['exemplar']}
