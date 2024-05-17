@@ -42,7 +42,7 @@
         fetch("api/clusters?stream_name=" + selectedStreamName)
             .then((response) => response.json())
             .then((j) => {
-                clusterData = j.labels;
+                clusterData = j.cluster_assignments;
                 showLoading = false;
             });
     };

@@ -20,14 +20,14 @@ def cli_clusters(node, event_stream, export) -> None:
 
     table = []
     for cluster in Clustering(node, event_stream):
-        table.append([cluster.label_ + 1,
+        table.append([cluster.id_ + 1,
                       len(cluster),
                       *[np.round(m, 1) for m in cluster.exemplar.features_]]
                      )
 
         if export:
             with load_file() as loads_json:
-                loads_json[str(cluster.label_)] = cluster.to_json()
+                loads_json[str(cluster.id_)] = cluster.to_json()
 
     headers = ['Index', 'Size', 'P_ss', 'Q_ss', 'P_pk', 'Q_pk']
 
