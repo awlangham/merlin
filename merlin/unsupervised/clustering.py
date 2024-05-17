@@ -1,9 +1,8 @@
 import numpy as np
-import asyncio
 from sklearn.cluster import HDBSCAN
 from sklearn.preprocessing import MinMaxScaler
 
-from merlin.utilities import get_joule_node
+from merlin.utilities import get_events
 
 
 class Exemplar:
@@ -15,10 +14,10 @@ class Exemplar:
 
 
 class Cluster:
-    def __init__(self, label, indices, size, exemplar) -> None:
+    def __init__(self, label, indices, exemplar) -> None:
         self.label_ = label
         self.indices_ = indices
-        self.size_ = size
+        self.size_ = len(indices)
         self.exemplar = exemplar
 
     def __len__(self) -> int:
@@ -30,21 +29,13 @@ class Cluster:
 
 class Clustering:
     def __init__(self, node_name, event_stream_name) -> None:
-        async def _get_events():
-            async with get_joule_node(node_name) as node:
-                return await node.event_stream_read(event_stream_name + '/events')
-
-        events = asyncio.run(_get_events())
-
-        # TODO: handle empty case
-        # if len(events) == 0:
-        #     return [], []
+        # TODO: handle case where there are no events
 
         feature_names = ['P_ss', 'Q_ss', 'P_pk', 'Q_pk']
         features = np.array([
             [
                 event.content[name] for name in feature_names]
-            for event in events
+            for event in get_events(node_name, event_stream_name)
         ])
 
         scaler = MinMaxScaler()
@@ -67,11 +58,8 @@ class Clustering:
                 continue
 
             cluster_indices = np.where(self.labels == cluster_label)[0]
-            cluster_size = len(cluster_indices)
-
             cluster_exemplar = Exemplar(self.medoids_values[cluster_label])
-
-            self.clusters.append(Cluster(cluster_label, cluster_indices, cluster_size, cluster_exemplar))
+            self.clusters.append(Cluster(cluster_label, cluster_indices, cluster_exemplar))
 
     def __iter__(self):
         yield from self.clusters
