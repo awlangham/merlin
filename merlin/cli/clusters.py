@@ -27,8 +27,11 @@ def cli_clusters(node, event_stream, export) -> None:
 
         if export:
             with load_file() as loads_json:
-                loads_json[str(cluster.id_)] = cluster.to_json()
+                loads_json['Cluster ' + str(cluster.id_)] = cluster.to_json()
 
     headers = ['Index', 'Size', 'P_ss', 'Q_ss', 'P_pk', 'Q_pk']
 
     click.echo(tabulate(table, headers=headers))
+
+    if export:
+        click.echo('Saved to loads.json')

@@ -24,8 +24,11 @@ class Cluster:
     def __len__(self) -> int:
         return self.size_
 
-    def to_json(self) -> dict:
-        return {'ss': self.exemplar.features_.tolist(), 'timestamps': self.exemplar.ts_interval_}
+    def to_json(self) -> list[dict]:
+        return {'Exemplar 0': {
+            'ss': self.exemplar.features_.tolist(),
+            'timestamps': self.exemplar.ts_interval_,
+        }}
 
 
 class Clustering:

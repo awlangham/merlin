@@ -48,17 +48,6 @@ class EventProcessor(FilterModule):
 
             features_ss = np.array([P_ss, Q_ss, P_pk, Q_pk])
 
-            # Find closest matching exemplar
-            best_error = np.inf
-            matching_load = None
-            with load_file() as loads_json:
-                for load_name in loads_json:
-                    exemplar_ss = np.array(loads_json[load_name]['ss'])
-                    error = np.linalg.norm(features_ss - exemplar_ss)
-                    if error < best_error:
-                        best_error = error
-                        matching_load = load_name
-
             event_content = {
                 'P_ss': float(P_ss),
                 'Q_ss': float(Q_ss),
@@ -66,12 +55,31 @@ class EventProcessor(FilterModule):
                 'Q_pk': float(Q_pk)
             }
 
-            if matching_load is not None:
-                event_content['label'] = matching_load
+            if parsed_args.method == 'unsupervised':
+                event_content['type'] = 'ON' if P_ss > 0 else 'OFF'
+            else:
+                # Find closest matching exemplar
+                best_error = np.inf
+                matching_load = None
+                matching_exemplar = None
+                with load_file() as loads_json:
+                    for load_name in loads_json:
+                        print(loads_json[load_name])
+                        print('--')
+                        for exemplar_name in loads_json[load_name]:
+                            print(exemplar_name)
+                            exemplar_ss = np.array(loads_json[load_name][exemplar_name]['ss'])
+                            error = np.linalg.norm(features_ss - exemplar_ss)
+                            if error < best_error:
+                                best_error = error
+                                matching_load = load_name
+                                matching_exemplar = exemplar_name
 
+                if matching_load is not None:
+                    event_content['label'] = matching_load
 
-            # Determine if event is ON or OFF
-            event_content['type'] = 'ON' if P_ss > 0 else 'OFF'
+                if matching_exemplar is not None:
+                    event_content['type'] = exemplar_name
 
             start_ts, end_ts = timestamps[0], timestamps[-1]
             new_event = Event(start_time=start_ts,
