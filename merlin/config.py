@@ -4,12 +4,12 @@ from contextlib import contextmanager
 
 
 @contextmanager
-def load_file():
+def config_file():
     """
     Context manager to manage a load file.
     """
 
-    filename = 'loads.json'
+    filename = 'config.json'
 
     try:
         with open(filename) as f:

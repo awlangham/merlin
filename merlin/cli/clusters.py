@@ -1,7 +1,7 @@
 import click
 from tabulate import tabulate
 import numpy as np
-from merlin.loads import load_file
+from merlin.config import config_file
 
 from merlin.cli.decorators import pass_node_name
 from merlin.unsupervised.clustering import Clustering
@@ -39,8 +39,8 @@ def cli_clusters(node, event_stream, infer) -> None:
         for cluster in clustering:
             exemplar_list.append(cluster.to_json())
 
-        with load_file() as loads_json:
-            loads_json['exemplars'] = exemplar_list
-            loads_json['loads'] = load_dict
+        with config_file() as config:
+            config['exemplars'] = exemplar_list
+            config['loads'] = load_dict
 
-        click.echo('Saved to loads.json')
+        click.echo(f'Saved to config.json')

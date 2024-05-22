@@ -3,7 +3,7 @@ from joule import FilterModule
 from joule.api import Event, EventStream
 from joule.errors import ApiError
 
-from merlin.loads import load_file
+from merlin.config import config_file
 
 
 class EventProcessor(FilterModule):
@@ -62,7 +62,7 @@ class EventProcessor(FilterModule):
                 best_error = np.inf
                 matching_load = None
                 matching_exemplar = None
-                with load_file() as loads_json:
+                with config_file() as loads_json:
                     for load_name in loads_json:
                         print(loads_json[load_name])
                         print('--')
