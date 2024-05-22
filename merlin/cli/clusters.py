@@ -9,9 +9,9 @@ from merlin.unsupervised.clustering import Clustering
 
 @click.command(name='clusters')
 @click.argument('event_stream')
-@click.option('--export', '-e', is_flag=True, default=False, help='Export clusters to load configuration')
+@click.option('--infer', '-i', is_flag=True, default=False)
 @pass_node_name
-def cli_clusters(node, event_stream, export) -> None:
+def cli_clusters(node, event_stream, infer) -> None:
     """
     Extract significant clusters from EVENT_STREAM.
 
@@ -19,19 +19,28 @@ def cli_clusters(node, event_stream, export) -> None:
     """
 
     table = []
-    for cluster in Clustering(node, event_stream):
+    clustering = Clustering(node, event_stream)
+    for cluster in clustering:
         table.append([cluster.id_ + 1,
                       len(cluster),
                       *[np.round(m, 1) for m in cluster.exemplar.features_]]
                      )
 
-        if export:
-            with load_file() as loads_json:
-                loads_json['Cluster ' + str(cluster.id_)] = cluster.to_json()
-
     headers = ['Index', 'Size', 'P_ss', 'Q_ss', 'P_pk', 'Q_pk']
 
     click.echo(tabulate(table, headers=headers))
 
-    if export:
+    if infer:
+        load_dict = {}
+        exemplar_list = []
+        for load in clustering.infer_loads():
+            load_dict[load.name] = load.to_json()
+
+        for cluster in clustering:
+            exemplar_list.append(cluster.to_json())
+
+        with load_file() as loads_json:
+            loads_json['exemplars'] = exemplar_list
+            loads_json['loads'] = load_dict
+
         click.echo('Saved to loads.json')

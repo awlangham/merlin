@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.cluster import HDBSCAN
 from sklearn.preprocessing import MinMaxScaler
+from itertools import combinations
 
 from merlin.utilities import get_events
 
@@ -9,9 +10,8 @@ class Exemplar:
     def __init__(self, features, ts_interval) -> None:
         self.features_ = features
         self.ts_interval_ = ts_interval
-
-    def __repr__(self) -> str:
-        return f'Exemplar({self.features_})'
+        self.steady_state_diff = features[:2]
+        self.transition = None
 
 
 class Cluster:
@@ -25,10 +25,11 @@ class Cluster:
         return self.size_
 
     def to_json(self) -> list[dict]:
-        return {'Exemplar 0': {
-            'ss': self.exemplar.features_.tolist(),
-            'timestamps': self.exemplar.ts_interval_,
-        }}
+        return {
+            'start_ts': self.exemplar.ts_interval_[0],
+            'end_ts': self.exemplar.ts_interval_[1],
+            'transition': self.exemplar.transition
+        }
 
 
 class Clustering:
@@ -66,3 +67,54 @@ class Clustering:
 
     def __iter__(self):
         yield from self.clusters
+
+    def infer_loads(self):
+        loads = []
+
+        def _best_matching_pair(cluster_list):
+            if len(cluster_list) < 2:
+                return False
+
+            best_mean_sq_error = np.inf
+            best_cluster1, best_cluster2 = None, None
+            for cluster1, cluster2 in combinations(cluster_list, 2):
+                mean_sq_error = np.linalg.norm(cluster1.exemplar.steady_state_diff + cluster2.exemplar.steady_state_diff)
+
+                if mean_sq_error < best_mean_sq_error:
+                    best_mean_sq_error = mean_sq_error
+                    best_cluster1 = cluster1
+                    best_cluster2 = cluster2
+
+            cluster_list.remove(best_cluster1)
+            cluster_list.remove(best_cluster2)
+
+            new_load_name = f'Load {len(loads)}'
+
+            # Figure out which exemplar is ON and which is OFF
+            on_exemplar, off_exemplar = (best_cluster1.exemplar, best_cluster2.exemplar) if best_cluster1.exemplar.features_[
+                0] > best_cluster2.exemplar.features_[0] else (best_cluster2.exemplar, best_cluster1.exemplar)
+            on_exemplar.transition = [new_load_name, 'OFF', 'ON']
+            off_exemplar.transition = [new_load_name, 'ON', 'OFF']
+
+            new_load = BasicLoad(new_load_name, on_exemplar.features_[:2])
+            loads.append(new_load)
+
+            return True
+
+        cluster_list_copy = self.clusters.copy()
+        found_pair = _best_matching_pair(cluster_list_copy)
+        while found_pair:
+            found_pair = _best_matching_pair(cluster_list_copy)
+
+        return loads
+
+
+class BasicLoad:
+    def __init__(self, name, on_ss) -> None:
+        self.name = name
+        self.states = {'OFF': [0, 0], 'ON': on_ss.tolist()}
+
+    def to_json(self):
+        return {
+            'states': self.states
+        }
