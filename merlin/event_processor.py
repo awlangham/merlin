@@ -3,8 +3,7 @@ from joule import FilterModule
 from joule.api import Event, EventStream
 from joule.errors import ApiError
 
-from merlin.config import config_file
-from merlin.utilities import trainola
+from merlin.supervised.matching import find_matching_exemplar
 
 
 class EventProcessor(FilterModule):
@@ -52,8 +51,6 @@ class EventProcessor(FilterModule):
             P_pk = np.max(P) - np.mean(P[:5])
             Q_pk = np.max(Q) - np.mean(Q[:5])
 
-            # features_ss = np.array([P_ss, Q_ss, P_pk, Q_pk])
-
             event_content = {
                 'P_ss': float(P_ss),
                 'Q_ss': float(Q_ss),
@@ -65,26 +62,7 @@ class EventProcessor(FilterModule):
                 event_content['type'] = 'OFF to ON' if P_ss > 0 else 'ON to OFF'
             else:
                 # Find closest matching exemplar
-                trainola_threshold = 0.15
-
-                best_score = np.inf
-                matching_exemplar = None
-                with config_file() as config:
-                    for exemplar in config['exemplars']:
-                        exemplar_sarray = await self.node.data_read_array(transients_pipe.stream,
-                                                                          start=exemplar['start_ts'],
-                                                                          end=exemplar['end_ts'])
-                        exemplar_PQ = exemplar_sarray['data']
-                        exemplar_PQ -= np.mean(exemplar_PQ[:5], axis=0)
-
-                        detected_PQ = np.column_stack((P, Q))
-                        detected_PQ -= np.mean(detected_PQ[:5], axis=0)
-
-                        trainola_score = trainola(detected_PQ.T, exemplar_PQ.T)
-
-                        if trainola_score < best_score and trainola_score < trainola_threshold:
-                            best_score = trainola_score
-                            matching_exemplar = exemplar
+                matching_exemplar = await find_matching_exemplar(P, Q, self.node, transients_pipe.stream)
 
                 if matching_exemplar is not None and matching_exemplar['transitions'] is not None:
                     # TODO: support multi-transition exemplars
