@@ -11,7 +11,7 @@ class Exemplar:
         self.features_ = features
         self.ts_interval_ = ts_interval
         self.steady_state_diff = features[:2]
-        self.transition = None
+        self.transitions = None
 
 
 class Cluster:
@@ -28,7 +28,7 @@ class Cluster:
         return {
             'start_ts': self.exemplar.ts_interval_[0],
             'end_ts': self.exemplar.ts_interval_[1],
-            'transition': self.exemplar.transition
+            'transitions': self.exemplar.transitions
         }
 
 
@@ -93,8 +93,8 @@ class Clustering:
             # Figure out which exemplar is ON and which is OFF
             on_exemplar, off_exemplar = (best_cluster1.exemplar, best_cluster2.exemplar) if best_cluster1.exemplar.features_[
                 0] > best_cluster2.exemplar.features_[0] else (best_cluster2.exemplar, best_cluster1.exemplar)
-            on_exemplar.transition = [new_load_name, 'OFF', 'ON']
-            off_exemplar.transition = [new_load_name, 'ON', 'OFF']
+            on_exemplar.transitions = [[new_load_name, 'OFF', 'ON']]
+            off_exemplar.transitions = [[new_load_name, 'ON', 'OFF']]
 
             new_load = BasicLoad(new_load_name, on_exemplar.features_[:2])
             loads.append(new_load)

@@ -4,6 +4,7 @@ from joule.api import Event, EventStream
 from joule.errors import ApiError
 
 from merlin.config import config_file
+from merlin.utilities import trainola
 
 
 class EventProcessor(FilterModule):
@@ -46,7 +47,7 @@ class EventProcessor(FilterModule):
             P_pk = np.max(P) - np.mean(P[:5])
             Q_pk = np.max(Q) - np.mean(Q[:5])
 
-            features_ss = np.array([P_ss, Q_ss, P_pk, Q_pk])
+            # features_ss = np.array([P_ss, Q_ss, P_pk, Q_pk])
 
             event_content = {
                 'P_ss': float(P_ss),
@@ -56,30 +57,40 @@ class EventProcessor(FilterModule):
             }
 
             if parsed_args.method == 'unsupervised':
-                event_content['type'] = 'ON' if P_ss > 0 else 'OFF'
+                event_content['type'] = 'OFF to ON' if P_ss > 0 else 'ON to OFF'
             else:
                 # Find closest matching exemplar
-                best_error = np.inf
-                matching_load = None
+                trainola_threshold = 0.15
+
+                best_score = np.inf
                 matching_exemplar = None
-                with config_file() as loads_json:
-                    for load_name in loads_json:
-                        print(loads_json[load_name])
-                        print('--')
-                        for exemplar_name in loads_json[load_name]:
-                            print(exemplar_name)
-                            exemplar_ss = np.array(loads_json[load_name][exemplar_name]['ss'])
-                            error = np.linalg.norm(features_ss - exemplar_ss)
-                            if error < best_error:
-                                best_error = error
-                                matching_load = load_name
-                                matching_exemplar = exemplar_name
+                with config_file() as config:
+                    for exemplar in config['exemplars']:
+                        exemplar_sarray = await self.node.data_read_array(transients_pipe.stream,
+                                                                          start=exemplar['start_ts'],
+                                                                          end=exemplar['end_ts'])
+                        exemplar_PQ = exemplar_sarray['data']
+                        exemplar_PQ -= np.mean(exemplar_PQ[:5], axis=0)
 
-                if matching_load is not None:
-                    event_content['label'] = matching_load
+                        detected_PQ = np.column_stack((P, Q))
+                        detected_PQ -= np.mean(detected_PQ[:5], axis=0)
 
-                if matching_exemplar is not None:
-                    event_content['type'] = exemplar_name
+                        trainola_score = trainola(detected_PQ.T, exemplar_PQ.T)
+
+                        if trainola_score < best_score and trainola_score < trainola_threshold:
+                            best_score = trainola_score
+                            matching_exemplar = exemplar
+
+                if matching_exemplar is not None and matching_exemplar['transitions'] is not None:
+                    # TODO: support multi-transition exemplars
+                    if len(matching_exemplar['transitions']) > 1:
+                        raise Exception('Multi-transition exemplars not implemented yet.')
+                    else:
+                        transition = matching_exemplar['transitions'][0]
+                        event_content['label'] = transition[0]
+                        event_content['type'] = transition[1] + ' to ' + transition[2]
+                else:
+                    event_content['type'] = None
 
             start_ts, end_ts = timestamps[0], timestamps[-1]
             new_event = Event(start_time=start_ts,
