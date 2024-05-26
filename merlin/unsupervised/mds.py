@@ -5,6 +5,12 @@ from sklearn.manifold import MDS
 from merlin.utilities import get_joule_node, trainola
 
 async def mds_data(node_name, stream_name, intervals):
+    """
+    Transform specified time-series data into a compressed 2-D
+    space via multidimensional scaling and using trainola scores
+    as the distance metric.
+    """
+
     async with get_joule_node(node_name) as node:
         mds_events = []
         for interval in intervals:

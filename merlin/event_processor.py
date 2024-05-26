@@ -8,6 +8,11 @@ from merlin.utilities import trainola
 
 
 class EventProcessor(FilterModule):
+    """
+    Filter module to process a fragmented time-domain prep stream
+    into a collection of Joule events.
+    """
+
     gap_time = 0.5 * 1e6  # microseconds
 
     def custom_args(self, parser):

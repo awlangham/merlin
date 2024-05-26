@@ -4,35 +4,18 @@ from sklearn.preprocessing import MinMaxScaler
 from itertools import combinations
 
 from merlin.utilities import get_events
-
-
-class Exemplar:
-    def __init__(self, features, ts_interval) -> None:
-        self.features_ = features
-        self.ts_interval_ = ts_interval
-        self.steady_state_diff = features[:2]
-        self.transitions = None
-
-
-class Cluster:
-    def __init__(self, cluster_id, indices, exemplar) -> None:
-        self.id_ = cluster_id
-        self.indices_ = indices
-        self.size_ = len(indices)
-        self.exemplar = exemplar
-
-    def __len__(self) -> int:
-        return self.size_
-
-    def to_json(self) -> list[dict]:
-        return {
-            'start_ts': self.exemplar.ts_interval_[0],
-            'end_ts': self.exemplar.ts_interval_[1],
-            'transitions': self.exemplar.transitions
-        }
+from merlin.models import Exemplar, Cluster, BasicLoad
 
 
 class Clustering:
+    """
+    Abstraction of a collection of clusters in a Merlin dataset.
+    
+    The HDBSCAN clustering procedure is run upon class construction.
+
+    Load inference is performed with Clustering.infer_loads().
+    """
+
     def __init__(self, node_name, event_stream_name) -> None:
         # TODO: handle case where there are no events
 
@@ -107,14 +90,3 @@ class Clustering:
             found_pair = _best_matching_pair(cluster_list_copy)
 
         return loads
-
-
-class BasicLoad:
-    def __init__(self, name, on_ss) -> None:
-        self.name = name
-        self.states = {'OFF': [0, 0], 'ON': on_ss.tolist()}
-
-    def to_json(self):
-        return {
-            'states': self.states
-        }
