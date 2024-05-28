@@ -37,19 +37,20 @@ class EventProcessor(FilterModule):
             timestamps = sarray_in['timestamp']
 
             timestamps_diff = np.diff(timestamps)
-            end_index = np.argmax(timestamps_diff >= self.gap_time)
 
             if np.all(timestamps_diff < self.gap_time):
                 end_index = len(timestamps) - 1
+            else:
+                end_index = np.argmax(timestamps_diff >= self.gap_time)
 
             timestamps = timestamps[:end_index + 1]
             P, Q = sarray_in['data'][:end_index + 1, 0], sarray_in['data'][:end_index + 1, 1]
 
-            P_ss = np.mean(P[-5:]) - np.mean(P[:5])
-            Q_ss = np.mean(Q[-5:]) - np.mean(Q[:5])
+            P_ss = self._extract_ss(P)
+            Q_ss = self._extract_ss(Q)
 
-            P_pk = np.max(P) - np.mean(P[:5])
-            Q_pk = np.max(Q) - np.mean(Q[:5])
+            P_pk = self._extract_pk(P)
+            Q_pk = self._extract_pk(Q)
 
             event_content = {
                 'P_ss': float(P_ss),
@@ -75,15 +76,19 @@ class EventProcessor(FilterModule):
                 else:
                     event_content['type'] = None
 
-            start_ts, end_ts = timestamps[0], timestamps[-1]
-            new_event = Event(start_time=start_ts,
-                              end_time=end_ts,
+            new_event = Event(start_time=timestamps[0],
+                              end_time=timestamps[-1],
                               content=event_content
                               )
 
             await self.node.event_stream_write(out_event_stream, [new_event])
-
             transients_pipe.consume(end_index + 1)
+
+    def _extract_ss(self, x):
+        return np.mean(x[-5:]) - np.mean(x[:5])
+
+    def _extract_pk(self, x):
+        return np.max(x) - np.mean(x[:5])
 
 
 def main():
