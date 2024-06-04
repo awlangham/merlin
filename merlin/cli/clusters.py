@@ -1,8 +1,8 @@
 import click
 from tabulate import tabulate
 import numpy as np
-from merlin.config import config_file
 
+from merlin.config import config_file, config_filename
 from merlin.cli.decorators import pass_node_name
 from merlin.unsupervised.clustering import Clustering
 
@@ -39,8 +39,9 @@ def cli_clusters(node, event_stream, infer) -> None:
         for cluster in clustering:
             exemplar_list.append(cluster.to_json())
 
-        with config_file() as config:
+        filename = config_filename(event_stream)
+        with config_file(filename) as config:
             config['exemplars'] = exemplar_list
             config['loads'] = load_dict
 
-        click.echo(f'Saved to config.json')
+        click.echo(f'Saved to {filename}')

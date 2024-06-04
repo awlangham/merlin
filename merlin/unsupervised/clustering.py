@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from itertools import combinations
 
 from merlin.utilities import get_events
-from merlin.models import Exemplar, Cluster, BasicLoad
+from merlin.models import Exemplar, Cluster, OnOffLoad
 
 
 class Clustering:
@@ -87,7 +87,7 @@ class Clustering:
             else:
                 family = None
 
-            new_load = BasicLoad(new_load_name, on_exemplar.features_[:2], family)
+            new_load = OnOffLoad(new_load_name, on_exemplar.features_[:2], family)
             loads.append(new_load)
 
             return True
