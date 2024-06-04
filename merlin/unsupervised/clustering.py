@@ -10,7 +10,7 @@ from merlin.models import Exemplar, Cluster, BasicLoad
 class Clustering:
     """
     Abstraction of a collection of clusters in a Merlin dataset.
-    
+
     The HDBSCAN clustering procedure is run upon class construction.
 
     Load inference is performed with Clustering.infer_loads().
@@ -79,7 +79,15 @@ class Clustering:
             on_exemplar.transitions = [[new_load_name, 'OFF', 'ON']]
             off_exemplar.transitions = [[new_load_name, 'ON', 'OFF']]
 
-            new_load = BasicLoad(new_load_name, on_exemplar.features_[:2])
+            if on_exemplar.features_[1] < 500:
+                family = 'Resistive'
+            elif on_exemplar.features_[2] > 2 * on_exemplar.features_[0]:
+                # TODO: Refactor this into some sort of classifier that's well documented
+                family = 'Motor'
+            else:
+                family = None
+
+            new_load = BasicLoad(new_load_name, on_exemplar.features_[:2], family)
             loads.append(new_load)
 
             return True
