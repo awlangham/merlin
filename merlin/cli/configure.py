@@ -1,7 +1,7 @@
 import click
 
 from merlin.models import GenericLoad
-from merlin.config import config_file, config_filename
+from merlin.config import config_file, filename
 
 
 def comma_separated_to_strings(string):
@@ -24,9 +24,10 @@ def parse_transition(string):
 
 
 @click.command('configure')
-@click.argument('event_stream')
-def configure(event_stream) -> None:
-    filename = config_filename(event_stream)
+def configure() -> None:
+    """
+    Configure Merlin with a set of known loads and exemplars.
+    """
 
     click.echo('\n~~~ Load Configuration ~~~')
 
@@ -67,7 +68,7 @@ def configure(event_stream) -> None:
 
         create_new_exemplar = click.confirm('Continue adding exemplars')
 
-    with config_file(filename) as config:
+    with config_file() as config:
         config['exemplars'] = exemplar_list
         config['loads'] = load_dict
 

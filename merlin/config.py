@@ -3,12 +3,11 @@ from json.decoder import JSONDecodeError
 from contextlib import contextmanager
 
 
-def config_filename(dataset_name):
-    return dataset_name[1:].replace('/', '_').replace(' ', '_') + '.merlin'
+filename = 'config.json'
 
 
 @contextmanager
-def config_file(filename):
+def config_file():
     """
     Context manager to manage a load file.
     """
