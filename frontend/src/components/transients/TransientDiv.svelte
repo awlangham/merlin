@@ -3,16 +3,19 @@
     import Plot from "../Plot.svelte";
     import { slide } from "svelte/transition";
 
-    export let eventData,
-        transientData,
-        transientPromise,
-        selected;
+    export let eventData, transientData, transientPromise, selected;
 
     const dispatch = createEventDispatcher();
 
     const formatTime = (timestampString) => {
         const timestampDate = new Date(timestampString);
         return timestampDate.toLocaleTimeString(undefined, { hour12: false });
+    };
+
+    const copyTimestamps = () => {
+        navigator.clipboard.writeText(
+            eventData.start_ts + ", " + eventData.end_ts,
+        );
     };
 
     const layout = {
@@ -63,6 +66,7 @@
                     <Plot data={transientData} {layout} {config} />
                 </div>
                 <div class="event-buttons-div">
+                    <button on:click={copyTimestamps}>Copy timestamps</button>
                 </div>
             </div>
         {/await}
@@ -121,5 +125,7 @@
 
     .event-buttons-div {
         text-align: right;
+        padding-right: 10px;
+        padding-top: 5px;
     }
 </style>
