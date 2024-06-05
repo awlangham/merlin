@@ -1,5 +1,5 @@
 import numpy as np
-from joule import FilterModule
+from joule.client import FilterModule
 from joule.api import Event, EventStream
 from joule.errors import ApiError
 
