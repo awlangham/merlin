@@ -92,8 +92,8 @@ class EventProcessor(FilterModule):
 
 
 def main():
-    merlin = EventProcessor()
-    merlin.start()
+    merlin_event_processor = EventProcessor()
+    merlin_event_processor.start()
 
 
 if __name__ == '__main__':
