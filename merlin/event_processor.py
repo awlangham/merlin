@@ -29,6 +29,12 @@ class EventProcessor(FilterModule):
             return await self.node.event_stream_create(new_stream, output_stream_path[:-len(event_stream_name) - 1])
 
     async def run(self, parsed_args, inputs, outputs):
+        """
+        Run module, either in real-time or historic mode.
+
+        Must be run from an async function or from the command line with ``merlin-process-events``.
+        """
+
         transients_pipe = inputs['transients']
         out_event_stream = await self._get_output_stream(parsed_args.output)
 
@@ -69,6 +75,8 @@ class EventProcessor(FilterModule):
                     # TODO: support multi-transition exemplars
                     if len(matching_exemplar['transitions']) > 1:
                         raise Exception('Multi-transition exemplars not implemented yet.')
+                        # Implement as list of labels, list of types? 
+                        # E.g. labels: ['load 1', 'load 2'], types: ['OFF to ON', 'HALF to OFF']
                     else:
                         transition = matching_exemplar['transitions'][0]
                         event_content['label'] = transition[0]

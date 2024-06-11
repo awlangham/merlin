@@ -10,3 +10,5 @@ Microgrid Event Recognition and Load Identification Network (MERLIN)
    :maxdepth: 3
 
    cli
+   event_processor
+   visualizer
