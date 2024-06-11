@@ -9,6 +9,7 @@ exclude = ["start_dev.sh", "start_dev.py"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "frontend/build" = "merlin/static"
+"docs/_build/html" = "merlin/docs"
 
 [project]
 name = "merlin"
