@@ -9,7 +9,7 @@ import merlin
 @click.command('docs')
 def docs() -> None:
     """
-    Open Merlin documentation in a browser.
+    Open Merlin documentation in the default browser.
     """
 
     installed_path = str(files(merlin)) + '/docs/index.html'

@@ -9,7 +9,7 @@ from merlin.unsupervised.clustering import Clustering
 
 @click.command(name='clusters')
 @click.argument('event_stream')
-@click.option('--infer', '-i', is_flag=True, default=False)
+@click.option('--infer', '-i', is_flag=True, default=False, help=f'Infer exemplars and loads and save to {filename}')
 @pass_node_name
 def cli_clusters(node, event_stream, infer) -> None:
     """
