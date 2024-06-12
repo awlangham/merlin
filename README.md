@@ -18,3 +18,7 @@ To run the development version of the visualization back-end, open a terminal in
 For the visualization front-end, open a terminal in merlin/frontend and run ``./start_dev.sh``. Note that [Node.js](https://nodejs.org) must be installed for merlin front-end development.
 
 To run a development server for the [Sphinx](https://www.sphinx-doc.org) documentation, open a terminal in merlin/docs and run ``./start_dev.sh``.
+
+Installation
+------------
+To install merlin, download the [latest release](https://github.com/awlangham/merlin/releases/latest) (download the prebuilt ``.whl`` file) and install with ``pip install merlin-<version>-py3-none-any.whl``.
