@@ -39,9 +39,12 @@ class EventProcessor(FilterModule):
         out_event_stream = await self._get_output_stream(parsed_args.output)
 
         while not self.stop_requested:
-            sarray_in = await transients_pipe.read()
+            sarray_in = await self.read_from_input(transients_pipe)
+            
+            if len(sarray_in) == 0:
+                continue
+            
             timestamps = sarray_in['timestamp']
-
             timestamps_diff = np.diff(timestamps)
 
             if np.all(timestamps_diff < self.gap_time):
@@ -75,7 +78,7 @@ class EventProcessor(FilterModule):
                     # TODO: support multi-transition exemplars
                     if len(matching_exemplar['transitions']) > 1:
                         raise Exception('Multi-transition exemplars not implemented yet.')
-                        # Implement as list of labels, list of types? 
+                        # Implement as list of labels, list of types?
                         # E.g. labels: ['load 1', 'load 2'], types: ['OFF to ON', 'HALF to OFF']
                     else:
                         transition = matching_exemplar['transitions'][0]
@@ -89,8 +92,14 @@ class EventProcessor(FilterModule):
                               content=event_content
                               )
 
-            await self.node.event_stream_write(out_event_stream, [new_event])
+            await self.write_to_output(out_event_stream, [new_event])
             transients_pipe.consume(end_index + 1)
+
+    async def read_from_input(self, transients_pipe):
+        return await transients_pipe.read()
+
+    async def write_to_output(self, event_stream_name, event_list):
+        await self.node.event_stream_write(event_stream_name, event_list)
 
     def _extract_ss(self, x):
         return np.mean(x[-5:]) - np.mean(x[:5])
