@@ -35,7 +35,7 @@
 <style>
     .transient-button.selected {
         font-weight: bold;
-        border-bottom: none;
+        /* border-bottom: none; */
     }
 
     .transient-button {
@@ -66,9 +66,9 @@
         border-right: 1px solid lightgray;
     }
 
-    .transient-button.selected .event-timestamp {
+    /* .transient-button.selected .event-timestamp {
         border-right-color: gray;
-    }
+    } */
 
     .transient-div {
         padding-bottom: 10px;

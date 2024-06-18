@@ -52,8 +52,18 @@
         }
     };
 
+    const clearTransientPlot = () => {
+        timestamps = undefined;
+        transient_P = undefined;
+        transient_Q = undefined;
+        transientData = [{ name: "P" }, { name: "Q" }];
+    };
+
     let transientPromise;
     $: if (selectedEventID != -1) {
+        clearTransientPlot();
+        scrollToSelected();
+
         const selectedEvent = events[selectedEventID];
         transientPromise = fetch(
             "api/transient?" +
@@ -69,13 +79,9 @@
                 timestamps = j.timestamps;
                 transient_P = j.P;
                 transient_Q = j.Q;
-                scrollToSelected();
             });
     } else {
-        timestamps = undefined;
-        transient_P = undefined;
-        transient_Q = undefined;
-        transientData = [{ name: "P" }, { name: "Q" }];
+        clearTransientPlot();
     }
 
     let virtualListStart, virtualListEnd;
@@ -106,9 +112,11 @@
 
 <div class="transient-plot-div">
     <Plot data={transientData} {layout} {config} />
-    <button id="copy-timestamps-btn" on:click={copyTimestamps}>
-        Copy timestamps
-    </button>
+    {#if selectedEventID != -1}
+        <button id="copy-timestamps-btn" on:click={copyTimestamps}>
+            Copy timestamps
+        </button>
+    {/if}
 </div>
 
 <div class="timespan-date">
@@ -133,9 +141,6 @@
                             selectedEventID = -1;
                         } else {
                             selectedEventID = item.id;
-                            timestamps = undefined;
-                            transient_P = undefined;
-                            transient_Q = undefined;
                         }
                     }}
                 />
