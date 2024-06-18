@@ -13,11 +13,11 @@
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"@types/plotly.js-dist-min": "^2.3.1",
 		"svelte": "^4.0.0",
-		"svelte-virtual-list-ce": "^3.1.0-beta.2",
 		"vite": "^5.0.0"
 	},
 	"type": "module",
 	"dependencies": {
-		"plotly.js-dist-min": "^2.23.2"
+		"plotly.js-dist-min": "^2.23.2",
+		"svelte-virtual-list-ce": "^3.1.0-beta.2"
 	}
 }
