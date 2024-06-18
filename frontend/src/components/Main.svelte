@@ -1,17 +1,14 @@
 <script>
-    import DatasetList from "./DatasetList.svelte";
     import TransientViewer from "./transients/TransientViewer.svelte";
     import DownloadData from "./DownloadData.svelte";
     import FeaturePlots from "./features/FeaturePlots.svelte";
     import Logo from "./Logo.svelte";
+    import TopBar from "./TopBar.svelte";
 
-    export let selectedStreamName = "";
+    let topBar;
 
-    let showLoading = false,
-        mode = "explore",
-        autoRefresh = false,
-        range_start,
-        range_end,
+    let mode = "explore",
+        selectedStreamName = "",
         selectedEventID = -1,
         brushedPoints,
         featurePlots,
@@ -22,31 +19,9 @@
     // events: array of objects with props {timestamp, start_ts, end_ts, P_ss, Q_ss, P_pk, Q_pk}
     let events = [];
 
-    const getEvents = () => {
-        showLoading = true;
-        fetch("api/features?stream_name=" + selectedStreamName)
-            .then((response) => response.json())
-            .then((j) => {
-                selectedEventID = -1;
-                range_start = j.range_start
-                    ? new Date(j.range_start / 1000)
-                    : null;
-                range_end = j.range_end ? new Date(j.range_end / 1000) : null;
-                events = j.events;
-                showLoading = false;
-                featurePlots.clearBrushedSelection();
-            });
-    };
-
-    const getClusters = () => {
-        showLoading = true;
-        fetch("api/clusters?stream_name=" + selectedStreamName)
-            .then((response) => response.json())
-            .then((j) => {
-                clusterData = j.cluster_assignments;
-                showLoading = false;
-            });
-    };
+    $: if (events && featurePlots) {
+        featurePlots.clearBrushedSelection();
+    }
 
     $: loadTypes = [...new Set(events.map((event) => event.load_type))].sort();
     $: filterType, (selectedEventID = -1), (brushedPoints = undefined);
@@ -69,27 +44,14 @@
         })
             .then((response) => response.json())
             .then((j) => {
-                getEvents();
+                topBar.getEvents();
                 newLabelName = "";
             });
     };
 
-    $: if (selectedStreamName !== "") {
-        getEvents();
-    }
-
     const unselectPoint = () => {
         selectedEventID = -1;
     };
-
-    let interval;
-    $: if (autoRefresh) {
-        interval = setInterval(() => {
-            getEvents();
-        }, 3000);
-    } else {
-        clearInterval(interval);
-    }
 
     $: filteredEvents =
         filterType === ""
@@ -120,38 +82,13 @@
 
 <div class="main">
     <Logo />
-    <div class="top-bar">
-        <div class="event-stream-list">
-            <DatasetList bind:selectedStreamName />
-        </div>
-
-        {#if selectedStreamName != ""}
-            {#if showLoading}
-                Loading...
-            {:else}
-                <button on:click={getEvents}>Refresh</button>
-            {/if}
-
-            <input
-                id="auto-refresh-checkbox"
-                type="checkbox"
-                bind:checked={autoRefresh}
-            />
-            <label id="auto-refresh-label" for="auto-refresh-checkbox">
-                Auto Refresh
-            </label>
-            <button on:click={getClusters}>Cluster</button>
-        {/if}
-
-        <span id="date-range-span">
-            {#if range_start && range_end}
-                {range_start.toLocaleString(undefined, { hour12: false })} to {range_end.toLocaleString(
-                    undefined,
-                    { hour12: false },
-                )}
-            {/if}
-        </span>
-    </div>
+    <TopBar
+        bind:this={topBar}
+        bind:selectedStreamName
+        bind:events
+        bind:clusterData
+        bind:selectedEventID
+    />
     <div class="left-column">
         <div id="tool-div">
             <div>
@@ -201,12 +138,7 @@
             {/if}
         </div>
 
-        <TransientViewer
-            on:update_events={getEvents}
-            {events}
-            bind:selectedEventID
-            {selectedStreamName}
-        />
+        <TransientViewer {events} bind:selectedEventID {selectedStreamName} />
     </div>
     <FeaturePlots
         bind:this={featurePlots}
@@ -225,28 +157,6 @@
         flex-wrap: wrap;
     }
 
-    .event-stream-list {
-        display: flex;
-    }
-
-    .top-bar {
-        display: flex;
-        width: 70%;
-        margin-left: auto;
-        margin-right: auto;
-        margin-bottom: 10px;
-        padding: 10px 10px 10px 10px;
-        border: 2px solid gray;
-        border-radius: 10px;
-        box-shadow: 3px 1px 4px #888;
-        background-color: white;
-    }
-
-    #date-range-span {
-        margin-left: auto;
-        margin-right: auto;
-    }
-
     #unselect-btn {
         visibility: hidden;
         margin-left: auto;
@@ -254,14 +164,6 @@
 
     #unselect-btn.visible {
         visibility: visible;
-    }
-
-    #auto-refresh-checkbox {
-        margin-left: 20px;
-    }
-
-    #auto-refresh-label {
-        margin-right: 20px;
     }
 
     #tool-div {
