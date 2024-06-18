@@ -3,6 +3,7 @@
     import TransientViewer from "./transients/TransientViewer.svelte";
     import DownloadData from "./DownloadData.svelte";
     import FeaturePlots from "./features/FeaturePlots.svelte";
+    import Logo from "./Logo.svelte";
 
     export let selectedStreamName = "";
 
@@ -118,9 +119,7 @@
 </script>
 
 <div class="main">
-    <div class="logo-bar">
-        <span class="logo"> ⚡️ Merlin </span>
-    </div>
+    <Logo />
     <div class="top-bar">
         <div class="event-stream-list">
             <DatasetList bind:selectedStreamName />
@@ -228,17 +227,6 @@
 
     .event-stream-list {
         display: flex;
-    }
-
-    .logo-bar {
-        display: flex;
-        width: 25%;
-    }
-
-    .logo {
-        font-size: 2.3em;
-        margin-left: auto;
-        margin-right: auto;
     }
 
     .top-bar {
