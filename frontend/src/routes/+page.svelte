@@ -1,8 +1,8 @@
 <script>
     import "../app.css";
-    import NilmDiscover from "../components/NilmDiscover.svelte";
+    import Main from "../components/Main.svelte";
 </script>
 
 <main>
-    <NilmDiscover />
+    <Main />
 </main>
