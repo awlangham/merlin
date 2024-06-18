@@ -1,9 +1,7 @@
 <script>
-    import { createEventDispatcher, onDestroy } from "svelte";
-    import Plot from "../Plot.svelte";
-    import { slide } from "svelte/transition";
+    import { createEventDispatcher } from "svelte";
 
-    export let eventData, transientData, transientPromise, selected;
+    export let eventData, selected;
 
     const dispatch = createEventDispatcher();
 
@@ -11,30 +9,6 @@
         const timestampDate = new Date(timestampString);
         return timestampDate.toLocaleTimeString(undefined, { hour12: false });
     };
-
-    const copyTimestamps = () => {
-        navigator.clipboard.writeText(
-            eventData.start_ts + ", " + eventData.end_ts,
-        );
-    };
-
-    const layout = {
-            autosize: true,
-            margin: { l: 60, r: 20, b: 40, t: 20 },
-            xaxis: {
-                title: { text: "Time (s)" },
-            },
-            yaxis: {
-                title: { text: "Power (W)" },
-            },
-        },
-        config = { staticPlot: true };
-
-    onDestroy(() => {
-        if (selected) {
-            dispatch("selected");
-        }
-    });
 </script>
 
 <div class="transient-div" timestamp={eventData.timestamp}>
@@ -56,28 +30,9 @@
             {eventData.label ? eventData.label : "unlabeled"}
         </div>
     </button>
-
-    {#if selected}
-        {#await transientPromise}
-            <div>Waiting...</div>
-        {:then}
-            <div in:slide>
-                <div class="transient-plot-div">
-                    <Plot data={transientData} {layout} {config} />
-                </div>
-                <div class="event-buttons-div">
-                    <button on:click={copyTimestamps}>Copy timestamps</button>
-                </div>
-            </div>
-        {/await}
-    {/if}
 </div>
 
 <style>
-    .transient-plot-div {
-        height: 300px;
-    }
-
     .transient-button.selected {
         font-weight: bold;
         border-bottom: none;
@@ -121,11 +76,5 @@
         border-bottom-left-radius: 10px;
         border-bottom-right-radius: 10px;
         background-color: white;
-    }
-
-    .event-buttons-div {
-        text-align: right;
-        padding-right: 10px;
-        padding-top: 5px;
     }
 </style>

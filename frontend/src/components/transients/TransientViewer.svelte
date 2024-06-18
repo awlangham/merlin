@@ -1,10 +1,9 @@
 <script>
     import VirtualList from "svelte-virtual-list-ce";
 
-    import { createEventDispatcher, tick } from "svelte";
+    import { tick } from "svelte";
     import TransientDiv from "./TransientDiv.svelte";
-
-    const dispatch = createEventDispatcher();
+    import Plot from "../Plot.svelte";
 
     export let events, selectedEventID, selectedStreamName;
 
@@ -13,7 +12,6 @@
     let timestamps,
         transient_P,
         transient_Q,
-        confirmDelete = false,
         transientData = [{ name: "P" }, { name: "Q" }],
         firstVisibleTimestamp = "",
         lastVisibleTimestamp = "";
@@ -71,29 +69,47 @@
                 timestamps = j.timestamps;
                 transient_P = j.P;
                 transient_Q = j.Q;
-                confirmDelete = false;
                 scrollToSelected();
             });
+    } else {
+        timestamps = undefined;
+        transient_P = undefined;
+        transient_Q = undefined;
+        transientData = [{ name: "P" }, { name: "Q" }];
     }
-
-    // const deleteEvent = () => {
-    //     if (confirmDelete) {
-    //         fetch(
-    //             "/api/delete/" + selectedStreamName + "/" + selectedEventID,
-    //         ).then(() => {
-    //             dispatch("update_events");
-    //         });
-    //     } else {
-    //         confirmDelete = true;
-    //     }
-    // };
 
     let virtualListStart, virtualListEnd;
     $: if (virtualListStart && virtualListEnd) {
         firstVisibleTimestamp = events[virtualListStart].timestamp;
         lastVisibleTimestamp = events[virtualListEnd - 1].timestamp;
     }
+
+    const layout = {
+            autosize: true,
+            margin: { l: 60, r: 20, b: 40, t: 20 },
+            xaxis: {
+                title: { text: "Time (s)" },
+            },
+            yaxis: {
+                title: { text: "Power (W)" },
+            },
+        },
+        config = { staticPlot: true };
+
+    const copyTimestamps = () => {
+        const eventData = events[selectedEventID];
+        navigator.clipboard.writeText(
+            eventData.start_ts + ", " + eventData.end_ts,
+        );
+    };
 </script>
+
+<div class="transient-plot-div">
+    <Plot data={transientData} {layout} {config} />
+    <button id="copy-timestamps-btn" on:click={copyTimestamps}>
+        Copy timestamps
+    </button>
+</div>
 
 <div class="timespan-date">
     Start: {firstVisibleTimestamp}
@@ -111,9 +127,7 @@
             >
                 <TransientDiv
                     eventData={item}
-                    {transientData}
                     selected={selectedEventID === item.id}
-                    {transientPromise}
                     on:selected={() => {
                         if (selectedEventID === item.id) {
                             selectedEventID = -1;
@@ -148,11 +162,28 @@
     }
 
     #transient-viewer {
-        height: calc(100vh - 110px + 20px - 144px - 50px);
+        height: calc(100vh - 110px + 20px - 144px - 50px - 290px - 7px);
         overflow: auto;
         border: 2px solid gray;
         border-radius: 10px;
         box-shadow: 3px 3px 4px #888;
         background-color: white;
+    }
+
+    .transient-plot-div {
+        height: 290px;
+        border: 2px solid gray;
+        border-radius: 10px;
+        box-shadow: 3px 3px 4px #888;
+        background-color: white;
+        overflow: hidden;
+        padding-bottom: 5px;
+        position: relative;
+    }
+
+    #copy-timestamps-btn {
+        position: absolute;
+        left: 10px;
+        bottom: 4px;
     }
 </style>
