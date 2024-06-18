@@ -2,11 +2,7 @@
     import FeatureViewer from "./FeatureViewer.svelte";
     import MdsViewer from "./MdsViewer.svelte";
 
-    export let featureData,
-        selectedEventID,
-        mode,
-        brushedPoints,
-        clusterData;
+    export let featureData, mode, brushedPoints, clusterData;
 
     let hasSelection1 = false,
         hasSelection2 = false,
@@ -47,7 +43,6 @@
 <div class="feature-viewer">
     <FeatureViewer
         {featureData}
-        bind:selectedEventID
         mode={mode === "mds" ? "crossbrush" : mode}
         brushedPoints={brushedPoints1}
         {clusterData}
@@ -61,15 +56,10 @@
 
 <div class="feature-viewer">
     {#if mode === "mds"}
-        <MdsViewer
-            bind:selectedEventID
-            brushedPointsIDs={brushedPoints}
-            {brushedPointsIntervals}
-        />
+        <MdsViewer brushedPointsIDs={brushedPoints} {brushedPointsIntervals} />
     {:else}
         <FeatureViewer
             {featureData}
-            bind:selectedEventID
             sequence={1}
             {mode}
             {clusterData}

@@ -1,26 +1,26 @@
 <script>
     import { createEventDispatcher } from "svelte";
-    import { datasetStore } from "./stores";
+    import { datasetStore, eventIndexStore } from "./stores";
     import DownloadData from "./DownloadData.svelte";
 
     const dispatch = createEventDispatcher();
 
-    export let filterType,
-        mode,
-        loadTypes,
-        brushedPoints,
-        selectedEventID,
-        featureData;
+    export let filterType, mode, loadTypes, brushedPoints, featureData;
 
     let selectedStreamName;
     datasetStore.subscribe((value) => {
         selectedStreamName = value;
     });
 
+    let selectedEventID;
+    eventIndexStore.subscribe((value) => {
+        selectedEventID = value;
+    });
+
     let newLabelName;
 
     const unselectPoint = () => {
-        selectedEventID = -1;
+        eventIndexStore.set(-1);
     };
 
     const putLabel = () => {

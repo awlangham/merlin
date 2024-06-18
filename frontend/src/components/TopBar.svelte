@@ -1,8 +1,8 @@
 <script>
-    import { datasetStore } from "./stores";
+    import { datasetStore, eventIndexStore } from "./stores";
     import DatasetList from "./DatasetList.svelte";
 
-    export let selectedEventID, events, clusterData;
+    export let events, clusterData;
 
     let selectedStreamName;
     datasetStore.subscribe((value) => {
@@ -32,7 +32,7 @@
         fetch("api/features?stream_name=" + selectedStreamName)
             .then((response) => response.json())
             .then((j) => {
-                selectedEventID = -1;
+                eventIndexStore.set(-1);
                 rangeStart = j.range_start
                     ? new Date(j.range_start / 1000)
                     : null;

@@ -7,13 +7,13 @@
         labels,
     } from "../../utilities.js";
 
+    import { eventIndexStore } from "../stores";
     import Plot from "../Plot.svelte";
     import { createEventDispatcher } from "svelte";
 
     const dispatch = createEventDispatcher();
 
     export let featureData,
-        selectedEventID,
         sequence = 0,
         mode,
         brushedPoints,
@@ -53,6 +53,11 @@
             scrollZoom: true,
             responsive: true,
         };
+
+    let selectedEventID;
+    eventIndexStore.subscribe((value) => {
+        selectedEventID = value;
+    });
 
     $: if (mode === "explore") {
         layout.dragmode = "pan";
@@ -149,7 +154,7 @@
             {config}
             on:click={(event) => {
                 const trace = event.detail.points[0];
-                selectedEventID = trace.id;
+                eventIndexStore.set(trace.id);
             }}
             on:selected={(event) => {
                 if (event.detail.selections.length > 0) {

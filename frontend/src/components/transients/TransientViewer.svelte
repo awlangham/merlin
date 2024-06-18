@@ -1,5 +1,5 @@
 <script>
-    import { datasetStore } from "../stores";
+    import { datasetStore, eventIndexStore } from "../stores";
 
     import VirtualList from "svelte-virtual-list-ce";
 
@@ -8,11 +8,16 @@
     import Plot from "../Plot.svelte";
     import { config, layout } from "./plot-settings";
 
-    export let events, selectedEventID;
+    export let events;
 
     let selectedStreamName;
     datasetStore.subscribe((value) => {
         selectedStreamName = value;
+    });
+
+    let selectedEventID;
+    eventIndexStore.subscribe((value) => {
+        selectedEventID = value;
     });
 
     let scrollToIndex;
@@ -134,9 +139,9 @@
                     selected={selectedEventID === item.id}
                     on:selected={() => {
                         if (selectedEventID === item.id) {
-                            selectedEventID = -1;
+                            eventIndexStore.set(-1);
                         } else {
-                            selectedEventID = item.id;
+                            eventIndexStore.set(item.id);
                         }
                     }}
                 />

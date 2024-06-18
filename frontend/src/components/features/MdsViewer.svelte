@@ -1,19 +1,24 @@
 <script>
-    import { datasetStore } from "../stores";
+    import { datasetStore, eventIndexStore } from "../stores";
     import Plot from "../Plot.svelte";
 
-    export let selectedEventID, brushedPointsIDs, brushedPointsIntervals;
+    export let brushedPointsIDs, brushedPointsIntervals;
 
     let selectedStreamName;
     datasetStore.subscribe((value) => {
         selectedStreamName = value;
     });
 
+    let selectedEventID;
+    eventIndexStore.subscribe((value) => {
+        selectedEventID = value;
+    });
+
     let mds_x = [],
         mds_y = [];
 
     $: if (brushedPointsIntervals && brushedPointsIntervals.length > 0) {
-        selectedEventID = -1;
+        eventIndexStore.set(-1);
         mds_x = [];
         mds_y = [];
 
@@ -124,6 +129,6 @@
     {config}
     on:click={(event) => {
         const trace = event.detail.points[0];
-        selectedEventID = trace.id;
+        eventIndexStore.set(trace.id);
     }}
 />

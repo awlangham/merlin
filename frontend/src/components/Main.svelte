@@ -1,4 +1,5 @@
 <script>
+    import { eventIndexStore } from "./stores";
     import TransientViewer from "./transients/TransientViewer.svelte";
     import Toolbox from "./Toolbox.svelte";
     import FeaturePlots from "./features/FeaturePlots.svelte";
@@ -8,7 +9,6 @@
     let topBar;
 
     let mode = "explore",
-        selectedEventID = -1,
         brushedPoints,
         featurePlots,
         filterType,
@@ -22,7 +22,7 @@
     }
 
     $: loadTypes = [...new Set(events.map((event) => event.load_type))].sort();
-    $: filterType, (selectedEventID = -1), (brushedPoints = undefined);
+    $: filterType, eventIndexStore.set(-1), (brushedPoints = undefined);
 
     $: filteredEvents =
         filterType === ""
@@ -53,29 +53,22 @@
 
 <div class="main">
     <Logo />
-    <TopBar
-        bind:this={topBar}
-        bind:events
-        bind:clusterData
-        bind:selectedEventID
-    />
+    <TopBar bind:this={topBar} bind:events bind:clusterData />
     <div class="left-column">
         <Toolbox
             bind:filterType
             bind:mode
-            bind:selectedEventID
             {featureData}
             {loadTypes}
             {brushedPoints}
             on:clear={featurePlots.clearBrushedSelection}
             on:refresh_events={topBar.getEvents}
         />
-        <TransientViewer {events} bind:selectedEventID />
+        <TransientViewer {events} />
     </div>
     <FeaturePlots
         bind:this={featurePlots}
         {featureData}
-        bind:selectedEventID
         {mode}
         bind:brushedPoints
         {clusterData}
