@@ -28,7 +28,7 @@ def initialize(node) -> None:
         click.echo(f'Event stream [{selected_folder}/events] already exists')
 
     click.echo('\nSelect a learning method:')
-    learning_methods = ['Unsupervised', 'Semi-supervised', 'Supervised']
+    learning_methods = ['Unsupervised', 'Supervised']
     for index, method in enumerate(learning_methods):
         click.echo(f'  {index + 1}) {method}')
 
