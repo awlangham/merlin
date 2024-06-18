@@ -54,9 +54,7 @@
 </script>
 
 <div class="top-bar">
-    <div class="event-stream-list">
-        <DatasetList />
-    </div>
+    <DatasetList />
 
     {#if selectedStreamName != ""}
         {#if showLoading}
@@ -87,10 +85,6 @@
 </div>
 
 <style>
-    .event-stream-list {
-        display: flex;
-    }
-
     .top-bar {
         display: flex;
         width: 70%;
