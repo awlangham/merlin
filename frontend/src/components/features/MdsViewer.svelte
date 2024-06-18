@@ -1,5 +1,5 @@
 <script>
-    import Plot from "./Plot.svelte";
+    import Plot from "../Plot.svelte";
 
     export let selectedEventID,
         brushedPointsIDs,

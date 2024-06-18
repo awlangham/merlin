@@ -4,6 +4,7 @@
     import { tick } from "svelte";
     import TransientDiv from "./TransientDiv.svelte";
     import Plot from "../Plot.svelte";
+    import { config, layout } from "./plot-settings";
 
     export let events, selectedEventID, selectedStreamName;
 
@@ -89,18 +90,6 @@
         firstVisibleTimestamp = events[virtualListStart].timestamp;
         lastVisibleTimestamp = events[virtualListEnd - 1].timestamp;
     }
-
-    const layout = {
-            autosize: true,
-            margin: { l: 60, r: 20, b: 40, t: 20 },
-            xaxis: {
-                title: { text: "Time (s)" },
-            },
-            yaxis: {
-                title: { text: "Power (W)" },
-            },
-        },
-        config = { staticPlot: true };
 
     const copyTimestamps = () => {
         const eventData = events[selectedEventID];

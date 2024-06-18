@@ -1,6 +1,6 @@
 <script>
     import FeatureViewer from "./FeatureViewer.svelte";
-    import BrushMap from "../BrushMap.svelte";
+    import MdsViewer from "./MdsViewer.svelte";
 
     export let featureData,
         selectedEventID,
@@ -62,7 +62,7 @@
 
 <div class="feature-viewer">
     {#if mode === "mds"}
-        <BrushMap
+        <MdsViewer
             bind:selectedEventID
             brushedPointsIDs={brushedPoints}
             {brushedPointsIntervals}
