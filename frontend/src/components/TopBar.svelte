@@ -1,7 +1,13 @@
 <script>
+    import { datasetStore } from "./stores";
     import DatasetList from "./DatasetList.svelte";
 
-    export let selectedStreamName, selectedEventID, events, clusterData;
+    export let selectedEventID, events, clusterData;
+
+    let selectedStreamName;
+    datasetStore.subscribe((value) => {
+        selectedStreamName = value;
+    });
 
     let autoRefresh = false,
         showLoading = false,
@@ -49,7 +55,7 @@
 
 <div class="top-bar">
     <div class="event-stream-list">
-        <DatasetList bind:selectedStreamName />
+        <DatasetList />
     </div>
 
     {#if selectedStreamName != ""}

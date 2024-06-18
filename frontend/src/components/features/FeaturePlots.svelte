@@ -6,7 +6,6 @@
         selectedEventID,
         mode,
         brushedPoints,
-        selectedStreamName,
         clusterData;
 
     let hasSelection1 = false,
@@ -66,7 +65,6 @@
             bind:selectedEventID
             brushedPointsIDs={brushedPoints}
             {brushedPointsIntervals}
-            {selectedStreamName}
         />
     {:else}
         <FeatureViewer

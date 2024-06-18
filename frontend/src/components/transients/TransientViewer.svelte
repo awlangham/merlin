@@ -1,4 +1,6 @@
 <script>
+    import { datasetStore } from "../stores";
+
     import VirtualList from "svelte-virtual-list-ce";
 
     import { tick } from "svelte";
@@ -6,7 +8,12 @@
     import Plot from "../Plot.svelte";
     import { config, layout } from "./plot-settings";
 
-    export let events, selectedEventID, selectedStreamName;
+    export let events, selectedEventID;
+
+    let selectedStreamName;
+    datasetStore.subscribe((value) => {
+        selectedStreamName = value;
+    });
 
     let scrollToIndex;
 

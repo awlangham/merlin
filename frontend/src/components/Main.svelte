@@ -8,7 +8,6 @@
     let topBar;
 
     let mode = "explore",
-        selectedStreamName = "",
         selectedEventID = -1,
         brushedPoints,
         featurePlots,
@@ -56,7 +55,6 @@
     <Logo />
     <TopBar
         bind:this={topBar}
-        bind:selectedStreamName
         bind:events
         bind:clusterData
         bind:selectedEventID
@@ -69,11 +67,10 @@
             {featureData}
             {loadTypes}
             {brushedPoints}
-            {selectedStreamName}
             on:clear={featurePlots.clearBrushedSelection}
             on:refresh_events={topBar.getEvents}
         />
-        <TransientViewer {events} bind:selectedEventID {selectedStreamName} />
+        <TransientViewer {events} bind:selectedEventID />
     </div>
     <FeaturePlots
         bind:this={featurePlots}
@@ -81,7 +78,6 @@
         bind:selectedEventID
         {mode}
         bind:brushedPoints
-        {selectedStreamName}
         {clusterData}
     />
 </div>

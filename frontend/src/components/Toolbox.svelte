@@ -1,6 +1,6 @@
 <script>
     import { createEventDispatcher } from "svelte";
-
+    import { datasetStore } from "./stores";
     import DownloadData from "./DownloadData.svelte";
 
     const dispatch = createEventDispatcher();
@@ -10,8 +10,12 @@
         loadTypes,
         brushedPoints,
         selectedEventID,
-        selectedStreamName,
         featureData;
+
+    let selectedStreamName;
+    datasetStore.subscribe((value) => {
+        selectedStreamName = value;
+    });
 
     let newLabelName;
 
@@ -37,7 +41,7 @@
         })
             .then((response) => response.json())
             .then((j) => {
-                dispatch('refresh_events');
+                dispatch("refresh_events");
                 newLabelName = "";
             });
     };

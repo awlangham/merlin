@@ -1,10 +1,13 @@
 <script>
+    import { datasetStore } from "../stores";
     import Plot from "../Plot.svelte";
 
-    export let selectedEventID,
-        brushedPointsIDs,
-        brushedPointsIntervals,
-        selectedStreamName;
+    export let selectedEventID, brushedPointsIDs, brushedPointsIntervals;
+
+    let selectedStreamName;
+    datasetStore.subscribe((value) => {
+        selectedStreamName = value;
+    });
 
     let mds_x = [],
         mds_y = [];
