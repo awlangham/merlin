@@ -7,7 +7,7 @@
         eventIndexStore,
         eventStore,
         brushedStore
-    } from "./stores";
+    } from "../stores";
     import DownloadData from "./DownloadData.svelte";
 
     const dispatch = createEventDispatcher();

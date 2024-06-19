@@ -1,5 +1,5 @@
 <script>
-    import { datasetStore } from "./stores";
+    import { datasetStore } from "../stores";
 
     export let intervals;
 

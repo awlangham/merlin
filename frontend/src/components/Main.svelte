@@ -7,8 +7,8 @@
     } from "./stores";
 
     import Logo from "./Logo.svelte";
-    import TopBar from "./TopBar.svelte";
-    import Toolbox from "./Toolbox.svelte";
+    import TopBar from "./topbar/TopBar.svelte";
+    import Toolbox from "./toolbox/Toolbox.svelte";
     import TransientViewer from "./transients/TransientViewer.svelte";
     import FeaturePlots from "./features/FeaturePlots.svelte";
 

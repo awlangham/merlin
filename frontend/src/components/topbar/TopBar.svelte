@@ -4,9 +4,10 @@
         eventIndexStore,
         eventStore,
         clusterStore,
-    } from "./stores";
+    } from "../stores";
 
     import DatasetList from "./DatasetList.svelte";
+    import DateRange from "./DateRange.svelte";
 
     let selectedStreamName;
     datasetStore.subscribe((value) => {
@@ -78,14 +79,7 @@
         <button on:click={getClusters}>Cluster</button>
     {/if}
 
-    <span id="date-range-span">
-        {#if rangeStart && rangeEnd}
-            {rangeStart.toLocaleString(undefined, { hour12: false })} to {rangeEnd.toLocaleString(
-                undefined,
-                { hour12: false },
-            )}
-        {/if}
-    </span>
+    <DateRange {rangeStart} {rangeEnd} />
 </div>
 
 <style>
@@ -108,10 +102,5 @@
 
     #auto-refresh-label {
         margin-right: 20px;
-    }
-
-    #date-range-span {
-        margin-left: auto;
-        margin-right: auto;
     }
 </style>
