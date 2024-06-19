@@ -1,5 +1,5 @@
 <script>
-    import { datasetStore, eventIndexStore } from "../stores";
+    import { datasetStore, eventIndexStore, eventStore } from "../stores";
 
     import VirtualList from "svelte-virtual-list-ce";
 
@@ -8,7 +8,10 @@
     import Plot from "../Plot.svelte";
     import { config, layout } from "./plot-settings";
 
-    export let events;
+    let events;
+    eventStore.subscribe((value) => {
+        events = value;
+    });
 
     let selectedStreamName;
     datasetStore.subscribe((value) => {

@@ -1,8 +1,8 @@
 <script>
-    import { datasetStore, eventIndexStore } from "./stores";
+    import { datasetStore, eventIndexStore, eventStore } from "./stores";
     import DatasetList from "./DatasetList.svelte";
 
-    export let events, clusterData;
+    export let clusterData;
 
     let selectedStreamName;
     datasetStore.subscribe((value) => {
@@ -37,7 +37,7 @@
                     ? new Date(j.range_start / 1000)
                     : null;
                 rangeEnd = j.range_end ? new Date(j.range_end / 1000) : null;
-                events = j.events;
+                eventStore.set(j.events);
                 showLoading = false;
             });
     };
