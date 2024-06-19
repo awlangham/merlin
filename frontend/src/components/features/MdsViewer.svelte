@@ -4,16 +4,6 @@
 
     export let brushedPointsIDs, brushedPointsIntervals;
 
-    let selectedStreamName;
-    datasetStore.subscribe((value) => {
-        selectedStreamName = value;
-    });
-
-    let selectedEventID;
-    eventIndexStore.subscribe((value) => {
-        selectedEventID = value;
-    });
-
     let mds_x = [],
         mds_y = [];
 
@@ -22,7 +12,7 @@
         mds_x = [];
         mds_y = [];
 
-        fetch("api/mds?stream_name=" + selectedStreamName, {
+        fetch("api/mds?stream_name=" + $datasetStore, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ intervals: brushedPointsIntervals }),
@@ -74,9 +64,9 @@
 
     let matchText = [];
 
-    $: if (brushedPointsIDs && selectedEventID != -1) {
+    $: if (brushedPointsIDs && $eventIndexStore != -1) {
         const selectedIndex = brushedPointsIDs.findIndex(
-            (id) => id === selectedEventID,
+            (id) => id === $eventIndexStore,
         );
 
         matchText = mds_x.map((x, i) => {
