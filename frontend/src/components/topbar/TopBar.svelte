@@ -9,17 +9,12 @@
     import DatasetList from "./DatasetList.svelte";
     import DateRange from "./DateRange.svelte";
 
-    let selectedStreamName;
-    datasetStore.subscribe((value) => {
-        selectedStreamName = value;
-    });
-
     let autoRefresh = false,
         showLoading = false,
         rangeStart,
         rangeEnd;
 
-    $: if (selectedStreamName !== "") {
+    $: if ($datasetStore !== "") {
         getEvents();
     }
 
@@ -34,7 +29,7 @@
 
     export const getEvents = () => {
         showLoading = true;
-        fetch("api/features?stream_name=" + selectedStreamName)
+        fetch("api/features?stream_name=" + $datasetStore)
             .then((response) => response.json())
             .then((j) => {
                 eventIndexStore.set(-1);
@@ -49,7 +44,7 @@
 
     const getClusters = () => {
         showLoading = true;
-        fetch("api/clusters?stream_name=" + selectedStreamName)
+        fetch("api/clusters?stream_name=" + $datasetStore)
             .then((response) => response.json())
             .then((j) => {
                 $clusterStore = j.cluster_assignments;
@@ -61,7 +56,7 @@
 <div class="top-bar">
     <DatasetList />
 
-    {#if selectedStreamName != ""}
+    {#if $datasetStore != ""}
         {#if showLoading}
             Loading...
         {:else}
