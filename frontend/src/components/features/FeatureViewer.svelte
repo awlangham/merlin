@@ -7,7 +7,13 @@
         labels,
     } from "../../utilities.js";
 
-    import { filterStore, eventStore, eventIndexStore } from "../stores";
+    import {
+        filterStore,
+        eventStore,
+        eventIndexStore,
+        clusterStore,
+    } from "../stores";
+
     import Plot from "../Plot.svelte";
     import { createEventDispatcher } from "svelte";
 
@@ -15,8 +21,7 @@
 
     export let cursor,
         sequence = 0,
-        brushedPoints,
-        clusterData;
+        brushedPoints;
 
     let x_feature, y_feature;
 
@@ -55,8 +60,8 @@
         y_feature = powerFeatures[1];
     }
 
-    $: if (clusterData && data) {
-        data[0].marker.color = clusterData.map((cluster) =>
+    $: if ($clusterStore && data) {
+        data[0].marker.color = $clusterStore.map((cluster) =>
             cluster === -1 ? unclusteredColor : colors[cluster],
         );
     }

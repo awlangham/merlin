@@ -1,8 +1,12 @@
 <script>
-    import { datasetStore, eventIndexStore, eventStore } from "./stores";
-    import DatasetList from "./DatasetList.svelte";
+    import {
+        datasetStore,
+        eventIndexStore,
+        eventStore,
+        clusterStore,
+    } from "./stores";
 
-    export let clusterData;
+    import DatasetList from "./DatasetList.svelte";
 
     let selectedStreamName;
     datasetStore.subscribe((value) => {
@@ -47,7 +51,7 @@
         fetch("api/clusters?stream_name=" + selectedStreamName)
             .then((response) => response.json())
             .then((j) => {
-                clusterData = j.cluster_assignments;
+                $clusterStore = j.cluster_assignments;
                 showLoading = false;
             });
     };

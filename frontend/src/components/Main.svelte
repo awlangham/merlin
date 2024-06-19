@@ -5,15 +5,14 @@
         filterStore,
         brushedStore,
     } from "./stores";
-    import TransientViewer from "./transients/TransientViewer.svelte";
-    import Toolbox from "./Toolbox.svelte";
-    import FeaturePlots from "./features/FeaturePlots.svelte";
+
     import Logo from "./Logo.svelte";
     import TopBar from "./TopBar.svelte";
+    import Toolbox from "./Toolbox.svelte";
+    import TransientViewer from "./transients/TransientViewer.svelte";
+    import FeaturePlots from "./features/FeaturePlots.svelte";
 
-    let topBar;
-
-    let featurePlots, clusterData;
+    let topBar, featurePlots;
 
     $: if ($eventStore && featurePlots) {
         featurePlots.clearBrushedSelection();
@@ -24,7 +23,7 @@
 
 <div class="main">
     <Logo />
-    <TopBar bind:this={topBar} bind:clusterData />
+    <TopBar bind:this={topBar} />
     <div class="left-column">
         <Toolbox
             on:clear={featurePlots.clearBrushedSelection}
@@ -32,7 +31,7 @@
         />
         <TransientViewer />
     </div>
-    <FeaturePlots bind:this={featurePlots} {clusterData} />
+    <FeaturePlots bind:this={featurePlots} />
 </div>
 
 <style>

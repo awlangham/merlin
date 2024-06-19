@@ -17,3 +17,6 @@ export const filterStore = writable('');
 
 // brushedStore: currently selected point indices
 export const brushedStore = writable(undefined);
+
+// clusterStore: current point clustering
+export const clusterStore = writable(undefined);
