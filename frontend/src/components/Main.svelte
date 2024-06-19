@@ -10,13 +10,7 @@
 
     let brushedPoints, featurePlots, filterType, clusterData;
 
-    // events: array of objects with props {timestamp, start_ts, end_ts, P_ss, Q_ss, P_pk, Q_pk}
-    let events;
-    eventStore.subscribe((value) => {
-        events = value;
-    });
-
-    $: if (events && featurePlots) {
+    $: if ($eventStore && featurePlots) {
         featurePlots.clearBrushedSelection();
     }
 
@@ -24,18 +18,18 @@
 
     $: filteredEvents =
         filterType === ""
-            ? events
-            : events.filter((event) => event.load_type === filterType);
+            ? $eventStore
+            : $eventStore.filter((event) => event.load_type === filterType);
 
     let featureData = {};
     $: if (filterType === "") {
-        featureData["Steady-State P"] = events.map(({ P_ss }) => P_ss);
-        featureData["Steady-State Q"] = events.map(({ Q_ss }) => Q_ss);
-        featureData["Peak P"] = events.map(({ P_pk }) => P_pk);
-        featureData["Peak Q"] = events.map(({ Q_pk }) => Q_pk);
-        featureData["id"] = events.map(({ id }) => id);
-        featureData["start_ts"] = events.map(({ start_ts }) => start_ts);
-        featureData["end_ts"] = events.map(({ end_ts }) => end_ts);
+        featureData["Steady-State P"] = $eventStore.map(({ P_ss }) => P_ss);
+        featureData["Steady-State Q"] = $eventStore.map(({ Q_ss }) => Q_ss);
+        featureData["Peak P"] = $eventStore.map(({ P_pk }) => P_pk);
+        featureData["Peak Q"] = $eventStore.map(({ Q_pk }) => Q_pk);
+        featureData["id"] = $eventStore.map(({ id }) => id);
+        featureData["start_ts"] = $eventStore.map(({ start_ts }) => start_ts);
+        featureData["end_ts"] = $eventStore.map(({ end_ts }) => end_ts);
     } else {
         featureData["Steady-State P"] = filteredEvents.map(({ P_ss }) => P_ss);
         featureData["Steady-State Q"] = filteredEvents.map(({ Q_ss }) => Q_ss);
