@@ -1,21 +1,16 @@
 <script>
     import { createEventDispatcher } from "svelte";
-    import { modeStore, datasetStore, eventIndexStore } from "./stores";
+    import {
+        modeStore,
+        datasetStore,
+        eventIndexStore,
+        eventStore,
+    } from "./stores";
     import DownloadData from "./DownloadData.svelte";
 
     const dispatch = createEventDispatcher();
 
     export let filterType, loadTypes, brushedPoints, featureData;
-
-    let selectedStreamName;
-    datasetStore.subscribe((value) => {
-        selectedStreamName = value;
-    });
-
-    let selectedEventID;
-    eventIndexStore.subscribe((value) => {
-        selectedEventID = value;
-    });
 
     let newLabelName;
 
@@ -28,7 +23,7 @@
             return;
         }
 
-        fetch("api/label?stream_name=" + selectedStreamName, {
+        fetch("api/label?stream_name=" + $datasetStore, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -45,6 +40,10 @@
                 newLabelName = "";
             });
     };
+
+    $: loadTypes = [
+        ...new Set($eventStore.map((event) => event.load_type)),
+    ].sort();
 </script>
 
 <div id="tool-div">
@@ -67,7 +66,7 @@
         </select>
 
         <button
-            class:visible={selectedEventID != -1}
+            class:visible={$eventIndexStore != -1}
             id="unselect-btn"
             on:click={unselectPoint}
         >
@@ -89,7 +88,6 @@
                 Clear Brush Selection
             </button>
             <DownloadData
-                stream={selectedStreamName}
                 intervals={brushedPoints.map((point) => [
                     featureData["start_ts"][point],
                     featureData["end_ts"][point],

@@ -1,8 +1,10 @@
 <script>
-    export let stream, intervals;
+    import { datasetStore } from "./stores";
+
+    export let intervals;
 
     const downloadData = () => {
-        fetch("api/download?stream_name=" + stream, {
+        fetch("api/download?stream_name=" + $datasetStore, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ intervals: intervals }),
@@ -12,7 +14,9 @@
                 const fileURL = window.URL.createObjectURL(blob);
                 const fileAnchor = document.createElement("a");
                 fileAnchor.href = fileURL;
-                fileAnchor.download = stream.replace(' ', '_').replace('/', '') + "_transients.npz";
+                fileAnchor.download =
+                    $datasetStore.replace(" ", "_").replace("/", "") +
+                    "_transients.npz";
                 fileAnchor.click();
             });
     };

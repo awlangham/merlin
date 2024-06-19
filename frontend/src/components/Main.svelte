@@ -1,5 +1,5 @@
 <script>
-    import { modeStore, eventIndexStore, eventStore } from "./stores";
+    import { eventIndexStore, eventStore } from "./stores";
     import TransientViewer from "./transients/TransientViewer.svelte";
     import Toolbox from "./Toolbox.svelte";
     import FeaturePlots from "./features/FeaturePlots.svelte";
@@ -20,7 +20,6 @@
         featurePlots.clearBrushedSelection();
     }
 
-    $: loadTypes = [...new Set(events.map((event) => event.load_type))].sort();
     $: filterType, eventIndexStore.set(-1), (brushedPoints = undefined);
 
     $: filteredEvents =
@@ -57,7 +56,6 @@
         <Toolbox
             bind:filterType
             {featureData}
-            {loadTypes}
             {brushedPoints}
             on:clear={featurePlots.clearBrushedSelection}
             on:refresh_events={topBar.getEvents}
