@@ -1,9 +1,9 @@
 <script>
-    import { modeStore } from "../stores";
+    import { modeStore, brushedStore, eventStore } from "../stores";
     import FeatureViewer from "./FeatureViewer.svelte";
     import MdsViewer from "./MdsViewer.svelte";
 
-    export let brushedPoints, clusterData;
+    export let clusterData;
 
     let hasSelection1 = false,
         hasSelection2 = false,
@@ -21,22 +21,22 @@
     }
 
     $: if (hasSelection1) {
-        brushedPoints2 = brushedPoints;
+        brushedPoints2 = $brushedStore;
     } else if (hasSelection2) {
-        brushedPoints1 = brushedPoints;
+        brushedPoints1 = $brushedStore;
     }
 
     export const clearBrushedSelection = () => {
         hasSelection1 = false;
         hasSelection2 = false;
-        brushedPoints = undefined;
+        $brushedStore = undefined;
     };
 
     let brushedPointsIntervals;
-    $: if (brushedPoints) {
-        brushedPointsIntervals = brushedPoints.map((point) => [
-            featureData["start_ts"][point],
-            featureData["end_ts"][point],
+    $: if ($brushedStore) {
+        brushedPointsIntervals = $brushedStore.map((point) => [
+            $eventStore[point]["start_ts"],
+            $eventStore[point]["end_ts"],
         ]);
     }
 </script>
@@ -47,7 +47,7 @@
         brushedPoints={brushedPoints1}
         {clusterData}
         on:brush={(d) => {
-            brushedPoints = d.detail;
+            $brushedStore = d.detail;
             hasSelection1 = true;
             hasSelection2 = false;
         }}
@@ -56,7 +56,7 @@
 
 <div class="feature-viewer">
     {#if $modeStore === "mds"}
-        <MdsViewer brushedPointsIDs={brushedPoints} {brushedPointsIntervals} />
+        <MdsViewer brushedPointsIDs={$brushedStore} {brushedPointsIntervals} />
     {:else}
         <FeatureViewer
             sequence={1}
@@ -64,7 +64,7 @@
             {clusterData}
             brushedPoints={brushedPoints2}
             on:brush={(d) => {
-                brushedPoints = d.detail;
+                $brushedStore = d.detail;
                 hasSelection1 = false;
                 hasSelection2 = true;
             }}

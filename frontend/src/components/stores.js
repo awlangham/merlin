@@ -14,3 +14,6 @@ export const modeStore = writable('explore');
 
 // filterStore: currently selected filter
 export const filterStore = writable('');
+
+// brushedStore: currently selected point indices
+export const brushedStore = writable(undefined);

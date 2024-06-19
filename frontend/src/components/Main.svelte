@@ -1,5 +1,10 @@
 <script>
-    import { eventIndexStore, eventStore, filterStore } from "./stores";
+    import {
+        eventIndexStore,
+        eventStore,
+        filterStore,
+        brushedStore,
+    } from "./stores";
     import TransientViewer from "./transients/TransientViewer.svelte";
     import Toolbox from "./Toolbox.svelte";
     import FeaturePlots from "./features/FeaturePlots.svelte";
@@ -8,13 +13,13 @@
 
     let topBar;
 
-    let brushedPoints, featurePlots, clusterData;
+    let featurePlots, clusterData;
 
     $: if ($eventStore && featurePlots) {
         featurePlots.clearBrushedSelection();
     }
 
-    $: $filterStore, eventIndexStore.set(-1), (brushedPoints = undefined);
+    $: $filterStore, eventIndexStore.set(-1), ($brushedStore = undefined);
 </script>
 
 <div class="main">
@@ -22,13 +27,12 @@
     <TopBar bind:this={topBar} bind:clusterData />
     <div class="left-column">
         <Toolbox
-            {brushedPoints}
             on:clear={featurePlots.clearBrushedSelection}
             on:refresh_events={topBar.getEvents}
         />
         <TransientViewer />
     </div>
-    <FeaturePlots bind:this={featurePlots} bind:brushedPoints {clusterData} />
+    <FeaturePlots bind:this={featurePlots} {clusterData} />
 </div>
 
 <style>

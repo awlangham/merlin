@@ -6,12 +6,13 @@
         datasetStore,
         eventIndexStore,
         eventStore,
+        brushedStore
     } from "./stores";
     import DownloadData from "./DownloadData.svelte";
 
     const dispatch = createEventDispatcher();
 
-    export let loadTypes, brushedPoints;
+    export let loadTypes;
 
     let newLabelName;
 
@@ -29,7 +30,7 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 label: newLabelName,
-                intervals: brushedPoints.map((point) => [
+                intervals: $brushedStore.map((point) => [
                     $eventStore[point]["start_ts"],
                     $eventStore[point]["end_ts"],
                 ]),
@@ -75,7 +76,7 @@
         </button>
     </div>
 
-    {#if brushedPoints}
+    {#if $brushedStore}
         <div>
             <input bind:value={newLabelName} />
             <button on:click={putLabel}>Label Data</button>
@@ -89,7 +90,7 @@
                 Clear Brush Selection
             </button>
             <DownloadData
-                intervals={brushedPoints.map((point) => [
+                intervals={$brushedStore.map((point) => [
                     $eventStore[point]["start_ts"],
                     $eventStore[point]["end_ts"],
                 ])}
