@@ -15,11 +15,7 @@ async def features(request: Request, stream_name: str):
     if len(events) == 0:
         return {'range_start': None, 'range_end': None, 'events': []}
 
-    range_start, range_end = events[0].start_time, events[-1].end_time
-
     result = {
-        'range_start': range_start,
-        'range_end': range_end,
         'events': [{
             'id': idx,
             'timestamp': ts2h(event.start_time),

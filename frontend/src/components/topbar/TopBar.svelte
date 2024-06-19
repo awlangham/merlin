@@ -27,17 +27,18 @@
         clearInterval(interval);
     }
 
+    $: if ($eventStore.length > 0) {
+        rangeStart = new Date($eventStore[0].start_ts / 1000);
+        rangeEnd = new Date($eventStore.at(-1).end_ts / 1000);
+    }
+
     export const getEvents = () => {
         showLoading = true;
         fetch("api/features?stream_name=" + $datasetStore)
             .then((response) => response.json())
             .then((j) => {
-                eventIndexStore.set(-1);
-                rangeStart = j.range_start
-                    ? new Date(j.range_start / 1000)
-                    : null;
-                rangeEnd = j.range_end ? new Date(j.range_end / 1000) : null;
-                eventStore.set(j.events);
+                $eventIndexStore = -1;
+                $eventStore = j.events;
                 showLoading = false;
             });
     };
