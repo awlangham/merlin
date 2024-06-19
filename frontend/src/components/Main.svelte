@@ -12,7 +12,7 @@
     import TransientViewer from "./transients/TransientViewer.svelte";
     import FeaturePlots from "./features/FeaturePlots.svelte";
 
-    let topBar, featurePlots;
+    let featurePlots;
 
     $: if ($eventStore && featurePlots) {
         featurePlots.clearBrushedSelection();
@@ -23,12 +23,9 @@
 
 <div class="main">
     <Logo />
-    <TopBar bind:this={topBar} />
+    <TopBar />
     <div class="left-column">
-        <Toolbox
-            on:clear={featurePlots.clearBrushedSelection}
-            on:refresh_events={topBar.getEvents}
-        />
+        <Toolbox on:clear={featurePlots.clearBrushedSelection} />
         <TransientViewer />
     </div>
     <FeaturePlots bind:this={featurePlots} />

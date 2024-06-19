@@ -6,8 +6,11 @@
         datasetStore,
         eventIndexStore,
         eventStore,
-        brushedStore
+        brushedStore,
     } from "../stores";
+
+    import { getEvents } from "../api-calls";
+
     import DownloadData from "./DownloadData.svelte";
 
     const dispatch = createEventDispatcher();
@@ -38,7 +41,7 @@
         })
             .then((response) => response.json())
             .then((j) => {
-                dispatch("refresh_events");
+                getEvents();
                 newLabelName = "";
             });
     };

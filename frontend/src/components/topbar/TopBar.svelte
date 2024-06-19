@@ -1,16 +1,12 @@
 <script>
-    import {
-        datasetStore,
-        eventIndexStore,
-        eventStore,
-        clusterStore,
-    } from "../stores";
+    import { datasetStore, eventStore } from "../stores";
+
+    import { getEvents, getClusters } from "../api-calls";
 
     import DatasetList from "./DatasetList.svelte";
     import DateRange from "./DateRange.svelte";
 
     let autoRefresh = false,
-        showLoading = false,
         rangeStart,
         rangeEnd;
 
@@ -31,38 +27,13 @@
         rangeStart = new Date($eventStore[0].start_ts / 1000);
         rangeEnd = new Date($eventStore.at(-1).end_ts / 1000);
     }
-
-    export const getEvents = () => {
-        showLoading = true;
-        fetch("api/features?stream_name=" + $datasetStore)
-            .then((response) => response.json())
-            .then((j) => {
-                $eventIndexStore = -1;
-                $eventStore = j.events;
-                showLoading = false;
-            });
-    };
-
-    const getClusters = () => {
-        showLoading = true;
-        fetch("api/clusters?stream_name=" + $datasetStore)
-            .then((response) => response.json())
-            .then((j) => {
-                $clusterStore = j.cluster_assignments;
-                showLoading = false;
-            });
-    };
 </script>
 
 <div class="top-bar">
     <DatasetList />
 
     {#if $datasetStore != ""}
-        {#if showLoading}
-            Loading...
-        {:else}
-            <button on:click={getEvents}>Refresh</button>
-        {/if}
+        <button on:click={getEvents}>Refresh</button>
 
         <input
             id="auto-refresh-checkbox"
