@@ -10,7 +10,7 @@
 
     const dispatch = createEventDispatcher();
 
-    export let filterType, loadTypes, brushedPoints, featureData;
+    export let filterType, loadTypes, brushedPoints;
 
     let newLabelName;
 
@@ -29,8 +29,8 @@
             body: JSON.stringify({
                 label: newLabelName,
                 intervals: brushedPoints.map((point) => [
-                    featureData["start_ts"][point],
-                    featureData["end_ts"][point],
+                    $eventStore[point]["start_ts"],
+                    $eventStore[point]["end_ts"],
                 ]),
             }),
         })
@@ -89,8 +89,8 @@
             </button>
             <DownloadData
                 intervals={brushedPoints.map((point) => [
-                    featureData["start_ts"][point],
-                    featureData["end_ts"][point],
+                    $eventStore[point]["start_ts"],
+                    $eventStore[point]["end_ts"],
                 ])}
             />
         </div>

@@ -8,21 +8,6 @@
     import Plot from "../Plot.svelte";
     import { config, layout } from "./plot-settings";
 
-    let events;
-    eventStore.subscribe((value) => {
-        events = value;
-    });
-
-    let selectedStreamName;
-    datasetStore.subscribe((value) => {
-        selectedStreamName = value;
-    });
-
-    let selectedEventID;
-    eventIndexStore.subscribe((value) => {
-        selectedEventID = value;
-    });
-
     let scrollToIndex;
 
     let timestamps,
@@ -56,7 +41,7 @@
     }
 
     const scrollToSelected = async () => {
-        scrollToIndex(selectedEventID, { behavior: "instant" });
+        scrollToIndex($eventIndexStore, { behavior: "instant" });
 
         await tick();
 
@@ -76,15 +61,15 @@
     };
 
     let transientPromise;
-    $: if (selectedEventID != -1) {
+    $: if ($eventIndexStore != -1) {
         clearTransientPlot();
         scrollToSelected();
 
-        const selectedEvent = events[selectedEventID];
+        const selectedEvent = $eventStore[$eventIndexStore];
         transientPromise = fetch(
             "api/transient?" +
                 "stream_name=" +
-                selectedStreamName +
+                $datasetStore +
                 "&start_ts=" +
                 selectedEvent.start_ts +
                 "&end_ts=" +
@@ -102,12 +87,12 @@
 
     let virtualListStart, virtualListEnd;
     $: if (virtualListStart && virtualListEnd) {
-        firstVisibleTimestamp = events[virtualListStart].timestamp;
-        lastVisibleTimestamp = events[virtualListEnd - 1].timestamp;
+        firstVisibleTimestamp = $eventStore[virtualListStart].timestamp;
+        lastVisibleTimestamp = $eventStore[virtualListEnd - 1].timestamp;
     }
 
     const copyTimestamps = () => {
-        const eventData = events[selectedEventID];
+        const eventData = $eventStore[$eventIndexStore];
         navigator.clipboard.writeText(
             eventData.start_ts + ", " + eventData.end_ts,
         );
@@ -116,7 +101,7 @@
 
 <div class="transient-plot-div">
     <Plot data={transientData} {layout} {config} />
-    {#if selectedEventID != -1}
+    {#if $eventIndexStore != -1}
         <button id="copy-timestamps-btn" on:click={copyTimestamps}>
             Copy timestamps
         </button>
@@ -128,20 +113,20 @@
 </div>
 
 <div id="transient-viewer">
-    {#if events}
+    {#if $eventStore}
         <div class="list" bind:this={listDiv}>
             <VirtualList
                 bind:start={virtualListStart}
                 bind:end={virtualListEnd}
                 bind:scrollToIndex
-                items={events}
+                items={$eventStore}
                 let:item
             >
                 <TransientDiv
                     eventData={item}
-                    selected={selectedEventID === item.id}
+                    selected={$eventIndexStore === item.id}
                     on:selected={() => {
-                        if (selectedEventID === item.id) {
+                        if ($eventIndexStore === item.id) {
                             eventIndexStore.set(-1);
                         } else {
                             eventIndexStore.set(item.id);
