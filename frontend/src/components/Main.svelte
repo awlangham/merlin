@@ -1,5 +1,5 @@
 <script>
-    import { eventIndexStore, eventStore } from "./stores";
+    import { modeStore, eventIndexStore, eventStore } from "./stores";
     import TransientViewer from "./transients/TransientViewer.svelte";
     import Toolbox from "./Toolbox.svelte";
     import FeaturePlots from "./features/FeaturePlots.svelte";
@@ -8,11 +8,7 @@
 
     let topBar;
 
-    let mode = "explore",
-        brushedPoints,
-        featurePlots,
-        filterType,
-        clusterData;
+    let brushedPoints, featurePlots, filterType, clusterData;
 
     // events: array of objects with props {timestamp, start_ts, end_ts, P_ss, Q_ss, P_pk, Q_pk}
     let events;
@@ -60,7 +56,6 @@
     <div class="left-column">
         <Toolbox
             bind:filterType
-            bind:mode
             {featureData}
             {loadTypes}
             {brushedPoints}
@@ -72,7 +67,6 @@
     <FeaturePlots
         bind:this={featurePlots}
         {featureData}
-        {mode}
         bind:brushedPoints
         {clusterData}
     />

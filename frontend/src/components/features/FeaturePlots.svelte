@@ -1,8 +1,9 @@
 <script>
+    import { modeStore } from "../stores";
     import FeatureViewer from "./FeatureViewer.svelte";
     import MdsViewer from "./MdsViewer.svelte";
 
-    export let featureData, mode, brushedPoints, clusterData;
+    export let featureData, brushedPoints, clusterData;
 
     let hasSelection1 = false,
         hasSelection2 = false,
@@ -10,10 +11,10 @@
         brushedPoints2;
 
     $: if (!hasSelection1 && !hasSelection2) {
-        if (mode === "explore") {
+        if ($modeStore === "explore") {
             brushedPoints1 = undefined;
             brushedPoints2 = undefined;
-        } else if (mode === "crossbrush") {
+        } else if ($modeStore === "crossbrush") {
             brushedPoints1 = [];
             brushedPoints2 = [];
         }
@@ -43,7 +44,7 @@
 <div class="feature-viewer">
     <FeatureViewer
         {featureData}
-        mode={mode === "mds" ? "crossbrush" : mode}
+        cursor={$modeStore === "mds" ? "crossbrush" : $modeStore}
         brushedPoints={brushedPoints1}
         {clusterData}
         on:brush={(d) => {
@@ -55,13 +56,13 @@
 </div>
 
 <div class="feature-viewer">
-    {#if mode === "mds"}
+    {#if $modeStore === "mds"}
         <MdsViewer brushedPointsIDs={brushedPoints} {brushedPointsIntervals} />
     {:else}
         <FeatureViewer
             {featureData}
             sequence={1}
-            {mode}
+            cursor={$modeStore}
             {clusterData}
             brushedPoints={brushedPoints2}
             on:brush={(d) => {

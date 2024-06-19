@@ -14,8 +14,8 @@
     const dispatch = createEventDispatcher();
 
     export let featureData,
+        cursor,
         sequence = 0,
-        mode,
         brushedPoints,
         clusterData;
 
@@ -59,9 +59,9 @@
         selectedEventID = value;
     });
 
-    $: if (mode === "explore") {
+    $: if (cursor === "explore") {
         layout.dragmode = "pan";
-    } else if (mode === "crossbrush") {
+    } else if (cursor === "crossbrush") {
         layout.dragmode = "lasso";
     }
 
@@ -144,7 +144,7 @@
 <div class="feature-space-map">
     <div
         class="plot-container"
-        style="--show-lasso-selection: {mode === 'crossbrush'
+        style="--show-lasso-selection: {cursor === 'crossbrush'
             ? 'inline'
             : 'none'}"
     >

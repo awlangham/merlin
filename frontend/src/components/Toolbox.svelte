@@ -1,11 +1,11 @@
 <script>
     import { createEventDispatcher } from "svelte";
-    import { datasetStore, eventIndexStore } from "./stores";
+    import { modeStore, datasetStore, eventIndexStore } from "./stores";
     import DownloadData from "./DownloadData.svelte";
 
     const dispatch = createEventDispatcher();
 
-    export let filterType, mode, loadTypes, brushedPoints, featureData;
+    export let filterType, loadTypes, brushedPoints, featureData;
 
     let selectedStreamName;
     datasetStore.subscribe((value) => {
@@ -60,7 +60,7 @@
 
     <div>
         Tool:
-        <select bind:value={mode}>
+        <select bind:value={$modeStore}>
             <option value="explore">Explore 🔦</option>
             <option value="crossbrush">CrossBrush 🖌️</option>
             <option value="mds">MDS 🔍</option>
