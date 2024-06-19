@@ -7,19 +7,44 @@
         labels,
     } from "../../utilities.js";
 
-    import { eventIndexStore } from "../stores";
+    import { filterStore, eventStore, eventIndexStore } from "../stores";
     import Plot from "../Plot.svelte";
     import { createEventDispatcher } from "svelte";
 
     const dispatch = createEventDispatcher();
 
-    export let featureData,
-        cursor,
+    export let cursor,
         sequence = 0,
         brushedPoints,
         clusterData;
 
     let x_feature, y_feature;
+
+    $: filteredEvents =
+        $filterStore === ""
+            ? $eventStore
+            : $eventStore.filter((event) => event.load_type === $filterStore);
+
+    let featureData = {};
+    $: if ($filterStore === "") {
+        featureData["Steady-State P"] = $eventStore.map(({ P_ss }) => P_ss);
+        featureData["Steady-State Q"] = $eventStore.map(({ Q_ss }) => Q_ss);
+        featureData["Peak P"] = $eventStore.map(({ P_pk }) => P_pk);
+        featureData["Peak Q"] = $eventStore.map(({ Q_pk }) => Q_pk);
+        featureData["id"] = $eventStore.map(({ id }) => id);
+        featureData["start_ts"] = $eventStore.map(({ start_ts }) => start_ts);
+        featureData["end_ts"] = $eventStore.map(({ end_ts }) => end_ts);
+    } else {
+        featureData["Steady-State P"] = filteredEvents.map(({ P_ss }) => P_ss);
+        featureData["Steady-State Q"] = filteredEvents.map(({ Q_ss }) => Q_ss);
+        featureData["Peak P"] = filteredEvents.map(({ P_pk }) => P_pk);
+        featureData["Peak Q"] = filteredEvents.map(({ Q_pk }) => Q_pk);
+        featureData["id"] = filteredEvents.map(({ id }) => id);
+        featureData["start_ts"] = filteredEvents.map(
+            ({ start_ts }) => start_ts,
+        );
+        featureData["end_ts"] = filteredEvents.map(({ end_ts }) => end_ts);
+    }
 
     // Set default views upon page load
     if (sequence == 1) {

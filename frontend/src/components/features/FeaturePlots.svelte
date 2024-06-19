@@ -3,7 +3,7 @@
     import FeatureViewer from "./FeatureViewer.svelte";
     import MdsViewer from "./MdsViewer.svelte";
 
-    export let featureData, brushedPoints, clusterData;
+    export let brushedPoints, clusterData;
 
     let hasSelection1 = false,
         hasSelection2 = false,
@@ -43,7 +43,6 @@
 
 <div class="feature-viewer">
     <FeatureViewer
-        {featureData}
         cursor={$modeStore === "mds" ? "crossbrush" : $modeStore}
         brushedPoints={brushedPoints1}
         {clusterData}
@@ -60,7 +59,6 @@
         <MdsViewer brushedPointsIDs={brushedPoints} {brushedPointsIntervals} />
     {:else}
         <FeatureViewer
-            {featureData}
             sequence={1}
             cursor={$modeStore}
             {clusterData}

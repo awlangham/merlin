@@ -11,3 +11,6 @@ export const eventStore = writable([]);
 
 // modeStore: currently selected tool mode
 export const modeStore = writable('explore');
+
+// filterStore: currently selected filter
+export const filterStore = writable('');

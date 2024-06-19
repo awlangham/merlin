@@ -1,6 +1,7 @@
 <script>
     import { createEventDispatcher } from "svelte";
     import {
+        filterStore,
         modeStore,
         datasetStore,
         eventIndexStore,
@@ -10,7 +11,7 @@
 
     const dispatch = createEventDispatcher();
 
-    export let filterType, loadTypes, brushedPoints;
+    export let loadTypes, brushedPoints;
 
     let newLabelName;
 
@@ -49,7 +50,7 @@
 <div id="tool-div">
     <div>
         Filter by:
-        <select bind:value={filterType}>
+        <select bind:value={$filterStore}>
             <option value="">-- show all --</option>
             {#each loadTypes as loadType}
                 <option>{loadType}</option>
