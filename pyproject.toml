@@ -13,13 +13,13 @@ exclude = ["start_dev.sh", "start_dev.py"]
 
 [project]
 name = "merlin"
-version = "0.3.1"
+version = "0.3.2"
 authors = [
   { name="Aaron Langham", email="alangham@mit.edu" },
 ]
 description = "Platform for high- and low-dimensional NILM data visualization"
 requires-python = ">=3.9"
-dependencies = ["joule", "fastapi", "numpy", "sqlalchemy", "orjson", "scikit-learn", "uvicorn", "tabulate"]
+dependencies = ["joule", "fastapi", "numpy", "orjson", "scikit-learn", "uvicorn", "tabulate"]
 
 [project.scripts]
 merlin = "merlin.cli:main"
