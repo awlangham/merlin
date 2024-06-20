@@ -3,21 +3,17 @@
     import {
         filterStore,
         modeStore,
-        eventIndexStore,
         eventStore,
         brushedStore,
     } from "../stores";
 
     import DownloadData from "./DownloadData.svelte";
     import LabelData from "./LabelData.svelte";
+    import UnselectButton from "./UnselectButton.svelte";
 
     const dispatch = createEventDispatcher();
 
     export let loadTypes;
-
-    const unselectPoint = () => {
-        eventIndexStore.set(-1);
-    };
 
     $: loadTypes = [
         ...new Set($eventStore.map((event) => event.load_type)),
@@ -43,13 +39,7 @@
             <option value="mds">MDS 🔍</option>
         </select>
 
-        <button
-            class:visible={$eventIndexStore != -1}
-            id="unselect-btn"
-            on:click={unselectPoint}
-        >
-            Unselect Point ⭕️
-        </button>
+        <UnselectButton />
     </div>
 
     {#if $brushedStore}
@@ -73,15 +63,6 @@
 </div>
 
 <style>
-    #unselect-btn {
-        visibility: hidden;
-        margin-left: auto;
-    }
-
-    #unselect-btn.visible {
-        visibility: visible;
-    }
-
     #tool-div {
         height: 110px;
         border: 2px solid gray;
