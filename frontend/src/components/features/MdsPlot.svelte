@@ -6,7 +6,7 @@
         brushedStore,
     } from "../stores";
 
-    import { mdsConfig, selectedRadius } from "./plot-settings";
+    import { mdsConfig, makeSelectionShape } from "./plot-settings";
 
     import Plot from "../Plot.svelte";
 
@@ -83,33 +83,10 @@
             return +percentMatch.toFixed(2) + "% match";
         });
 
-        layout.shapes = [
-            {
-                type: "circle",
-                xsizemode: "pixel",
-                ysizemode: "pixel",
-                fillcolor: "#1f77b4",
-                xanchor: mds_x[selectedIndex],
-                yanchor: mds_y[selectedIndex],
-
-                x0: -selectedRadius / 2,
-                x1: selectedRadius / 2,
-                y0: -selectedRadius / 2,
-                y1: selectedRadius / 2,
-
-                line: { color: "black", width: 4 },
-            },
-            {
-                // Workaround for what I think is a bug in PlotlyJS:
-                // The previous shape uses "pixel" as the x and y sizemodes,
-                // which causes the lasso select to use the wrong coordinates.
-                // This sets the last shape to use "scaled" sizemodes which seems to fix it.
-                type: "path",
-                path: "",
-                xsizemode: "scaled",
-                ysizemode: "scaled",
-            },
-        ];
+        layout.shapes = makeSelectionShape(
+            mds_x[selectedIndex],
+            mds_y[selectedIndex],
+        );
     } else {
         layout.shapes = [];
     }
