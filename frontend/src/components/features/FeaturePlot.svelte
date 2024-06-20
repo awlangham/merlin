@@ -25,41 +25,20 @@
         sequence = 0,
         brushedPoints;
 
-    let x_feature, y_feature;
+    let xFeature, yFeature;
 
     $: filteredEvents =
         $filterStore === ""
             ? $eventStore
             : $eventStore.filter((event) => event.load_type === $filterStore);
 
-    let featureData = {};
-    $: if ($filterStore === "") {
-        featureData["Steady-State P"] = $eventStore.map(({ P_ss }) => P_ss);
-        featureData["Steady-State Q"] = $eventStore.map(({ Q_ss }) => Q_ss);
-        featureData["Peak P"] = $eventStore.map(({ P_pk }) => P_pk);
-        featureData["Peak Q"] = $eventStore.map(({ Q_pk }) => Q_pk);
-        featureData["id"] = $eventStore.map(({ id }) => id);
-        featureData["start_ts"] = $eventStore.map(({ start_ts }) => start_ts);
-        featureData["end_ts"] = $eventStore.map(({ end_ts }) => end_ts);
-    } else {
-        featureData["Steady-State P"] = filteredEvents.map(({ P_ss }) => P_ss);
-        featureData["Steady-State Q"] = filteredEvents.map(({ Q_ss }) => Q_ss);
-        featureData["Peak P"] = filteredEvents.map(({ P_pk }) => P_pk);
-        featureData["Peak Q"] = filteredEvents.map(({ Q_pk }) => Q_pk);
-        featureData["id"] = filteredEvents.map(({ id }) => id);
-        featureData["start_ts"] = filteredEvents.map(
-            ({ start_ts }) => start_ts,
-        );
-        featureData["end_ts"] = filteredEvents.map(({ end_ts }) => end_ts);
-    }
-
     // Set default views upon page load
     if (sequence == 1) {
-        x_feature = powerFeatures[0];
-        y_feature = powerFeatures[2];
+        xFeature = powerFeatures[0];
+        yFeature = powerFeatures[2];
     } else {
-        x_feature = powerFeatures[0];
-        y_feature = powerFeatures[1];
+        xFeature = powerFeatures[0];
+        yFeature = powerFeatures[1];
     }
 
     $: if ($clusterStore && data) {
@@ -97,14 +76,17 @@
         layout.dragmode = "lasso";
     }
 
-    $: if (featureData[x_feature] && featureData[y_feature]) {
+    $: xData = filteredEvents.map((e) => e[xFeature]);
+    $: yData = filteredEvents.map((e) => e[yFeature]);
+
+    $: if (xData && yData) {
         data = [
             {
                 selectedpoints: brushedPoints,
                 name: "Events",
-                x: featureData[x_feature],
-                y: featureData[y_feature],
-                ids: featureData["id"],
+                x: xData,
+                y: yData,
+                ids: filteredEvents.map(({ id }) => id),
                 type: "scattergl",
                 mode: "markers",
                 selected: {
@@ -121,8 +103,8 @@
             },
         ];
 
-        layout.xaxis.title = { text: labels[x_feature] };
-        layout.yaxis.title = { text: labels[y_feature] };
+        layout.xaxis.title = { text: labels[xFeature] };
+        layout.yaxis.title = { text: labels[yFeature] };
     }
 
     $: if (selectedEventID != -1) {
@@ -132,8 +114,8 @@
                 xsizemode: "pixel",
                 ysizemode: "pixel",
                 fillcolor: "#1f77b4",
-                xanchor: featureData[x_feature][selectedEventID],
-                yanchor: featureData[y_feature][selectedEventID],
+                xanchor: xData[selectedEventID],
+                yanchor: yData[selectedEventID],
 
                 x0: -selectedRadius / 2,
                 x1: selectedRadius / 2,
@@ -159,15 +141,15 @@
 </script>
 
 <div>
-    <select bind:value={y_feature}>
-        {#each powerFeatures as power_feature}
-            <option>{power_feature}</option>
+    <select bind:value={yFeature}>
+        {#each powerFeatures as powerFeature}
+            <option>{powerFeature}</option>
         {/each}
     </select>
     vs.
-    <select bind:value={x_feature}>
-        {#each powerFeatures as power_feature}
-            <option>{power_feature}</option>
+    <select bind:value={xFeature}>
+        {#each powerFeatures as powerFeature}
+            <option>{powerFeature}</option>
         {/each}
     </select>
 </div>

@@ -21,10 +21,10 @@ async def features(request: Request, stream_name: str):
             'timestamp': ts2h(event.start_time),
             'start_ts': event.start_time,
             'end_ts': event.end_time,
-            'P_ss': event.content['P_ss'],
-            'Q_ss': event.content['Q_ss'],
-            'P_pk': event.content['P_pk'],
-            'Q_pk': event.content['Q_pk'],
+            'Steady-State P': event.content['P_ss'],
+            'Steady-State Q': event.content['Q_ss'],
+            'Peak P': event.content['P_pk'],
+            'Peak Q': event.content['Q_pk'],
             'type': event.content['type'],
             'label': event.content['label'] if 'label' in event.content else None
         } for idx, event in enumerate(events)]
