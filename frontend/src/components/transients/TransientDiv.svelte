@@ -1,9 +1,7 @@
 <script>
-    import { createEventDispatcher } from "svelte";
+    import { eventIndexStore } from "../stores";
 
     export let eventData, selected;
-
-    const dispatch = createEventDispatcher();
 
     const formatTime = (timestampString) => {
         const timestampDate = new Date(timestampString);
@@ -11,11 +9,15 @@
     };
 </script>
 
-<div class="transient-div" timestamp={eventData.timestamp}>
+<div class="transient-div">
     <button
         class="transient-button"
         on:click={() => {
-            dispatch("selected");
+            if ($eventIndexStore === eventData.id) {
+                eventIndexStore.set(-1);
+            } else {
+                eventIndexStore.set(eventData.id);
+            }
         }}
         class:selected
     >

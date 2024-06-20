@@ -125,13 +125,6 @@
                 <TransientDiv
                     eventData={item}
                     selected={$eventIndexStore === item.id}
-                    on:selected={() => {
-                        if ($eventIndexStore === item.id) {
-                            eventIndexStore.set(-1);
-                        } else {
-                            eventIndexStore.set(item.id);
-                        }
-                    }}
                 />
             </VirtualList>
         </div>
