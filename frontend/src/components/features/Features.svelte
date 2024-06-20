@@ -1,7 +1,7 @@
 <script>
     import { modeStore, brushedStore } from "../stores";
-    import FeatureViewer from "./FeatureViewer.svelte";
-    import MdsViewer from "./MdsViewer.svelte";
+    import FeaturePlot from "./FeaturePlot.svelte";
+    import MdsPlot from "./MdsPlot.svelte";
 
     let hasSelection1 = false,
         hasSelection2 = false,
@@ -32,7 +32,7 @@
 </script>
 
 <div class="feature-viewer">
-    <FeatureViewer
+    <FeaturePlot
         cursor={$modeStore === "mds" ? "crossbrush" : $modeStore}
         brushedPoints={brushedPoints1}
         on:brush={(d) => {
@@ -45,9 +45,9 @@
 
 <div class="feature-viewer">
     {#if $modeStore === "mds"}
-        <MdsViewer />
+        <MdsPlot />
     {:else}
-        <FeatureViewer
+        <FeaturePlot
             sequence={1}
             cursor={$modeStore}
             brushedPoints={brushedPoints2}

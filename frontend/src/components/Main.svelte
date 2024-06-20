@@ -9,8 +9,8 @@
     import Logo from "./Logo.svelte";
     import TopBar from "./topbar/TopBar.svelte";
     import Toolbox from "./toolbox/Toolbox.svelte";
-    import TransientViewer from "./transients/TransientViewer.svelte";
-    import FeaturePlots from "./features/FeaturePlots.svelte";
+    import Transients from "./transients/Transients.svelte";
+    import Features from "./features/Features.svelte";
 
     let featurePlots;
 
@@ -26,9 +26,9 @@
     <TopBar />
     <div class="left-column">
         <Toolbox on:clear={featurePlots.clearBrushedSelection} />
-        <TransientViewer />
+        <Transients />
     </div>
-    <FeaturePlots bind:this={featurePlots} />
+    <Features bind:this={featurePlots} />
 </div>
 
 <style>
