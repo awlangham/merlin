@@ -1,8 +1,7 @@
 <script>
-    import { modeStore, brushedStore, eventStore } from "../stores";
+    import { modeStore, brushedStore } from "../stores";
     import FeatureViewer from "./FeatureViewer.svelte";
     import MdsViewer from "./MdsViewer.svelte";
-
 
     let hasSelection1 = false,
         hasSelection2 = false,
@@ -30,14 +29,6 @@
         hasSelection2 = false;
         $brushedStore = undefined;
     };
-
-    let brushedPointsIntervals;
-    $: if ($brushedStore) {
-        brushedPointsIntervals = $brushedStore.map((point) => [
-            $eventStore[point]["start_ts"],
-            $eventStore[point]["end_ts"],
-        ]);
-    }
 </script>
 
 <div class="feature-viewer">
@@ -54,7 +45,7 @@
 
 <div class="feature-viewer">
     {#if $modeStore === "mds"}
-        <MdsViewer brushedPointsIDs={$brushedStore} {brushedPointsIntervals} />
+        <MdsViewer />
     {:else}
         <FeatureViewer
             sequence={1}

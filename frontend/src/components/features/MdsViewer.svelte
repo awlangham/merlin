@@ -1,11 +1,22 @@
 <script>
-    import { datasetStore, eventIndexStore } from "../stores";
+    import {
+        datasetStore,
+        eventStore,
+        eventIndexStore,
+        brushedStore,
+    } from "../stores";
     import Plot from "../Plot.svelte";
-
-    export let brushedPointsIDs, brushedPointsIntervals;
 
     let mds_x = [],
         mds_y = [];
+
+    let brushedPointsIntervals;
+    $: if ($brushedStore) {
+        brushedPointsIntervals = $brushedStore.map((point) => [
+            $eventStore[point]["start_ts"],
+            $eventStore[point]["end_ts"],
+        ]);
+    }
 
     $: if (brushedPointsIntervals && brushedPointsIntervals.length > 0) {
         eventIndexStore.set(-1);
@@ -29,7 +40,7 @@
             x: mds_x,
             y: mds_y,
             text: matchText,
-            ids: brushedPointsIDs,
+            ids: $brushedStore,
             type: "scattergl",
             mode: "markers",
             marker: { size: 10, opacity: 0.3 },
@@ -64,8 +75,8 @@
 
     let matchText = [];
 
-    $: if (brushedPointsIDs && $eventIndexStore != -1) {
-        const selectedIndex = brushedPointsIDs.findIndex(
+    $: if ($brushedStore && $eventIndexStore != -1) {
+        const selectedIndex = $brushedStore.findIndex(
             (id) => id === $eventIndexStore,
         );
 
