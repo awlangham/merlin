@@ -1,35 +1,17 @@
 <script>
     import { createEventDispatcher } from "svelte";
-    import {
-        filterStore,
-        modeStore,
-        eventStore,
-        brushedStore,
-    } from "../stores";
+    import { modeStore, eventStore, brushedStore } from "../stores";
 
     import DownloadData from "./DownloadData.svelte";
     import LabelData from "./LabelData.svelte";
     import UnselectButton from "./UnselectButton.svelte";
+    import FilterDropdown from "./FilterDropdown.svelte";
 
     const dispatch = createEventDispatcher();
-
-    export let loadTypes;
-
-    $: loadTypes = [
-        ...new Set($eventStore.map((event) => event.load_type)),
-    ].sort();
 </script>
 
 <div id="tool-div">
-    <div>
-        Filter by:
-        <select bind:value={$filterStore}>
-            <option value="">-- show all --</option>
-            {#each loadTypes as loadType}
-                <option>{loadType}</option>
-            {/each}
-        </select>
-    </div>
+    <FilterDropdown />
 
     <div>
         Tool:
