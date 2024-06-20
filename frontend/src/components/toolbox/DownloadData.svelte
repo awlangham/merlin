@@ -1,7 +1,10 @@
 <script>
-    import { datasetStore } from "../stores";
+    import { datasetStore, brushedStore, eventStore } from "../stores";
 
-    export let intervals;
+    $: intervals = $brushedStore.map((point) => [
+        $eventStore[point]["start_ts"],
+        $eventStore[point]["end_ts"],
+    ]);
 
     const downloadData = () => {
         fetch("api/download?stream_name=" + $datasetStore, {

@@ -1,6 +1,6 @@
 <script>
     import { createEventDispatcher } from "svelte";
-    import { modeStore, eventStore, brushedStore } from "../stores";
+    import { modeStore, brushedStore } from "../stores";
 
     import DownloadData from "./DownloadData.svelte";
     import LabelData from "./LabelData.svelte";
@@ -34,12 +34,7 @@
             >
                 Clear Brush Selection
             </button>
-            <DownloadData
-                intervals={$brushedStore.map((point) => [
-                    $eventStore[point]["start_ts"],
-                    $eventStore[point]["end_ts"],
-                ])}
-            />
+            <DownloadData />
         </div>
     {/if}
 </div>
