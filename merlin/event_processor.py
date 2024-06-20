@@ -3,6 +3,7 @@ from joule.client import FilterModule
 from joule.api import Event, EventStream
 from joule.errors import ApiError
 
+from merlin.config import config_file
 from merlin.supervised.matching import find_matching_exemplar
 
 
@@ -40,10 +41,10 @@ class EventProcessor(FilterModule):
 
         while not self.stop_requested:
             sarray_in = await self.read_from_input(transients_pipe)
-            
+
             if len(sarray_in) == 0:
                 continue
-            
+
             timestamps = sarray_in['timestamp']
             timestamps_diff = np.diff(timestamps)
 
@@ -84,8 +85,9 @@ class EventProcessor(FilterModule):
                         transition = matching_exemplar['transitions'][0]
                         event_content['label'] = transition[0]
                         event_content['type'] = transition[1] + ' to ' + transition[2]
-                else:
-                    event_content['type'] = None
+                        with config_file() as config:
+                            load_family = config['loads'][transition[0]]['family']
+                        event_content['load_family'] = load_family
 
             new_event = Event(start_time=timestamps[0],
                               end_time=timestamps[-1],

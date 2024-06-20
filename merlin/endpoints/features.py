@@ -25,7 +25,8 @@ async def features(request: Request, stream_name: str):
             'Steady-State Q': event.content['Q_ss'],
             'Peak P': event.content['P_pk'],
             'Peak Q': event.content['Q_pk'],
-            'type': event.content['type'],
+            'type': event.content['type'] if 'type' in event.content else None,
+            'load_family': event.content['load_family'] if 'load_family' in event.content else None,
             'label': event.content['label'] if 'label' in event.content else None
         } for idx, event in enumerate(events)]
     }

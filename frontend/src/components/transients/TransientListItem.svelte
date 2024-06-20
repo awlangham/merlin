@@ -26,7 +26,9 @@
         <div class="event-timestamp">
             {formatTime(eventData.timestamp)}
         </div>
-        <div class="load-type">{eventData.load_type}</div>
+        <div class="load-family">
+            {eventData.load_family ? eventData.load_family : "---"}
+        </div>
         <div class="event-type">
             {eventData.type ? eventData.type : "---"}
         </div>
@@ -59,14 +61,14 @@
         width: 20%;
     }
 
-    .load-type,
+    .load-family,
     .event-label {
         width: 31%;
     }
 
     .event-timestamp,
     .event-type,
-    .load-type {
+    .load-family {
         border-right: 1px solid lightgray;
     }
 
