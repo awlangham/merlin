@@ -39,12 +39,14 @@
     }
 
     const getBaseline = (dataArray) => {
-        if (dataArray.length <= 5) {
+        const baselineLength = 5;
+
+        if (dataArray.length <= baselineLength) {
             return 0;
         }
 
-        const startAvg = dataArray.slice(0, 5).reduce((a, b) => a + b) / 5;
-        const endAvg = dataArray.slice(-5).reduce((a, b) => a + b) / 5;
+        const startAvg = dataArray.slice(0, baselineLength).reduce((a, b) => a + b) / baselineLength;
+        const endAvg = dataArray.slice(-baselineLength).reduce((a, b) => a + b) / baselineLength;
         return startAvg < endAvg ? startAvg : endAvg;
     };
 

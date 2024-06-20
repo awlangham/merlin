@@ -5,7 +5,7 @@
 
     import { tick } from "svelte";
 
-    import TransientDiv from "./TransientDiv.svelte";
+    import TransientListItem from "./TransientListItem.svelte";
     import TransientPlot from "./TransientPlot.svelte";
 
     let scrollToIndex;
@@ -53,7 +53,7 @@
                 items={$eventStore}
                 let:item
             >
-                <TransientDiv eventData={item} />
+                <TransientListItem eventData={item} />
             </VirtualList>
         </div>
     {/if}
