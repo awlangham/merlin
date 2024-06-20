@@ -14,7 +14,7 @@
         clusterStore,
     } from "../stores";
 
-    import { makeSelectionShape } from "./plot-settings";
+    import { makeSelectionShape, featureConfig } from "./plot-settings";
 
     import Plot from "../Plot.svelte";
     import { createEventDispatcher } from "svelte";
@@ -56,13 +56,6 @@
             xaxis: { fixedrange: false },
             yaxis: { fixedrange: false },
             showlegend: false,
-        },
-        config = {
-            showTips: false,
-            modeBarButtonsToRemove: ["zoom2d", "select2d", "pan2d", "lasso2d"],
-            displaylogo: false,
-            scrollZoom: true,
-            responsive: true,
         };
 
     $: if (cursor === "explore") {
@@ -136,7 +129,7 @@
         <Plot
             {data}
             {layout}
-            {config}
+            config={featureConfig}
             on:click={(event) => {
                 const trace = event.detail.points[0];
                 eventIndexStore.set(trace.id);
