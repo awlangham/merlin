@@ -77,7 +77,7 @@
     }
 
     #transients {
-        height: calc(100vh - 110px + 20px - 144px - 50px - 290px - 7px);
+        height: calc(100vh - 110px + 20px - 144px - 50px - 275px - 7px);
         overflow: auto;
         border: 2px solid gray;
         border-radius: 10px;

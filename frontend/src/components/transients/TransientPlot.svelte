@@ -80,7 +80,7 @@
 
 <style>
     .transient-plot-div {
-        height: 290px;
+        height: 275px;
         border: 2px solid gray;
         border-radius: 10px;
         box-shadow: 3px 3px 4px #888;
