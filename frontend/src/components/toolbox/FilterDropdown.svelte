@@ -7,7 +7,7 @@
     } from "../stores";
 
     $: loadTypes = [
-        ...new Set($eventStore.map((event) => event.load_type)),
+        ...new Set($eventStore.map((event) => event.load_family)),
     ].sort();
 
     filterStore.subscribe((value) => {
@@ -21,7 +21,11 @@
     <select bind:value={$filterStore}>
         <option value="">-- show all --</option>
         {#each loadTypes as loadType}
-            <option>{loadType}</option>
+            {#if loadType != null}
+                <option>{loadType}</option>
+            {:else}
+                <option value={loadType}>-- undefined --</option>
+            {/if}
         {/each}
     </select>
 </div>

@@ -30,7 +30,7 @@
     $: filteredEvents =
         $filterStore === ""
             ? $eventStore
-            : $eventStore.filter((event) => event.load_type === $filterStore);
+            : $eventStore.filter((event) => event.load_family === $filterStore);
 
     // Set default views upon page load
     if (sequence == 1) {
