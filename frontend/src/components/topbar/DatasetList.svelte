@@ -1,12 +1,6 @@
 <script>
     import { datasetStore } from "../stores";
 
-    let selection;
-
-    $: if (selection) {
-        datasetStore.set(selection);
-    }
-
     const datasetListPromise = fetch("api/datasets").then((response) =>
         response.json(),
     );
@@ -17,7 +11,7 @@
         <!-- Loading dataset list... -->
     {:then data}
         Connected to [{data.joule_node}]
-        <select class="stream-select" bind:value={selection}>
+        <select class="stream-select" bind:value={$datasetStore}>
             <option hidden value="">-- select a stream --</option>
             {#each data.dataset_names as dataset_name}
                 <option value={dataset_name}>{dataset_name}</option>
