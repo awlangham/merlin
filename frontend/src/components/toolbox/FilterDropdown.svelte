@@ -12,7 +12,7 @@
 
     filterStore.subscribe((value) => {
         $eventIndexStore = -1;
-        $brushedStore = undefined;
+        $brushedStore = [];
     });
 </script>
 

@@ -27,7 +27,7 @@
     export const clearBrushedSelection = () => {
         hasSelection1 = false;
         hasSelection2 = false;
-        $brushedStore = undefined;
+        $brushedStore = [];
     };
 </script>
 

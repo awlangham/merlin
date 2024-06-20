@@ -16,7 +16,7 @@ export const modeStore = writable('explore');
 export const filterStore = writable('');
 
 // brushedStore: currently selected point indices
-export const brushedStore = writable(undefined);
+export const brushedStore = writable([]);
 
 // clusterStore: current point clustering
 export const clusterStore = writable(undefined);

@@ -14,6 +14,8 @@
         clusterStore,
     } from "../stores";
 
+    import { selectedRadius } from "./plot-settings";
+
     import Plot from "../Plot.svelte";
     import { createEventDispatcher } from "svelte";
 
@@ -124,7 +126,6 @@
     }
 
     $: if (selectedEventID != -1) {
-        const selectedRadius = 16;
         layout.shapes = [
             {
                 type: "circle",

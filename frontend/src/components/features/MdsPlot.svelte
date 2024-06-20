@@ -5,21 +5,21 @@
         eventIndexStore,
         brushedStore,
     } from "../stores";
+
+    import { mdsConfig, selectedRadius } from "./plot-settings";
+
     import Plot from "../Plot.svelte";
 
     let mds_x = [],
         mds_y = [];
 
-    let brushedPointsIntervals;
-    $: if ($brushedStore) {
-        brushedPointsIntervals = $brushedStore.map((point) => [
-            $eventStore[point]["start_ts"],
-            $eventStore[point]["end_ts"],
-        ]);
-    }
+    $: brushedPointsIntervals = $brushedStore.map((point) => [
+        $eventStore[point]["start_ts"],
+        $eventStore[point]["end_ts"],
+    ]);
 
-    $: if (brushedPointsIntervals && brushedPointsIntervals.length > 0) {
-        eventIndexStore.set(-1);
+    $: if (brushedPointsIntervals.length > 0) {
+        $eventIndexStore = -1;
         mds_x = [];
         mds_y = [];
 
@@ -65,14 +65,6 @@
         showlegend: false,
     };
 
-    const config = {
-        showTips: false,
-        modeBarButtonsToRemove: ["zoom2d", "pan2d", "select2d", "lasso2d"],
-        displaylogo: false,
-        scrollZoom: true,
-        responsive: true,
-    };
-
     let matchText = [];
 
     $: if ($brushedStore && $eventIndexStore != -1) {
@@ -91,7 +83,6 @@
             return +percentMatch.toFixed(2) + "% match";
         });
 
-        const selectedRadius = 16;
         layout.shapes = [
             {
                 type: "circle",
@@ -127,7 +118,7 @@
 <Plot
     {data}
     {layout}
-    {config}
+    config={mdsConfig}
     on:click={(event) => {
         const trace = event.detail.points[0];
         eventIndexStore.set(trace.id);
