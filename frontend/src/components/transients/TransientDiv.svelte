@@ -1,7 +1,9 @@
 <script>
     import { eventIndexStore } from "../stores";
 
-    export let eventData, selected;
+    export let eventData;
+
+    $: selected = $eventIndexStore === eventData.id;
 
     const formatTime = (timestampString) => {
         const timestampDate = new Date(timestampString);
@@ -14,9 +16,9 @@
         class="transient-button"
         on:click={() => {
             if ($eventIndexStore === eventData.id) {
-                eventIndexStore.set(-1);
+                $eventIndexStore = -1;
             } else {
-                eventIndexStore.set(eventData.id);
+                $eventIndexStore = eventData.id;
             }
         }}
         class:selected

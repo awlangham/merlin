@@ -122,10 +122,7 @@
                 items={$eventStore}
                 let:item
             >
-                <TransientDiv
-                    eventData={item}
-                    selected={$eventIndexStore === item.id}
-                />
+                <TransientDiv eventData={item} />
             </VirtualList>
         </div>
     {/if}
