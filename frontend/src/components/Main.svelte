@@ -1,10 +1,5 @@
 <script>
-    import {
-        eventIndexStore,
-        eventStore,
-        filterStore,
-        brushedStore,
-    } from "./stores";
+    import { eventStore } from "./stores";
 
     import Logo from "./Logo.svelte";
     import TopBar from "./topbar/TopBar.svelte";
@@ -17,8 +12,6 @@
     $: if ($eventStore && featurePlots) {
         featurePlots.clearBrushedSelection();
     }
-
-    $: $filterStore, eventIndexStore.set(-1), ($brushedStore = undefined);
 </script>
 
 <div class="main">

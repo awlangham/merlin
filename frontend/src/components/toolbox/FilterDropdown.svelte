@@ -1,9 +1,19 @@
 <script>
-    import { filterStore, eventStore } from "../stores";
+    import {
+        filterStore,
+        eventStore,
+        eventIndexStore,
+        brushedStore,
+    } from "../stores";
 
     $: loadTypes = [
         ...new Set($eventStore.map((event) => event.load_type)),
     ].sort();
+
+    filterStore.subscribe((value) => {
+        $eventIndexStore = -1;
+        $brushedStore = undefined;
+    });
 </script>
 
 <div>
