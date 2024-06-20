@@ -65,11 +65,6 @@
             responsive: true,
         };
 
-    let selectedEventID;
-    eventIndexStore.subscribe((value) => {
-        selectedEventID = value;
-    });
-
     $: if (cursor === "explore") {
         layout.dragmode = "pan";
     } else if (cursor === "crossbrush") {
@@ -107,15 +102,15 @@
         layout.yaxis.title = { text: labels[yFeature] };
     }
 
-    $: if (selectedEventID != -1) {
+    $: if ($eventIndexStore != -1) {
         layout.shapes = [
             {
                 type: "circle",
                 xsizemode: "pixel",
                 ysizemode: "pixel",
                 fillcolor: "#1f77b4",
-                xanchor: xData[selectedEventID],
-                yanchor: yData[selectedEventID],
+                xanchor: xData[$eventIndexStore],
+                yanchor: yData[$eventIndexStore],
 
                 x0: -selectedRadius / 2,
                 x1: selectedRadius / 2,
