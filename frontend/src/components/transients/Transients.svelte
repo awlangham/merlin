@@ -39,11 +39,11 @@
 
 <TransientPlot />
 
-<div class="timespan-date">
+<div class="timespan">
     Start: {firstVisibleTimestamp}
 </div>
 
-<div id="transient-viewer">
+<div id="transients">
     {#if $eventStore}
         <div class="list">
             <VirtualList
@@ -59,7 +59,7 @@
     {/if}
 </div>
 
-<div class="timespan-date">
+<div class="timespan">
     End: {lastVisibleTimestamp}
 </div>
 
@@ -69,14 +69,14 @@
         height: 100%;
     }
 
-    .timespan-date {
+    .timespan {
         height: 20px;
         padding-bottom: 5px;
         padding-top: 5px;
         padding-left: 10px;
     }
 
-    #transient-viewer {
+    #transients {
         height: calc(100vh - 110px + 20px - 144px - 50px - 290px - 7px);
         overflow: auto;
         border: 2px solid gray;

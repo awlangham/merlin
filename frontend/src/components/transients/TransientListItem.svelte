@@ -11,7 +11,7 @@
     };
 </script>
 
-<div class="transient-div">
+<div class="transient-list-item">
     <button
         class="transient-button"
         on:click={() => {
@@ -74,7 +74,7 @@
         border-right-color: gray;
     } */
 
-    .transient-div {
+    .transient-list-item {
         padding-bottom: 10px;
         border-bottom: 2px solid gray;
         border-bottom-left-radius: 10px;
