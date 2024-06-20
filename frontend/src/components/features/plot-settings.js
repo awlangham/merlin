@@ -6,6 +6,24 @@ export const mdsConfig = {
     responsive: true,
 };
 
+export let mdsLayout = {
+    autosize: true,
+    margin: { l: 70, r: 20, b: 40, t: 20 },
+    dragmode: "pan",
+    uirevision: true,
+    xaxis: {
+        title: { text: "MDS 0" },
+        fixedrange: false,
+        range: [-1, 1],
+    },
+    yaxis: {
+        title: { text: "MDS 1" },
+        fixedrange: false,
+        range: [-1, 1],
+    },
+    showlegend: false,
+};
+
 export const makeSelectionShape = (x, y) => {
     const selectedRadius = 16;
 

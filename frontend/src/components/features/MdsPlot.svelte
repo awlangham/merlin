@@ -6,12 +6,12 @@
         brushedStore,
     } from "../stores";
 
-    import { mdsConfig, makeSelectionShape } from "./plot-settings";
+    import { mdsConfig, makeSelectionShape, mdsLayout } from "./plot-settings";
 
     import Plot from "../Plot.svelte";
 
-    let mds_x = [],
-        mds_y = [];
+    let mdsX = [],
+        mdsY = [];
 
     $: brushedPointsIntervals = $brushedStore.map((point) => [
         $eventStore[point]["start_ts"],
@@ -20,8 +20,8 @@
 
     $: if (brushedPointsIntervals.length > 0) {
         $eventIndexStore = -1;
-        mds_x = [];
-        mds_y = [];
+        mdsX = [];
+        mdsY = [];
 
         fetch("api/mds?stream_name=" + $datasetStore, {
             method: "POST",
@@ -30,15 +30,15 @@
         })
             .then((response) => response.json())
             .then((j) => {
-                mds_x = j.data0;
-                mds_y = j.data1;
+                mdsX = j.data0;
+                mdsY = j.data1;
             });
     }
 
     $: data = [
         {
-            x: mds_x,
-            y: mds_y,
+            x: mdsX,
+            y: mdsY,
             text: matchText,
             ids: $brushedStore,
             type: "scattergl",
@@ -47,24 +47,6 @@
         },
     ];
 
-    let layout = {
-        autosize: true,
-        margin: { l: 70, r: 20, b: 40, t: 20 },
-        dragmode: "pan",
-        uirevision: true,
-        xaxis: {
-            title: { text: "MDS 0" },
-            fixedrange: false,
-            range: [-1, 1],
-        },
-        yaxis: {
-            title: { text: "MDS 1" },
-            fixedrange: false,
-            range: [-1, 1],
-        },
-        showlegend: false,
-    };
-
     let matchText = [];
 
     $: if ($brushedStore && $eventIndexStore != -1) {
@@ -72,29 +54,28 @@
             (id) => id === $eventIndexStore,
         );
 
-        matchText = mds_x.map((x, i) => {
-            const y = mds_y[i];
+        matchText = mdsX.map((x, i) => {
+            const y = mdsY[i];
             const distance = Math.sqrt(
-                (mds_x[selectedIndex] - x) ** 2 +
-                    (mds_y[selectedIndex] - y) ** 2,
+                (mdsX[selectedIndex] - x) ** 2 + (mdsY[selectedIndex] - y) ** 2,
             );
 
             const percentMatch = (1 - distance) * 100;
             return +percentMatch.toFixed(2) + "% match";
         });
 
-        layout.shapes = makeSelectionShape(
-            mds_x[selectedIndex],
-            mds_y[selectedIndex],
+        mdsLayout.shapes = makeSelectionShape(
+            mdsX[selectedIndex],
+            mdsY[selectedIndex],
         );
     } else {
-        layout.shapes = [];
+        mdsLayout.shapes = [];
     }
 </script>
 
 <Plot
     {data}
-    {layout}
+    layout={mdsLayout}
     config={mdsConfig}
     on:click={(event) => {
         const trace = event.detail.points[0];
