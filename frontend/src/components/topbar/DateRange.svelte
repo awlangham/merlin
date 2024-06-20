@@ -4,10 +4,9 @@
 
 <span id="date-range-span">
     {#if rangeStart && rangeEnd}
-        {rangeStart.toLocaleString(undefined, { hour12: false })} to {rangeEnd.toLocaleString(
-            undefined,
-            { hour12: false },
-        )}
+        {rangeStart.toLocaleString(undefined, { hour12: false })}
+        to
+        {rangeEnd.toLocaleString(undefined, { hour12: false })}
     {/if}
 </span>
 
