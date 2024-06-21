@@ -2,7 +2,8 @@ from itertools import combinations
 import numpy as np
 from sklearn.manifold import MDS
 
-from merlin.utilities import get_joule_node, trainola
+from merlin.utilities import get_joule_node
+from merlin.supervised.trainola import trainola
 
 async def mds_data(node_name, stream_name, intervals):
     """

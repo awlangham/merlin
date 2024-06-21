@@ -1,8 +1,5 @@
 import click
 
-from merlin.models import GenericLoad
-from merlin.config import config_file, filename
-
 
 def comma_separated_to_strings(string):
     return [substring.strip() for substring in string.split(',')]
@@ -28,6 +25,9 @@ def configure() -> None:
     """
     Configure Merlin with a set of known loads and exemplars.
     """
+
+    from merlin.models import GenericLoad
+    from merlin.config import config_file, filename
 
     click.echo('\n~~~ Load Configuration ~~~')
 

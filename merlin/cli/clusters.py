@@ -1,10 +1,8 @@
 import click
-from tabulate import tabulate
-import numpy as np
+
 
 from merlin.config import config_file, filename
 from merlin.cli.decorators import pass_node_name
-from merlin.unsupervised.clustering import Clustering
 
 
 @click.command(name='clusters')
@@ -17,6 +15,10 @@ def cli_clusters(node, event_stream, infer) -> None:
 
     Clusters with fewer than 25 data points are excluded.
     """
+
+    from tabulate import tabulate
+    import numpy as np
+    from merlin.unsupervised.clustering import Clustering
 
     table = []
     clustering = Clustering(node, event_stream)

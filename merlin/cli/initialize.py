@@ -2,7 +2,7 @@ import click
 import configparser
 
 from merlin.cli.decorators import pass_node_name
-from merlin.utilities import search_for_stream, create_event_stream
+
 
 @click.command(name='initialize')
 @pass_node_name
@@ -10,6 +10,8 @@ def initialize(node) -> None:
     """
     Set up a Merlin event processor on a given transient stream.
     """
+
+    from merlin.utilities import search_for_stream, create_event_stream
 
     click.echo('Select a transient source:')
 

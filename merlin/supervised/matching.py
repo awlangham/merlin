@@ -1,7 +1,7 @@
 import numpy as np
 
 from merlin.config import config_file
-from merlin.utilities import trainola
+from merlin.supervised.trainola import trainola
 
 
 async def find_matching_exemplar(P, Q, joule_node, transients_stream, trainola_threshold=0.15):
