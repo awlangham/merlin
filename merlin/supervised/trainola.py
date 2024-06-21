@@ -2,32 +2,43 @@ import numpy as np
 
 
 def trainola(a, b):
-    # Compute trainola score for two waveforms a and b.
+    """
+    Compute trainola score for two waveforms a and b.
 
-    # a and b are 2-D arrays with the same number of rows,
-    # but they do not need to have the same number of columns.
+    a and b are 2-D arrays with the same number of rows,
+    but they do not need to have the same number of columns.
 
-    # Returns a score within [0, infinity] such that
-    # 0 indicates a match, 1 indicates no correlation,
-    # and infinity indicates negative correlation
+    Returns a score within [0, infinity] such that
+    0 indicates a match, 1 indicates no correlation,
+    and infinity indicates negative correlation
+    """
 
     a = a.reshape((-1, a.shape[-1]))
     b = b.reshape((-1, b.shape[-1]))
 
     max_length = max(a.shape[-1], b.shape[-1])
+    
+    # Find the next power of 2 from max_length
+    # since FFT works best with n as a power of 2.
+    max_length_base_2 = int(2**np.ceil(np.log2(max_length)))
 
-    # Probably can cache these somehow (outside of the function)
-    max_length_2 = int(2**np.ceil(np.log2(max_length)))
-    A = np.fft.fft(a, n=max_length_2)
-    B = np.fft.fft(b, n=max_length_2)
+    A = np.fft.fft(a, n=max_length_base_2)
+    B = np.fft.fft(b, n=max_length_base_2)
+    
     circular_corr = np.fft.ifft(A * B.conj()).real
     corr_scores = np.sum(circular_corr / (max(np.linalg.norm(a), np.linalg.norm(b)) ** 2), axis=0)
     mapped_scores = mapping(corr_scores)
+
     return max(min(mapped_scores), 0)
 
 
 def mapping(x):
-    # 0 is good, 1 is neutral, inf is bad
+    """
+    Mapping function to turn correlation scores into
+    trainola scores.
+
+    0 is good, 1 is neutral, inf is bad
+    """
 
     # fix for floating point
     x_shifted = x + 1

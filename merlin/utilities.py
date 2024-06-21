@@ -30,7 +30,7 @@ def async_run(func):
 
 
 @async_run
-async def create_event_stream(node_name, path):
+async def create_event_stream(node_name, path) -> bool:
     """
     Create new event stream at [path]/events and return True.
     If one already exists, do nothing and return False.

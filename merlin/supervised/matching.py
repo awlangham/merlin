@@ -5,6 +5,12 @@ from merlin.supervised.trainola import trainola
 
 
 async def find_matching_exemplar(P, Q, joule_node, transients_stream, trainola_threshold=0.15):
+    """
+    Returns the exemplar in the config file that best
+    matches the provided transient, or None if no exemplar
+    matches the transient below trainola_threshold.
+    """
+
     with config_file() as config:
         best_score = np.inf
         matching_exemplar = None
