@@ -47,7 +47,11 @@ async def create_event_stream(node_name, path):
 
 
 @async_run
-async def get_events(node_name, stream_name):
+async def get_events(node_name, stream_name) -> list:
+    """
+    Return a list of all events in the specified stream.
+    """
+
     async with get_joule_node(node_name) as node:
         return await node.event_stream_read(stream_name + '/events')
 
@@ -82,28 +86,37 @@ async def search_for_stream(node_name, stream_name) -> list:
 
 
 @async_run
-async def connection_info(node_name):
-    async with get_joule_node(node_name) as node:
-        return node.name
-
-
-@async_run
 async def clear_stream(node_name, stream_name) -> None:
+    """
+    Remove all events from the specified stream.
+    """
+
     async with get_joule_node(node_name) as node:
         await node.event_stream_remove(stream_name + '/events')
 
 
-async def get_transients(node_name, stream_name, intervals):
+async def get_transients(node_name, stream_name, intervals) -> list:
+    """
+    Return a list of the transients corresponding
+    to the specified intervals in the provided stream.
+    """
+
     async with get_joule_node(node_name) as node:
-        events = []
+        transients = []
         for interval in intervals:
             sarray = await node.data_read_array(stream_name + '/transients', start=interval[0], end=interval[1], flatten=True)
-            events.append(sarray.T)
+            transients.append(sarray.T)
 
-    return events
+    return transients
 
 
-async def label_data(node_name, stream_name, intervals, label_name):
+async def label_data(node_name, stream_name, intervals, label_name) -> None:
+    """
+    Apply the specified label to the events in the
+    provided stream that correspond to the specified
+    time intervals.
+    """
+
     new_events = []
     async with get_joule_node(node_name) as node:
         for interval in intervals:
