@@ -12,16 +12,23 @@ filename = str(files(merlin) / 'config.json')
 @contextmanager
 def config_file():
     """
-    Context manager to manage a load file.
+    Context manager to update a Merlin
+    configuration file.
+
+    Example usage:
+    with config_file() as cf:
+        # modify cf as Python dictionary
+    # file automatically saved and released
+    # upon exiting the context manager
     """
 
     try:
         with open(filename) as f:
-            loads_json = json.load(f)
-            yield loads_json
+            config_json = json.load(f)
+            yield config_json
     except (FileNotFoundError, JSONDecodeError):
-        loads_json = {}
-        yield loads_json
+        config_json = {}
+        yield config_json
     finally:
         with open(filename, 'w') as f:
-            json.dump(loads_json, f, indent=4)
+            json.dump(config_json, f, indent=4)
