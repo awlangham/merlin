@@ -1,9 +1,12 @@
 import json
 from json.decoder import JSONDecodeError
 from contextlib import contextmanager
+from importlib.resources import files
+
+import merlin
 
 
-filename = 'config.json'
+filename = str(files(merlin) / 'config.json')
 
 
 @contextmanager
