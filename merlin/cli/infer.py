@@ -5,13 +5,12 @@ from merlin.config import config_file, filename
 from merlin.cli.decorators import pass_node_name
 
 
-@click.command(name='clusters')
+@click.command(name='infer')
 @click.argument('event_stream')
-@click.option('--infer', '-i', is_flag=True, default=False, help=f'Infer exemplars and loads and save to {filename}')
 @pass_node_name
-def cli_clusters(node, event_stream, infer) -> None:
+def infer(node, event_stream) -> None:
     """
-    Extract significant clusters from EVENT_STREAM.
+    Infer loads and exemplars from EVENT_STREAM.
 
     Clusters with fewer than 25 data points are excluded.
     """
@@ -32,17 +31,16 @@ def cli_clusters(node, event_stream, infer) -> None:
 
     click.echo(tabulate(table, headers=headers))
 
-    if infer:
-        load_dict = {}
-        exemplar_list = []
-        for load in clustering.infer_loads():
-            load_dict[load.name] = load.to_json()
+    load_dict = {}
+    exemplar_list = []
+    for load in clustering.infer_loads():
+        load_dict[load.name] = load.to_json()
 
-        for cluster in clustering:
-            exemplar_list.append(cluster.to_json())
+    for cluster in clustering:
+        exemplar_list.append(cluster.to_json())
 
-        with config_file() as config:
-            config['exemplars'] = exemplar_list
-            config['loads'] = load_dict
+    with config_file() as config:
+        config['exemplars'] = exemplar_list
+        config['loads'] = load_dict
 
-        click.echo(f'Saved to {filename}')
+    click.echo(f'Saved to {filename}')

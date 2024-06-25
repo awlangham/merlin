@@ -2,7 +2,7 @@ import click
 
 from merlin.cli.datasets import datasets
 from merlin.cli.initialize import initialize
-from merlin.cli.clusters import cli_clusters
+from merlin.cli.infer import infer
 from merlin.cli.clear import cli_clear
 from merlin.cli.configure import configure
 from merlin.cli.docs import docs
@@ -20,7 +20,7 @@ def main(context, node) -> None:
 
 main.add_command(datasets)
 main.add_command(initialize)
-main.add_command(cli_clusters)
+main.add_command(infer)
 main.add_command(cli_clear)
 main.add_command(configure)
 main.add_command(docs)
