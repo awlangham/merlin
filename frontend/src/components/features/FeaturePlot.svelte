@@ -43,7 +43,7 @@
 
     $: if ($clusterStore && data) {
         data[0].marker.color = $clusterStore.map((cluster) =>
-            cluster === -1 ? unclusteredColor : colors[cluster],
+            cluster === -1 ? unclusteredColor : colors[cluster % colors.length],
         );
     }
 
