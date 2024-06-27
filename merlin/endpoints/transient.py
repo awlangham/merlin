@@ -1,17 +1,16 @@
 from fastapi import APIRouter
 from fastapi import Request
 
-from merlin.utilities import get_joule_node
+from merlin.utilities import read_interval
 
 router = APIRouter()
 
 
 @router.get('/transient')
 async def transients(request: Request, stream_name: str, start_ts: int, end_ts: int):
-    async with get_joule_node(request.app.node) as node:
-        sarray = await node.data_read_array(stream_name + '/transients', start=start_ts, end=end_ts)
+    sarray = await read_interval(request.app.node, stream_name, start_ts, end_ts)
 
-    timestamps, data = sarray['timestamp'], sarray['data']
+    timestamps, data = sarray[:, 0], sarray[:, 1:]
     timestamps -= timestamps[0]
     timestamps = timestamps / 1e6
     P = data[:, 0]

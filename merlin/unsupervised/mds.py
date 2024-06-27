@@ -2,8 +2,9 @@ from itertools import combinations
 import numpy as np
 from sklearn.manifold import MDS
 
-from merlin.utilities import get_joule_node
+from merlin.utilities import get_transients
 from merlin.supervised.trainola import trainola
+
 
 async def mds_data(node_name, stream_name, intervals):
     """
@@ -12,11 +13,7 @@ async def mds_data(node_name, stream_name, intervals):
     as the distance metric.
     """
 
-    async with get_joule_node(node_name) as node:
-        mds_events = []
-        for interval in intervals:
-            sarray = await node.data_read_array(stream_name + '/transients', start=interval[0], end=interval[1], flatten=True)
-            mds_events.append(sarray.T)
+    mds_events = await get_transients(node_name, stream_name, intervals)
 
     num_events = len(mds_events)
     trainola_distances = np.zeros((num_events, num_events))

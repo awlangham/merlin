@@ -1,19 +1,19 @@
 from fastapi import APIRouter, Request, Response
 import orjson
 from joule.utilities import timestamp_to_human as ts2h
-from merlin.utilities import get_joule_node
+from merlin.utilities import get_joule_node, read_interval
 
 router = APIRouter()
 
 
 @router.get('/features')
 async def features(request: Request, stream_name: str):
+    # Invalidate LRU cache of transients
+    read_interval.cache_clear()
+
     async with get_joule_node(request.app.node) as node:
         # TODO: Fix limit parameter
         events = await node.event_stream_read(stream_name + '/events')
-
-    if len(events) == 0:
-        return {'range_start': None, 'range_end': None, 'events': []}
 
     result = {
         'events': [{

@@ -3,6 +3,7 @@ from joule.api import EventStream
 from joule.errors import ApiError
 from contextlib import asynccontextmanager
 import asyncio
+from async_lru import alru_cache
 
 
 @asynccontextmanager
@@ -95,17 +96,27 @@ async def clear_stream(node_name, stream_name) -> None:
         await node.event_stream_remove(stream_name + '/events')
 
 
+@alru_cache(maxsize=8192)
+async def read_interval(node_name, stream_name, interval_start, interval_end):
+    """
+    Cache recently-viewed transients in the back-end program.
+    """
+
+    async with get_joule_node(node_name) as node:
+        sarray = await node.data_read_array(stream_name + '/transients', start=interval_start, end=interval_end, flatten=True)
+    return sarray
+
+
 async def get_transients(node_name, stream_name, intervals) -> list:
     """
     Return a list of the transients corresponding
     to the specified intervals in the provided stream.
     """
 
-    async with get_joule_node(node_name) as node:
-        transients = []
-        for interval in intervals:
-            sarray = await node.data_read_array(stream_name + '/transients', start=interval[0], end=interval[1], flatten=True)
-            transients.append(sarray.T)
+    transients = []
+    for interval in intervals:
+        sarray = await read_interval(node_name, stream_name, interval[0], interval[1])
+        transients.append(sarray.T)
 
     return transients
 
