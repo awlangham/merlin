@@ -22,7 +22,7 @@ def configuration() -> None:
     with config_file() as cf:
         try:
             for i, exemplar in enumerate(cf['exemplars']):
-                exemplar_tree.create_node(f'[ {ts2h(exemplar['start_ts'])}, {ts2h(exemplar['end_ts'])}]', i, parent='exemplars')
+                exemplar_tree.create_node(f'[ {ts2h(exemplar["start_ts"])}, {ts2h(exemplar["end_ts"])}]', i, parent='exemplars')
                 for transition in exemplar['transitions']:
                     exemplar_tree.create_node(f'{transition[0]}::{transition[1]}->{transition[2]}', parent=i)
 
