@@ -31,4 +31,4 @@ async def find_matching_exemplar(P, Q, joule_node, transients_stream, trainola_t
                 best_score = trainola_score
                 matching_exemplar = exemplar
 
-        return matching_exemplar
+        return matching_exemplar, best_score
