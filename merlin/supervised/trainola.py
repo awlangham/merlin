@@ -13,18 +13,19 @@ def trainola(a, b):
     and infinity indicates negative correlation
     """
 
-    a = a.reshape((-1, a.shape[-1]))
-    b = b.reshape((-1, b.shape[-1]))
+    # Remove mean of first 5 samples
+    a = (a.T - np.mean(a[:, :5], axis=1)).T
+    b = (b.T - np.mean(b[:, :5], axis=1)).T
 
     max_length = max(a.shape[-1], b.shape[-1])
-    
+
     # Find the next power of 2 from max_length
     # since FFT works best with n as a power of 2.
     max_length_base_2 = int(2**np.ceil(np.log2(max_length)))
 
     A = np.fft.fft(a, n=max_length_base_2)
     B = np.fft.fft(b, n=max_length_base_2)
-    
+
     circular_corr = np.fft.ifft(A * B.conj()).real
     corr_scores = np.sum(circular_corr / (max(np.linalg.norm(a), np.linalg.norm(b)) ** 2), axis=0)
     mapped_scores = mapping(corr_scores)
