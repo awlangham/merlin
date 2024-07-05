@@ -73,7 +73,7 @@ class EventProcessor(FilterModule):
                 event_content['type'] = 'OFF to ON' if P_ss > 0 else 'ON to OFF'
             else:
                 # Find closest matching exemplar
-                matching_exemplar = await find_matching_exemplar(P, Q, self.node, transients_pipe.stream)
+                matching_exemplar, match_score = await find_matching_exemplar(P, Q, self.node, transients_pipe.stream)
 
                 if matching_exemplar is not None and matching_exemplar['transitions'] is not None:
                     # TODO: support multi-transition exemplars
@@ -88,6 +88,7 @@ class EventProcessor(FilterModule):
                         with config_file() as config:
                             load_family = config['loads'][transition[0]]['family']
                         event_content['load_family'] = load_family
+                        event_content['distance'] = match_score
 
             new_event = Event(start_time=timestamps[0],
                               end_time=timestamps[-1],
