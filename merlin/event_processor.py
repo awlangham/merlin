@@ -88,7 +88,7 @@ class EventProcessor(FilterModule):
                         with config_file() as config:
                             load_family = config['loads'][transition[0]]['family']
                         event_content['load_family'] = load_family
-                        event_content['distance'] = match_score
+                        event_content['distance'] = float(match_score)
 
             new_event = Event(start_time=timestamps[0],
                               end_time=timestamps[-1],
