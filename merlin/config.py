@@ -26,7 +26,7 @@ def config_file():
         with open(filename) as f:
             config_json = json.load(f)
             yield config_json
-    except (FileNotFoundError, JSONDecodeError):
+    except FileNotFoundError:
         config_json = {}
         yield config_json
     finally:
