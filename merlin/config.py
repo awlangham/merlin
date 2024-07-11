@@ -10,7 +10,7 @@ filename = str(files(merlin) / 'config.json')
 
 
 @contextmanager
-def config_file():
+def config_file(write=False):
     """
     Context manager to update a Merlin
     configuration file.
@@ -23,12 +23,13 @@ def config_file():
     """
 
     try:
-        with open(filename) as f:
+        with open(filename, 'r') as f:
             config_json = json.load(f)
             yield config_json
     except FileNotFoundError:
         config_json = {}
         yield config_json
     finally:
-        with open(filename, 'w') as f:
-            json.dump(config_json, f, indent=4)
+        if write:
+            with open(filename, 'w') as f:
+                json.dump(config_json, f, indent=4)

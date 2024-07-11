@@ -36,7 +36,7 @@ def initialize(node) -> None:
 
     value = click.prompt(f'Selection [1-{len(learning_methods)}]', type=int)
     if learning_methods[value - 1] == 'Supervised':
-        _supervised_setup()
+        _supervised_setup(selected_folder)
 
     config = configparser.ConfigParser()
     config['Main'] = {
@@ -58,7 +58,7 @@ def initialize(node) -> None:
     click.echo(f'\nCreated {filename}')
 
 
-def _supervised_setup():
+def _supervised_setup(selected_folder):
     from merlin.models import GenericLoad
     from merlin.config import config_file, filename
 
@@ -101,7 +101,8 @@ def _supervised_setup():
 
         create_new_exemplar = click.confirm('Continue adding exemplars')
 
-    with config_file() as config:
+    with config_file(write=True) as config:
+        config['stream_name'] = selected_folder
         config['exemplars'] = exemplar_list
         config['loads'] = load_dict
 
