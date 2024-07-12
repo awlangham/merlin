@@ -4,7 +4,7 @@ from joule.api import Event, EventStream
 from joule.errors import ApiError
 
 from merlin.config import config_file
-from merlin.supervised.matching import find_matching_exemplar
+from merlin.supervised.matching import find_matching_exemplar, combinatorial_match
 
 
 class EventProcessor(FilterModule):
@@ -75,7 +75,13 @@ class EventProcessor(FilterModule):
                 # Find closest matching exemplar
                 matching_exemplar, match_score = await find_matching_exemplar(P, Q, self.node, transients_pipe.stream)
 
-                if matching_exemplar is not None and matching_exemplar['transitions'] is not None:
+                if matching_exemplar is None:
+                    comb_match = await combinatorial_match(P_ss, Q_ss)
+                    if comb_match is not None:
+                        event_content['label'] = comb_match[0]
+                        event_content['type'] = comb_match[1]
+                        event_content['distance'] = None
+                elif matching_exemplar is not None and matching_exemplar['transitions'] is not None:
                     # TODO: support multi-transition exemplars
                     if len(matching_exemplar['transitions']) > 1:
                         raise Exception('Multi-transition exemplars not implemented yet.')
