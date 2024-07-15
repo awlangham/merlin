@@ -68,11 +68,11 @@ class EventProcessor(FilterModule):
                 'Q_pk': float(Q_pk)
             }
 
-            current_installation = CurrentInstallation()
-
             if parsed_args.method == 'unsupervised':
                 event_content['type'] = 'OFF to ON' if P_ss > 0 else 'ON to OFF'
             else:
+                current_installation = CurrentInstallation()
+
                 # Find closest matching exemplar
                 matching_exemplar, match_score = await current_installation.find_matching_exemplar(P, Q)
 
