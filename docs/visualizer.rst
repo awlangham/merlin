@@ -1,6 +1,6 @@
 Data Visualizer
 ===============
 
-.. click:: merlin.main:run
-   :prog: merlin-viz
+.. click:: merlin.visualizer.main:run
+   :prog: merlin-visualizer
    :nested: full

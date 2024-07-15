@@ -5,7 +5,7 @@ from importlib.resources import files
 import click
 
 import merlin
-from merlin.endpoints import datasets, features, transient, download, mds, label, clusters
+from merlin.visualizer import datasets, features, transient, download, mds, label, clusters
 
 
 app = FastAPI()
@@ -26,4 +26,4 @@ def run(node):
     app.node = node
     static_path = files(merlin).joinpath('static')
     app.mount('/', StaticFiles(directory=static_path, html=True), name='static')
-    uvicorn.run('merlin.main:app', host='', port=8050)
+    uvicorn.run('merlin.visualizer.main:app', host='', port=8050)

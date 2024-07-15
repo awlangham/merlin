@@ -23,5 +23,5 @@ dependencies = ["joule", "fastapi", "numpy", "orjson", "scikit-learn", "uvicorn"
 
 [project.scripts]
 merlin = "merlin.cli:main"
-merlin-viz = "merlin.main:run"
+merlin-visualizer = "merlin.visualizer.main:run"
 merlin-process-events = "merlin.event_processor:main"
