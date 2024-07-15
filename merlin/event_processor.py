@@ -3,8 +3,7 @@ from joule.client import FilterModule
 from joule.api import Event, EventStream
 from joule.errors import ApiError
 
-from merlin.config import config_file
-from merlin.supervised.matching import find_matching_exemplar, combinatorial_match
+from merlin.installation import CurrentInstallation
 
 
 class EventProcessor(FilterModule):
@@ -69,14 +68,16 @@ class EventProcessor(FilterModule):
                 'Q_pk': float(Q_pk)
             }
 
+            current_installation = CurrentInstallation()
+
             if parsed_args.method == 'unsupervised':
                 event_content['type'] = 'OFF to ON' if P_ss > 0 else 'ON to OFF'
             else:
                 # Find closest matching exemplar
-                matching_exemplar, match_score = await find_matching_exemplar(P, Q, self.node, transients_pipe.stream)
+                matching_exemplar, match_score = await current_installation.find_matching_exemplar(P, Q)
 
                 if matching_exemplar is None:
-                    comb_match = await combinatorial_match(P_ss, Q_ss)
+                    comb_match = await current_installation.combinatorial_match(P_ss, Q_ss)
                     if comb_match is not None:
                         event_content['label'] = comb_match[0]
                         event_content['type'] = comb_match[1]
@@ -91,9 +92,10 @@ class EventProcessor(FilterModule):
                         transition = matching_exemplar['transitions'][0]
                         event_content['label'] = transition[0]
                         event_content['type'] = transition[1] + ' to ' + transition[2]
-                        with config_file() as config:
-                            load_family = config['loads'][transition[0]]['family']
+
+                        load_family = current_installation.config_json['loads'][transition[0]]['family']
                         event_content['load_family'] = load_family
+
                         event_content['distance'] = float(match_score)
 
             new_event = Event(start_time=timestamps[0],

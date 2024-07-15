@@ -1,18 +1,103 @@
-from merlin.config import config_file
-from merlin.utilities import read_interval
+import numpy as np
+import json
+from importlib.resources import files
+from itertools import combinations, product
 
-
-async def load_exemplar(load_name, state1, state2):
-    with config_file() as cf:
-        exemplars = cf['exemplars']
-        stream_name = cf['stream_name']
-
-    for exemplar in exemplars:
-        if exemplar['transitions'] == [[load_name, state1, state2]]:
-            return await read_interval('', stream_name, exemplar['start_ts'], exemplar['end_ts'])
+import merlin
+from merlin.utilities import read_interval, get_joule_node
+from merlin.supervised.trainola import trainola
 
 
 class CurrentInstallation:
+    def __init__(self) -> None:
+        """
+        Read JSON configuration and construct installation object.
+        """
+
+        config_filename = str(files(merlin) / 'config.json')
+        with open(config_filename, 'r') as config_file:
+            self.config_json = json.load(config_file)
+
     def get_load_names(self) -> list:
-        with config_file() as cf:
-            return list(cf['loads'].keys())
+        """
+        Return a list of all loads on this installation.
+        """
+
+        return list(self.config_json['loads'].keys())
+
+    async def load_exemplar(self, load_name, state1, state2):
+        """
+        Find the exemplar corresponding to
+        the transition load_name::state1->state2
+        """
+
+        exemplars = self.config_json['exemplars']
+        stream_name = self.config_json['stream_name']
+
+        for exemplar in exemplars:
+            if exemplar['transitions'] == [[load_name, state1, state2]]:
+                return await read_interval(self.config_json['node'], stream_name, exemplar['start_ts'], exemplar['end_ts'])
+
+    async def find_matching_exemplar(self, P, Q, trainola_threshold=0.15):
+        """
+        Returns the exemplar in the config file that best
+        matches the provided transient, or None if no exemplar
+        matches the transient below trainola_threshold.
+        """
+
+        best_score = np.inf
+        matching_exemplar = None
+
+        for exemplar in self.config_json['exemplars']:
+            async with get_joule_node(self.config_json['node']) as node:
+                exemplar_sarray = await node.data_read_array(self.config_json['stream_name'] + '/transients',
+                                                             start=exemplar['start_ts'],
+                                                             end=exemplar['end_ts'])
+            exemplar_PQ = exemplar_sarray['data']
+            exemplar_PQ -= np.mean(exemplar_PQ[:5], axis=0)
+
+            detected_PQ = np.column_stack((P, Q))
+            detected_PQ -= np.mean(detected_PQ[:5], axis=0)
+
+            trainola_score = trainola(detected_PQ.T, exemplar_PQ.T)
+
+            if trainola_score < best_score and trainola_score < trainola_threshold:
+                best_score = trainola_score
+                matching_exemplar = exemplar
+
+        return matching_exemplar, best_score
+
+    async def combinatorial_match(self, P_ss, Q_ss):
+        """
+        Match the steady-state changes in real and reactive power
+        to combinations of two loads in the configuration.
+        """
+
+        load_names = list(self.config_json['loads'].keys())
+
+        best_error = np.inf
+        best_loads, best_type = None, None
+
+        for load1, load2 in combinations(load_names, 2):
+            P_ss_1, Q_ss_1 = self.config_json['loads'][load1]['states']['ON']
+            P_ss_2, Q_ss_2 = self.config_json['loads'][load2]['states']['ON']
+
+            for a, b in product([1, -1], repeat=2):
+                P_ss_combo = a * P_ss_1 + b * P_ss_2
+                Q_ss_combo = a * Q_ss_1 + b * Q_ss_2
+
+                error = (P_ss - P_ss_combo) ** 2 + (Q_ss - Q_ss_combo) ** 2
+                error /= P_ss_combo ** 2 + Q_ss_combo ** 2
+                if error < best_error:
+                    best_error = error
+                    best_loads = f'{load1},{load2}'
+
+                    type1 = 'OFF to ON' if a == 1 else 'ON to OFF'
+                    type2 = 'OFF to ON' if b == 1 else 'ON to OFF'
+
+                    best_type = f'{type1},{type2}'
+
+        if best_error < 0.1:
+            return best_loads, best_type
+        else:
+            return None
