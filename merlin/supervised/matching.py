@@ -36,6 +36,11 @@ async def find_matching_exemplar(P, Q, joule_node, transients_stream, trainola_t
 
 
 async def combinatorial_match(P_ss, Q_ss):
+    """
+    Match the steady-state changes in real and reactive power
+    to combinations of two loads in the configuration.
+    """
+
     with config_file() as config:
         load_names = list(config['loads'].keys())
 
