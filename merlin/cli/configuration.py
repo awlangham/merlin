@@ -44,8 +44,11 @@ def configuration() -> None:
         click.echo('Invalid configuration file.')
 
     if config_valid:
-        click.echo(click.style('Node:', bold=True) + f' {cf['node']}')
-        click.echo(click.style('Input:', bold=True) + f' {cf['stream_name']}/transients')
-        click.echo(click.style('Output:', bold=True) + f' {cf['stream_name']}/events\n')
-        click.echo(exemplar_tree.show(stdout=False))
-        click.echo(load_tree.show(stdout=False))
+        cli_output = ''
+        cli_output += click.style('Node:', bold=True) + f' {cf['node']}\n'
+        cli_output += click.style('Input:', bold=True) + f' {cf['stream_name']}/transients\n'
+        cli_output += click.style('Output:', bold=True) + f' {cf['stream_name']}/events\n\n'
+        cli_output += exemplar_tree.show(stdout=False) + '\n'
+        cli_output += load_tree.show(stdout=False)
+
+        click.echo_via_pager(cli_output)
