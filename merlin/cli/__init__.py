@@ -1,4 +1,5 @@
 import click
+from joule.api import get_node
 
 from merlin.cli.datasets import datasets
 from merlin.cli.initialize import initialize
@@ -14,7 +15,10 @@ from merlin.cli.configuration import configuration
 @click.pass_context
 def main(context, node) -> None:
     context.ensure_object(dict)
-    context.obj['NODE'] = node
+    if node != '':
+        context.obj['NODE'] = node
+    else:
+        context.obj['NODE'] = get_node(node).name
 
 
 main.add_command(datasets)

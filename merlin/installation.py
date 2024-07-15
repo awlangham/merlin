@@ -7,6 +7,8 @@ import merlin
 from merlin.utilities import read_interval, get_joule_node
 from merlin.supervised.trainola import trainola
 
+config_filename = str(files(merlin) / 'config.json')
+
 
 class CurrentInstallation:
     def __init__(self) -> None:
@@ -14,7 +16,6 @@ class CurrentInstallation:
         Read JSON configuration and construct installation object.
         """
 
-        config_filename = str(files(merlin) / 'config.json')
         with open(config_filename, 'r') as config_file:
             self.config_json = json.load(config_file)
 

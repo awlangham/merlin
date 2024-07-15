@@ -1,7 +1,7 @@
 import click
+import json
 
-
-from merlin.config import config_file, filename
+from merlin.installation import config_filename
 from merlin.cli.decorators import pass_node_name
 
 
@@ -39,8 +39,13 @@ def infer(node, event_stream) -> None:
     for cluster in clustering:
         exemplar_list.append(cluster.to_json())
 
-    with config_file() as config:
-        config['exemplars'] = exemplar_list
-        config['loads'] = load_dict
+    config = {}
+    config['node'] = node
+    config['stream_name'] = event_stream
+    config['exemplars'] = exemplar_list
+    config['loads'] = load_dict
 
-    click.echo(f'Saved to {filename}')
+    with open(config_filename, 'w') as f:
+        json.dump(config, f, indent=4)
+
+    click.echo(f'Saved to {config_filename}')

@@ -1,5 +1,6 @@
 import click
 import configparser
+import json
 
 from merlin.cli.decorators import pass_node_name
 
@@ -36,31 +37,31 @@ def initialize(node) -> None:
 
     value = click.prompt(f'Selection [1-{len(learning_methods)}]', type=int)
     if learning_methods[value - 1] == 'Supervised':
-        _supervised_setup(selected_folder)
+        _supervised_setup(selected_folder, node)
 
-    config = configparser.ConfigParser()
-    config['Main'] = {
+    module_config = configparser.ConfigParser()
+    module_config['Main'] = {
         'exec_cmd': 'merlin-process-events',
         'name': 'Merlin event processor'
     }
-    config['Arguments'] = {
+    module_config['Arguments'] = {
         'output': f'{selected_folder}/events',
         'method': learning_methods[value - 1].lower()
     }
-    config['Inputs'] = {
+    module_config['Inputs'] = {
         'transients': f'{selected_folder}/transients'
     }
 
-    filename = 'merlin.conf'
-    with open(filename, 'w') as configfile:
-        config.write(configfile)
+    module_config_filename = 'merlin.conf'
+    with open(module_config_filename, 'w') as module_config_file:
+        module_config.write(module_config_file)
 
-    click.echo(f'\nCreated {filename}')
+    click.echo(f'\nCreated {module_config_filename}')
 
 
-def _supervised_setup(selected_folder):
+def _supervised_setup(selected_folder, node_name):
     from merlin.models import GenericLoad
-    from merlin.config import config_file, filename
+    from merlin.installation import config_filename
 
     click.echo('\n~~~ Load Configuration ~~~')
 
@@ -101,12 +102,17 @@ def _supervised_setup(selected_folder):
 
         create_new_exemplar = click.confirm('Continue adding exemplars')
 
-    with config_file(write=True) as config:
-        config['stream_name'] = selected_folder
-        config['exemplars'] = exemplar_list
-        config['loads'] = load_dict
+    
+    config = {}
+    config['node'] = node_name
+    config['stream_name'] = selected_folder
+    config['exemplars'] = exemplar_list
+    config['loads'] = load_dict
 
-    click.echo(f'Saved to {filename}')
+    with open(config_filename, 'w') as f:
+        json.dump(config, f, indent=4)
+
+    click.echo(f'Saved to {config_filename}')
 
 
 def _comma_separated_to_strings(string):
