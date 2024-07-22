@@ -4,20 +4,21 @@ from importlib.resources import files
 from itertools import combinations, product
 
 import merlin
-from merlin.utilities import read_interval, get_joule_node
 from merlin.supervised.trainola import trainola
 
 config_filename = str(files(merlin) / 'config.json')
 
 
 class CurrentInstallation:
-    def __init__(self) -> None:
+    def __init__(self, node) -> None:
         """
         Read JSON configuration and construct installation object.
         """
 
         with open(config_filename, 'r') as config_file:
             self.config_json = json.load(config_file)
+
+        self.node = node
 
     def get_load_names(self) -> list:
         """
@@ -37,7 +38,7 @@ class CurrentInstallation:
 
         for exemplar in exemplars:
             if exemplar['transitions'] == [[load_name, state1, state2]]:
-                return await read_interval(self.config_json['node'], stream_name, exemplar['start_ts'], exemplar['end_ts'])
+                return await self.node.data_read_array(stream_name + '/transients', start=exemplar['start_ts'], end=exemplar['end_ts'], flatten=True)
 
     async def find_matching_exemplar(self, P, Q, trainola_threshold=0.15):
         """
@@ -50,10 +51,9 @@ class CurrentInstallation:
         matching_exemplar = None
 
         for exemplar in self.config_json['exemplars']:
-            async with get_joule_node(self.config_json['node']) as node:
-                exemplar_sarray = await node.data_read_array(self.config_json['stream_name'] + '/transients',
-                                                             start=exemplar['start_ts'],
-                                                             end=exemplar['end_ts'])
+            exemplar_sarray = await self.node.data_read_array(self.config_json['stream_name'] + '/transients',
+                                                              start=exemplar['start_ts'],
+                                                              end=exemplar['end_ts'])
             exemplar_PQ = exemplar_sarray['data']
             exemplar_PQ -= np.mean(exemplar_PQ[:5], axis=0)
 

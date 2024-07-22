@@ -2,9 +2,12 @@ import click
 from treelib import Tree
 from joule.utilities import timestamp_to_human as ts2h
 
+from merlin.cli.decorators import pass_node_name
+
 
 @click.command('configuration')
-def configuration() -> None:
+@pass_node_name
+def configuration(node) -> None:
     """
     Show current Merlin configuration.
     """
@@ -19,7 +22,7 @@ def configuration() -> None:
     load_tree = Tree()
     load_tree.create_node(click.style('Loads', bold=True), 'loads')
 
-    current_installation = CurrentInstallation()
+    current_installation = CurrentInstallation(node)
     cf = current_installation.config_json
 
     try:

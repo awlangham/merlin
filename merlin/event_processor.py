@@ -38,6 +38,9 @@ class EventProcessor(FilterModule):
         transients_pipe = inputs['transients']
         out_event_stream = await self._get_output_stream(parsed_args.output)
 
+        if parsed_args.method == 'supervised':
+            current_installation = CurrentInstallation(self.node)
+
         while not self.stop_requested:
             sarray_in = await self.read_from_input(transients_pipe)
 
@@ -71,8 +74,6 @@ class EventProcessor(FilterModule):
             if parsed_args.method == 'unsupervised':
                 event_content['type'] = 'OFF to ON' if P_ss > 0 else 'ON to OFF'
             else:
-                current_installation = CurrentInstallation()
-
                 # Find closest matching exemplar
                 matching_exemplar, match_score = await current_installation.find_matching_exemplar(P, Q)
 
