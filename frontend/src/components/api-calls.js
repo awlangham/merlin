@@ -53,7 +53,16 @@ export const getEvents = () => {
 };
 
 export const getClusters = () => {
-    fetch("api/clusters?stream_name=" + get(datasetStore))
+    let endpoint = "api/clusters?stream_name=" + get(datasetStore);
+
+    if (get(rangeStartStore) && get(rangeEndStore)) {
+        endpoint += '&start_ts=';
+        endpoint += unformatDate(get(rangeStartStore));
+        endpoint += '&end_ts=';
+        endpoint += unformatDate(get(rangeEndStore), true);
+    }
+
+    fetch(endpoint)
         .then((response) => response.json())
         .then((j) => {
             clusterStore.set(j.cluster_assignments);

@@ -16,16 +16,16 @@ class Clustering:
     Load inference is performed with Clustering.infer_loads().
     """
 
-    def _get_events(self, node_name, event_stream_name):
-        return get_events(node_name, event_stream_name)
+    def _get_events(self, node_name, event_stream_name, start = None, end = None):
+        return get_events(node_name, event_stream_name, start, end)
 
-    def __init__(self, node_name, event_stream_name) -> None:
+    def __init__(self, node_name, event_stream_name, start = None, end = None) -> None:
         # TODO: handle case where there are no events
 
         feature_names = ['P_ss', 'Q_ss', 'P_pk', 'Q_pk']
 
         features, intervals = [], []
-        for event in self._get_events(node_name, event_stream_name):
+        for event in self._get_events(node_name, event_stream_name, start, end):
             features.append([event.content[name] for name in feature_names])
             intervals.append((event.start_time, event.end_time))
 

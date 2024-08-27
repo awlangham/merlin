@@ -48,13 +48,13 @@ async def create_event_stream(node_name, path) -> bool:
 
 
 @async_run
-async def get_events(node_name, stream_name) -> list:
+async def get_events(node_name, stream_name, start = None, end = None) -> list:
     """
     Return a list of all events in the specified stream.
     """
 
     async with get_joule_node(node_name) as node:
-        return await node.event_stream_read(stream_name + '/events')
+        return await node.event_stream_read(stream_name + '/events', start=start, end=end, limit=50000)
 
 
 @async_run
