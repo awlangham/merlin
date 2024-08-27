@@ -6,9 +6,7 @@
     import DatasetList from "./DatasetList.svelte";
     import DateRange from "./DateRange.svelte";
 
-    let autoRefresh = false,
-        rangeStart,
-        rangeEnd;
+    let autoRefresh = false;
 
     $: if ($datasetStore !== "") {
         getEvents();
@@ -21,11 +19,6 @@
         }, 3000);
     } else {
         clearInterval(interval);
-    }
-
-    $: if ($eventStore.length > 0) {
-        rangeStart = new Date($eventStore[0].start_ts / 1000);
-        rangeEnd = new Date($eventStore.at(-1).end_ts / 1000);
     }
 </script>
 
@@ -46,7 +39,7 @@
         <button on:click={getClusters}>Cluster</button>
     {/if}
 
-    <DateRange {rangeStart} {rangeEnd} />
+    <DateRange />
 </div>
 
 <style>

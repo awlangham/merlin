@@ -1,13 +1,13 @@
 <script>
-    export let rangeStart, rangeEnd;
+    import { getEvents } from "../api-calls";
+    import { rangeStartStore, rangeEndStore } from "../stores";
 </script>
 
 <span id="date-range-span">
-    {#if rangeStart && rangeEnd}
-        {rangeStart.toLocaleString(undefined, { hour12: false })}
-        to
-        {rangeEnd.toLocaleString(undefined, { hour12: false })}
-    {/if}
+    <input type="date" bind:value={$rangeStartStore} />
+    to
+    <input type="date" bind:value={$rangeEndStore} />
+    <button id="set-daterange-btn" on:click={getEvents}>Go</button>
 </span>
 
 <style>

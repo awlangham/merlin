@@ -7,13 +7,12 @@ router = APIRouter()
 
 
 @router.get('/features')
-async def features(request: Request, stream_name: str):
+async def features(request: Request, stream_name: str, start_ts: int = None, end_ts: int = None):
     # Invalidate LRU cache of transients
     read_interval.cache_clear()
 
     async with get_joule_node(request.app.node) as node:
-        # TODO: Fix limit parameter
-        events = await node.event_stream_read(stream_name + '/events')
+        events = await node.event_stream_read(stream_name + '/events', limit=50000, start=start_ts, end=end_ts)
 
     result = {
         'events': [{

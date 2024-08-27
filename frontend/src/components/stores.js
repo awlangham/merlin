@@ -20,3 +20,7 @@ export const brushedStore = writable([]);
 
 // clusterStore: current point clustering
 export const clusterStore = writable(undefined);
+
+// rangeStartStore and rangeEndStore: selected date range
+export const rangeStartStore = writable(undefined);
+export const rangeEndStore = writable(undefined);
