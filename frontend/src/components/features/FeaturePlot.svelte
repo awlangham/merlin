@@ -30,7 +30,7 @@
     $: filteredEvents =
         $filterStore === ""
             ? $eventStore
-            : $eventStore.filter((event) => event.load_family === $filterStore);
+            : $eventStore.filter((event) => event.label === $filterStore);
 
     // Set default views upon page load
     if (sequence == 1) {
@@ -96,9 +96,12 @@
     }
 
     $: if ($eventIndexStore != -1) {
+        const selectedEvent = filteredEvents.find(
+            (e) => e.id === $eventIndexStore,
+        );
         layout.shapes = makeSelectionShape(
-            xData[$eventIndexStore],
-            yData[$eventIndexStore],
+            selectedEvent[xFeature],
+            selectedEvent[yFeature],
         );
     } else {
         layout.shapes = [];

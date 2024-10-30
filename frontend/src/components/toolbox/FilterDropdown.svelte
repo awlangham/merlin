@@ -6,8 +6,8 @@
         brushedStore,
     } from "../stores";
 
-    $: loadTypes = [
-        ...new Set($eventStore.map((event) => event.load_family)),
+    $: loadLabels = [
+        ...new Set($eventStore.map((event) => event.label)),
     ].sort();
 
     filterStore.subscribe((value) => {
@@ -20,11 +20,11 @@
     Filter by:
     <select bind:value={$filterStore}>
         <option value="">-- show all --</option>
-        {#each loadTypes as loadType}
-            {#if loadType != null}
-                <option>{loadType}</option>
+        {#each loadLabels as loadLabel}
+            {#if loadLabel != null}
+                <option>{loadLabel}</option>
             {:else}
-                <option value={loadType}>-- undefined --</option>
+                <option value={loadLabel}>-- unlabeled --</option>
             {/if}
         {/each}
     </select>
