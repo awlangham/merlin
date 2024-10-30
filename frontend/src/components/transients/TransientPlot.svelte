@@ -7,13 +7,13 @@
     let timestamps,
         transient_P,
         transient_Q,
-        transientData = [{ name: "P" }, { name: "Q" }];
+        transientData = [{ name: "Real" }, { name: "Reactive" }];
 
     export const clearTransientPlot = () => {
         timestamps = undefined;
         transient_P = undefined;
         transient_Q = undefined;
-        transientData = [{ name: "P" }, { name: "Q" }];
+        transientData = [{ name: "Real" }, { name: "Reactive" }];
     };
 
     $: if ($eventIndexStore != -1) {
