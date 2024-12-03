@@ -20,6 +20,11 @@ class EventProcessor(FilterModule):
         grp.add_argument('--method', type=str, required=True, help='Learning method')
 
     async def _get_output_stream(self, output_stream_path: str) -> EventStream:
+        """
+        Get the EventStream object corresponding to output_stream_path.
+        Creates it if does not exist.
+        """
+
         event_stream_name = output_stream_path.split('/')[-1]
 
         try:
@@ -51,7 +56,15 @@ class EventProcessor(FilterModule):
             timestamps_diff = np.diff(timestamps)
 
             if np.all(timestamps_diff < self.gap_time):
-                end_index = len(timestamps) - 1
+                # Fix to prevent premature event end when
+                # there's still more transient data left to process.
+                # The downside is that events can't be ended before another begins.
+
+                if transients_pipe.end_of_interval or transients_pipe.is_empty():
+                    # Flush the pipe
+                    end_index = len(timestamps) - 1
+                else:
+                    continue
             else:
                 end_index = np.argmax(timestamps_diff >= self.gap_time)
 
