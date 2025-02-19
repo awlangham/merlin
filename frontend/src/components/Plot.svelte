@@ -22,7 +22,7 @@
     }
 </script>
 
-<div class="plot-div" bind:this={plotDiv} />
+<div class="plot-div" bind:this={plotDiv}></div>
 
 <style>
     .plot-div {
