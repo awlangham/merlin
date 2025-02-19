@@ -8,7 +8,7 @@ Development
 
 Install merlin for development by cloning this repository and opening it in a terminal. Then run
 
-    pip -m venv venv
+    python3 -m venv venv
     source venv/bin/activate
     pip install -e .
 
