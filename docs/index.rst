@@ -21,6 +21,7 @@ a web-based visualization tool.
 .. toctree::
    :maxdepth: 3
 
+   levels
    cli
    event_processor
    visualizer
