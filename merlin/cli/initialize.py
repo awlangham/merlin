@@ -10,6 +10,9 @@ from merlin.cli.decorators import pass_node_name
 def initialize(node) -> None:
     """
     Set up a Merlin event processor on a given transient stream.
+
+    The user is prompted to choose a transient source, a supervision
+    level, and to supply any initial load information.
     """
 
     from merlin.utilities import search_for_stream, create_event_stream
