@@ -11,7 +11,7 @@ from merlin.cli.configuration import configuration
 
 @click.group()
 @click.version_option()
-@click.option('--node', '-n', default='', help='Joule node to use (uses the default node if unspecified)')
+@click.option('--node', '-n', default='', help='Joule node to use (uses the default node if unspecified).')
 @click.pass_context
 def main(context, node) -> None:
     context.ensure_object(dict)
