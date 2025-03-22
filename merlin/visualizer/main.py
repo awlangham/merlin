@@ -22,7 +22,7 @@ app.include_router(clusters.router, prefix='/api')
 
 @click.command()
 @click.option('--node', '-n', default='', help='Joule node to use (uses default if unspecified).')
-def run(node):
+def run(node) -> None:
     app.node = node
     static_path = files(merlin).joinpath('static')
     app.mount('/', StaticFiles(directory=static_path, html=True), name='static')

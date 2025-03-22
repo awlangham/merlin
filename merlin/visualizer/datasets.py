@@ -6,7 +6,7 @@ router = APIRouter()
 
 
 @router.get('/datasets')
-def get_datasets(request: Request):
+def get_datasets(request: Request) -> dict:
     async def find_default_node_name():
         async with get_joule_node(request.app.node) as node:
             return node.name

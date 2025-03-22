@@ -7,7 +7,7 @@ router = APIRouter()
 
 
 @router.get('/transient')
-async def transients(request: Request, stream_name: str, start_ts: int, end_ts: int):
+async def transients(request: Request, stream_name: str, start_ts: int, end_ts: int) -> dict:
     sarray = await read_interval(request.app.node, stream_name, start_ts, end_ts)
 
     timestamps, data = sarray[:, 0], sarray[:, 1:]

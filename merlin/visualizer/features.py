@@ -7,7 +7,7 @@ router = APIRouter()
 
 
 @router.get('/features')
-async def features(request: Request, stream_name: str, start_ts: int = None, end_ts: int = None):
+async def features(request: Request, stream_name: str, start_ts: int = None, end_ts: int = None) -> Response:
     # Invalidate LRU cache of transients
     read_interval.cache_clear()
 
