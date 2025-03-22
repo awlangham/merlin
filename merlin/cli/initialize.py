@@ -62,7 +62,7 @@ def initialize(node) -> None:
     click.echo(f'\nCreated {module_config_filename}')
 
 
-def _supervised_setup(selected_folder, node_name):
+def _supervised_setup(selected_folder, node_name) -> None:
     from merlin.models import GenericLoad
     from merlin.installation import config_filename
 
@@ -118,15 +118,15 @@ def _supervised_setup(selected_folder, node_name):
     click.echo(f'Saved to {config_filename}')
 
 
-def _comma_separated_to_strings(string):
+def _comma_separated_to_strings(string) -> list[str]:
     return [substring.strip() for substring in string.split(',')]
 
 
-def _comma_separated_to_ints(string):
+def _comma_separated_to_ints(string) -> list[int]:
     return [int(substring.strip()) for substring in string.split(',')]
 
 
-def _parse_transition(string):
+def _parse_transition(string) -> tuple[str, str, str]:
     substrings = string.split('::')
     load_name = substrings[0]
 
