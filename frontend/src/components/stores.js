@@ -24,3 +24,6 @@ export const clusterStore = writable(undefined);
 // rangeStartStore and rangeEndStore: selected date range
 export const rangeStartStore = writable(undefined);
 export const rangeEndStore = writable(undefined);
+
+// rangeMode: how to treat date range (first N events after start, last N events before end, or most recent N events)
+export const rangeModeStore = writable();

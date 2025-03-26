@@ -1,24 +1,12 @@
 <script>
-    import { datasetStore, eventStore } from "../stores";
-
+    import { datasetStore } from "../stores";
     import { getEvents, getClusters } from "../api-calls";
 
     import DatasetList from "./DatasetList.svelte";
     import DateRange from "./DateRange.svelte";
 
-    let autoRefresh = false;
-
     $: if ($datasetStore !== "") {
         getEvents();
-    }
-
-    let interval;
-    $: if (autoRefresh) {
-        interval = setInterval(() => {
-            getEvents();
-        }, 3000);
-    } else {
-        clearInterval(interval);
     }
 </script>
 
@@ -27,15 +15,6 @@
 
     {#if $datasetStore != ""}
         <button on:click={getEvents}>Refresh</button>
-
-        <input
-            id="auto-refresh-checkbox"
-            type="checkbox"
-            bind:checked={autoRefresh}
-        />
-        <label id="auto-refresh-label" for="auto-refresh-checkbox">
-            Auto Refresh
-        </label>
         <button on:click={getClusters}>Cluster</button>
     {/if}
 
@@ -54,13 +33,5 @@
         border-radius: 10px;
         box-shadow: 3px 1px 4px #888;
         background-color: white;
-    }
-
-    #auto-refresh-checkbox {
-        margin-left: 20px;
-    }
-
-    #auto-refresh-label {
-        margin-right: 20px;
     }
 </style>

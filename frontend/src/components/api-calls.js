@@ -1,5 +1,5 @@
 import { get } from "svelte/store";
-import { datasetStore, eventIndexStore, eventStore, clusterStore, rangeStartStore, rangeEndStore } from "./stores";
+import { datasetStore, eventIndexStore, eventStore, clusterStore, rangeStartStore, rangeEndStore, rangeModeStore as rangeModeStore } from "./stores";
 
 const formatDate = (dateTime) => {
     const year = dateTime.getFullYear();
@@ -36,10 +36,16 @@ export const getEvents = () => {
     let endpoint = "api/features?stream_name=" + get(datasetStore);
 
     if (get(rangeStartStore) && get(rangeEndStore)) {
-        endpoint += '&start_ts=';
-        endpoint += unformatDate(get(rangeStartStore));
-        endpoint += '&end_ts=';
-        endpoint += unformatDate(get(rangeEndStore), true);
+        if (get(rangeModeStore) === 'start') {
+            endpoint += '&start_ts=';
+            endpoint += unformatDate(get(rangeStartStore));
+        } else if (get(rangeModeStore) === 'end') {
+            endpoint += '&end_ts=';
+            endpoint += unformatDate(get(rangeEndStore), true);
+        } else if (get(rangeModeStore) === 'live') {
+            endpoint += '&end_ts=';
+            endpoint += (new Date()).getTime() * 1000;
+        }
     }
 
     fetch(endpoint)
@@ -49,6 +55,7 @@ export const getEvents = () => {
             eventStore.set(j.events);
             rangeStartStore.set(formatDate(new Date(j.events[0].start_ts / 1000)))
             rangeEndStore.set(formatDate(new Date(j.events.at(-1).end_ts / 1000)))
+            console.log('got events...')
         });
 };
 
