@@ -29,7 +29,8 @@ Schedules may change depending on the operating conditions and overall status of
 The final layer of abstraction is *condition*. As loads degrade or fail, their behavior changes.
 This can be due to a change in any one of the previous abstractions.
 Some examples for each layer of abstraction are:
-    - A sudden fault to ground changing the *state* of a load, adding zero-sequence current.
-    - An existing fault to ground changing the ``OFF->ON`` *transient* of a load.
-    - A sudden failure on one phase of a three-phse load creating a new state in its *finite state machine*.
-    - A feedback sensor failure causing a load's *schedule* to alter as it struggles to meet an impossible setpoint.
+
+    * A sudden fault to ground changing the *state* of a load, adding zero-sequence current.
+    * An existing fault to ground changing the ``OFF->ON`` *transient* of a load.
+    * A sudden failure on one phase of a three-phse load creating a new state in its *finite state machine*.
+    * A feedback sensor failure causing a load's *schedule* to alter as it struggles to meet an impossible setpoint.
