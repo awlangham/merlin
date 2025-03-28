@@ -16,9 +16,9 @@
     {#if $datasetStore != ""}
         <button on:click={getEvents}>Refresh</button>
         <button on:click={getClusters}>Cluster</button>
-    {/if}
 
-    <DateRange />
+        <DateRange />
+    {/if}
 </div>
 
 <style>

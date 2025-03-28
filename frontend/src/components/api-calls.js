@@ -36,16 +36,7 @@ export const getEvents = () => {
     let endpoint = "api/features?stream_name=" + get(datasetStore);
 
     if (get(rangeStartStore) && get(rangeEndStore)) {
-        if (get(rangeModeStore) === 'start') {
-            endpoint += '&start_ts=';
-            endpoint += unformatDate(get(rangeStartStore));
-        } else if (get(rangeModeStore) === 'end') {
-            endpoint += '&end_ts=';
-            endpoint += unformatDate(get(rangeEndStore), true);
-        } else if (get(rangeModeStore) === 'live') {
-            endpoint += '&end_ts=';
-            endpoint += (new Date()).getTime() * 1000;
-        }
+        endpoint += makeTimeParams();
     }
 
     fetch(endpoint)
@@ -63,10 +54,7 @@ export const getClusters = () => {
     let endpoint = "api/clusters?stream_name=" + get(datasetStore);
 
     if (get(rangeStartStore) && get(rangeEndStore)) {
-        endpoint += '&start_ts=';
-        endpoint += unformatDate(get(rangeStartStore));
-        endpoint += '&end_ts=';
-        endpoint += unformatDate(get(rangeEndStore), true);
+        endpoint += makeTimeParams();
     }
 
     fetch(endpoint)
@@ -75,3 +63,18 @@ export const getClusters = () => {
             clusterStore.set(j.cluster_assignments);
         });
 };
+
+const makeTimeParams = () => {
+    let result = "";
+    if (get(rangeModeStore) === 'start') {
+        result += '&start_ts=';
+        result += unformatDate(get(rangeStartStore));
+    } else if (get(rangeModeStore) === 'end') {
+        result += '&end_ts=';
+        result += unformatDate(get(rangeEndStore), true);
+    } else if (get(rangeModeStore) === 'live') {
+        result += '&end_ts=';
+        result += (new Date()).getTime() * 1000;
+    }
+    return result;
+}
