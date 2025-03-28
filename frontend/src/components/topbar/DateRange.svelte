@@ -10,10 +10,17 @@
     } else {
         clearInterval(interval);
     }
+
+    let selectedMode;
+
+    const goButtonClicked = () => {
+        $rangeModeStore = selectedMode;
+        getEvents();
+    }
 </script>
 
 <span id="date-range-span">
-    <select bind:value={$rangeModeStore}>
+    <select bind:value={selectedMode}>
         <option value="start">Start</option>
         <option value="end">End</option>
         <option value="live">Live</option>
@@ -30,7 +37,7 @@
         bind:value={$rangeEndStore}
         disabled={$rangeModeStore != "end"}
     />
-    <button id="set-daterange-btn" on:click={getEvents}>Go</button>
+    <button id="set-daterange-btn" on:click={goButtonClicked}>Go</button>
 </span>
 
 <style>
