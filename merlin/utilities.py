@@ -54,7 +54,7 @@ async def get_events(node_name, stream_name, start = None, end = None) -> list:
     """
 
     async with get_joule_node(node_name) as node:
-        return await node.event_stream_read(stream_name + '/events', start=start, end=end, limit=50000)
+        return await node.event_stream_read(stream_name + '/events', start=start, end=end, limit=1000)
 
 
 @async_run
