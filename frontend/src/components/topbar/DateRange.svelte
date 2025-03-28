@@ -29,13 +29,13 @@
     <input
         type="date"
         bind:value={$rangeStartStore}
-        disabled={$rangeModeStore != "start"}
+        disabled={selectedMode != "start"}
     />
     to
     <input
         type="date"
         bind:value={$rangeEndStore}
-        disabled={$rangeModeStore != "end"}
+        disabled={selectedMode != "end"}
     />
     <button id="set-daterange-btn" on:click={goButtonClicked}>Go</button>
 </span>

@@ -44,9 +44,8 @@ export const getEvents = () => {
         .then((j) => {
             eventIndexStore.set(-1);
             eventStore.set(j.events);
-            rangeStartStore.set(formatDate(new Date(j.events[0].start_ts / 1000)))
-            rangeEndStore.set(formatDate(new Date(j.events.at(-1).end_ts / 1000)))
-            console.log('got events...')
+            rangeStartStore.set(formatDate(new Date(j.events[0].start_ts / 1000)));
+            rangeEndStore.set(formatDate(new Date(j.events.at(-1).end_ts / 1000)));
         });
 };
 
