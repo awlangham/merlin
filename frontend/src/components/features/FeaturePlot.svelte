@@ -152,7 +152,7 @@
 <style>
     .feature-space-map {
         width: 100%;
-        height: 90%;
+        flex: 1 1 100%;
     }
 
     :global(.selectionlayer),

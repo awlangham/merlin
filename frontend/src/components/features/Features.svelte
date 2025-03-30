@@ -71,5 +71,7 @@
         padding: 10px;
         box-shadow: 3px 3px 4px #888;
         background-color: white;
+        display: flex;
+        flex-direction: column;
     }
 </style>

@@ -65,4 +65,8 @@
     #bottom-row {
         flex: 1 1 100%;
     }
+
+    .row {
+        --bs-gutter-x: 0.7rem;
+    }
 </style>
