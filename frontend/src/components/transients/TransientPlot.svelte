@@ -45,8 +45,12 @@
             return 0;
         }
 
-        const startAvg = dataArray.slice(0, baselineLength).reduce((a, b) => a + b) / baselineLength;
-        const endAvg = dataArray.slice(-baselineLength).reduce((a, b) => a + b) / baselineLength;
+        const startAvg =
+            dataArray.slice(0, baselineLength).reduce((a, b) => a + b) /
+            baselineLength;
+        const endAvg =
+            dataArray.slice(-baselineLength).reduce((a, b) => a + b) /
+            baselineLength;
         return startAvg < endAvg ? startAvg : endAvg;
     };
 
@@ -72,7 +76,12 @@
 <div class="transient-plot-div h-100">
     <Plot data={transientData} {layout} {config} />
     {#if $eventIndexStore != -1}
-        <button id="copy-timestamps-btn" on:click={copyTimestamps}>
+        <button
+            id="copy-timestamps-btn"
+            type="button"
+            class="btn btn-secondary btn-sm"
+            on:click={copyTimestamps}
+        >
             Copy timestamps
         </button>
     {/if}
@@ -91,7 +100,7 @@
 
     #copy-timestamps-btn {
         position: absolute;
-        left: 10px;
+        right: 10px;
         bottom: 4px;
     }
 </style>
