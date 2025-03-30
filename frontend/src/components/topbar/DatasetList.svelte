@@ -8,6 +8,10 @@
 
 {#await datasetListPromise}
     <!-- Loading dataset list... -->
+    Connecting...
+    <select disabled class="stream-select form-select form-select-sm">
+        <option hidden value="">-- select a stream --</option>
+    </select>
 {:then data}
     Connected to [{data.joule_node}]
     <select
@@ -25,6 +29,8 @@
     </select>
     <!-- {:catch error} -->
     <!-- {error.message} -->
+{:catch}
+    Connection error
 {/await}
 
 <style>
