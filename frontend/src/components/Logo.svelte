@@ -4,8 +4,7 @@
 
 <style>
     .logo-bar {
-        display: flex;
-        width: 25%;
+        text-align: center;
     }
 
     .logo {

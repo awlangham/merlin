@@ -69,7 +69,7 @@
     };
 </script>
 
-<div class="transient-plot-div">
+<div class="transient-plot-div h-100">
     <Plot data={transientData} {layout} {config} />
     {#if $eventIndexStore != -1}
         <button id="copy-timestamps-btn" on:click={copyTimestamps}>
@@ -80,7 +80,6 @@
 
 <style>
     .transient-plot-div {
-        height: 275px;
         border: 2px solid gray;
         border-radius: 10px;
         box-shadow: 3px 3px 4px #888;

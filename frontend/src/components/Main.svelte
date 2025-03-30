@@ -6,6 +6,10 @@
     import Toolbox from "./toolbox/Toolbox.svelte";
     import Transients from "./transients/Transients.svelte";
     import Features from "./features/Features.svelte";
+    import TransientPlot from "./transients/TransientPlot.svelte";
+
+    import "bootstrap/dist/css/bootstrap.min.css";
+    // import 'bootstrap/dist/js/bootstrap.min.js';
 
     let featurePlots;
 
@@ -14,23 +18,51 @@
     }
 </script>
 
-<div class="main">
-    <Logo />
-    <TopBar />
-    <div class="left-column">
-        <Toolbox on:clear={featurePlots.clearBrushedSelection} />
-        <Transients />
+<div class="main container vh-100">
+    <div class="row" id="top-row">
+        <div class="col-3">
+            <Logo />
+        </div>
+        <div class="col-9">
+            <TopBar />
+        </div>
     </div>
-    <Features bind:this={featurePlots} />
+    <div class="row" id="bottom-row">
+        <div class="col-4">
+            <div class="row h-25 pb-2">
+                <div class="col">
+                    <Toolbox on:clear={featurePlots.clearBrushedSelection} />
+                </div>
+            </div>
+            <div class="row h-75">
+                <div class="col">
+                    <div class="row h-50 pb-2">
+                        <div class="col">
+                            <TransientPlot />
+                        </div>
+                    </div>
+                    <div class="row h-50">
+                        <div class="col">
+                            <Transients></Transients>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <Features bind:this={featurePlots} />
+    </div>
 </div>
 
 <style>
     .main {
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: column;
+        max-width: 100%;
+        padding-top: 10px;
+        padding-bottom: 10px;
     }
 
-    .left-column {
-        width: 25%;
+    #bottom-row {
+        flex: 1 1 100%;
     }
 </style>

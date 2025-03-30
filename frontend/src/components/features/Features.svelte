@@ -31,45 +31,49 @@
     };
 </script>
 
-<div class="feature-viewer">
-    <FeaturePlot
-        cursor={$modeStore === "mds" ? "crossbrush" : $modeStore}
-        brushedPoints={brushedPoints1}
-        on:brush={(d) => {
-            $brushedStore = d.detail;
-            hasSelection1 = true;
-            hasSelection2 = false;
-        }}
-    />
-</div>
-
-<div class="feature-viewer">
-    {#if $modeStore === "mds"}
-        <MdsPlot />
-    {:else}
+<div class="col-4">
+    <div class="feature-viewer h-100">
         <FeaturePlot
-            sequence={1}
-            cursor={$modeStore}
-            brushedPoints={brushedPoints2}
+            cursor={$modeStore === "mds" ? "crossbrush" : $modeStore}
+            brushedPoints={brushedPoints1}
             on:brush={(d) => {
                 $brushedStore = d.detail;
-                hasSelection1 = false;
-                hasSelection2 = true;
+                hasSelection1 = true;
+                hasSelection2 = false;
             }}
         />
-    {/if}
+    </div>
+</div>
+
+<div class="col-4">
+    <div class="feature-viewer h-100">
+        {#if $modeStore === "mds"}
+            <MdsPlot />
+        {:else}
+            <FeaturePlot
+                sequence={1}
+                cursor={$modeStore}
+                brushedPoints={brushedPoints2}
+                on:brush={(d) => {
+                    $brushedStore = d.detail;
+                    hasSelection1 = false;
+                    hasSelection2 = true;
+                }}
+            />
+        {/if}
+    </div>
 </div>
 
 <style>
     .feature-viewer {
-        display: flex;
-        height: calc(100vh - 110px);
-        width: 35%;
         border: 2px solid gray;
         border-radius: 10px;
+        /* padding: 10px; */
+        /* margin-left: auto; */
+        /* flex-wrap: wrap; */
         padding: 10px;
-        margin-left: auto;
-        flex-wrap: wrap;
+        /* margin-left: 0px; */
+        /* margin-right: 0px; */
         box-shadow: 3px 3px 4px #888;
         background-color: white;
     }

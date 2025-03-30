@@ -6,7 +6,6 @@
     import { tick } from "svelte";
 
     import TransientListItem from "./TransientListItem.svelte";
-    import TransientPlot from "./TransientPlot.svelte";
 
     let scrollToIndex;
 
@@ -35,15 +34,15 @@
         firstVisibleTimestamp = $eventStore[virtualListStart].timestamp;
         lastVisibleTimestamp = $eventStore[virtualListEnd - 1].timestamp;
     }
+
+    $: console.log($eventStore);
 </script>
 
-<TransientPlot />
+<div id="transients" class="h-100">
+    <div class="timespan">
+        Start: {firstVisibleTimestamp}
+    </div>
 
-<div class="timespan">
-    Start: {firstVisibleTimestamp}
-</div>
-
-<div id="transients">
     {#if $eventStore}
         <div class="list">
             <VirtualList
@@ -57,27 +56,25 @@
             </VirtualList>
         </div>
     {/if}
-</div>
 
-<div class="timespan">
-    End: {lastVisibleTimestamp}
+    <div class="timespan">
+        End: {lastVisibleTimestamp}
+    </div>
 </div>
 
 <style>
     .list {
-        width: 100%;
-        height: 100%;
+        height: calc(33.75vh - 20px - 20px - 20px);
+        border-top: 2px solid gray;
+        border-bottom: 2px solid gray;
     }
 
     .timespan {
         height: 20px;
-        padding-bottom: 5px;
-        padding-top: 5px;
         padding-left: 10px;
     }
 
     #transients {
-        height: calc(100vh - 110px + 20px - 144px - 50px - 275px - 7px);
         overflow: auto;
         border: 2px solid gray;
         border-radius: 10px;

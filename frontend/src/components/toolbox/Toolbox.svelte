@@ -10,7 +10,7 @@
     const dispatch = createEventDispatcher();
 </script>
 
-<div id="tool-div">
+<div id="tool-div" class="h-100">
     <FilterDropdown />
 
     <div>
@@ -41,19 +41,21 @@
 
 <style>
     #tool-div {
-        height: 110px;
+        /* height: 110px; */
         border: 2px solid gray;
         border-radius: 10px;
         box-shadow: 3px 3px 4px #888;
+        padding: 10px;
         margin-bottom: 10px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        padding-left: 5px;
-        padding-right: 5px;
+        /* padding-top: 10px; */
+        /* padding-bottom: 10px; */
+        /* padding-left: 5px; */
+        /* padding-right: 5px; */
+        /* margin-left: 10px; */
         background-color: white;
     }
 
     #tool-div div {
-        padding-bottom: 5px;
+        /* padding-bottom: 5px; */
     }
 </style>
