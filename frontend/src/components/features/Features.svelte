@@ -68,12 +68,7 @@
     .feature-viewer {
         border: 2px solid gray;
         border-radius: 10px;
-        /* padding: 10px; */
-        /* margin-left: auto; */
-        /* flex-wrap: wrap; */
         padding: 10px;
-        /* margin-left: 0px; */
-        /* margin-right: 0px; */
         box-shadow: 3px 3px 4px #888;
         background-color: white;
     }

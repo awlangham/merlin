@@ -14,8 +14,8 @@
     <DatasetList />
 
     {#if $datasetStore != ""}
-        <button type="button" class="btn btn-primary" on:click={getEvents}>Refresh</button>
-        <button type="button" class="btn btn-primary" on:click={getClusters}>Cluster</button>
+        <button type="button" class="btn btn-secondary btn-sm" on:click={getEvents}>Refresh</button>
+        <button type="button" class="btn btn-secondary btn-sm" on:click={getClusters}>Cluster</button>
 
         <DateRange />
     {/if}

@@ -109,13 +109,13 @@
 </script>
 
 <div>
-    <select bind:value={yFeature}>
+    <select class="form-select form-select-sm" bind:value={yFeature}>
         {#each powerFeatures as powerFeature}
             <option>{powerFeature}</option>
         {/each}
     </select>
     vs.
-    <select bind:value={xFeature}>
+    <select class="form-select form-select-sm" bind:value={xFeature}>
         {#each powerFeatures as powerFeature}
             <option>{powerFeature}</option>
         {/each}
@@ -163,5 +163,10 @@
     .plot-container {
         width: 100%;
         height: 100%;
+    }
+
+    .form-select {
+        display: inline;
+        width: auto;
     }
 </style>

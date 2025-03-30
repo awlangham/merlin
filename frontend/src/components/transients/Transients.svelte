@@ -34,8 +34,6 @@
         firstVisibleTimestamp = $eventStore[virtualListStart].timestamp;
         lastVisibleTimestamp = $eventStore[virtualListEnd - 1].timestamp;
     }
-
-    $: console.log($eventStore);
 </script>
 
 <div id="transients" class="h-100">

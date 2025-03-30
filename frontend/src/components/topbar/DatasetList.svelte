@@ -11,7 +11,7 @@
 {:then data}
     Connected to [{data.joule_node}]
     <select
-        class="stream-select"
+        class="stream-select form-select form-select-sm"
         bind:value={$datasetStore}
         on:change={() => {
             $rangeStartStore = undefined;
@@ -29,6 +29,8 @@
 
 <style>
     .stream-select {
+        display: inline;
+        width: auto;
         margin-left: 10px;
         margin-right: 10px;
     }

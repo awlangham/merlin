@@ -16,11 +16,15 @@
     const goButtonClicked = () => {
         $rangeModeStore = selectedMode;
         getEvents();
-    }
+    };
 </script>
 
 <span id="date-range-span">
-    <select bind:value={selectedMode}>
+    <select
+        id="mode-select"
+        class="form-select form-select-sm"
+        bind:value={selectedMode}
+    >
         <option value="start">Start</option>
         <option value="end">End</option>
         <option value="live">Live</option>
@@ -28,21 +32,38 @@
 
     <input
         type="date"
+        class="form-control form-control-sm"
         bind:value={$rangeStartStore}
         disabled={selectedMode != "start"}
     />
     to
     <input
         type="date"
+        class="form-control form-control-sm"
         bind:value={$rangeEndStore}
         disabled={selectedMode != "end"}
     />
-    <button id="set-daterange-btn" on:click={goButtonClicked}>Go</button>
+    <button
+        type="button"
+        class="btn btn-secondary btn-sm"
+        id="set-daterange-btn"
+        on:click={goButtonClicked}>Go</button
+    >
 </span>
 
 <style>
+    #mode-select {
+        width: auto;
+        display: inline;
+    }
+
     #date-range-span {
         margin-left: auto;
         margin-right: auto;
+    }
+
+    .form-control {
+        display: inline;
+        width: auto;
     }
 </style>
