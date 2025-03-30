@@ -18,7 +18,7 @@
 
 <div>
     Filter by:
-    <select bind:value={$filterStore}>
+    <select class="form-select form-select-sm" bind:value={$filterStore}>
         <option value="">-- show all --</option>
         {#each loadLabels as loadLabel}
             {#if loadLabel != null}
@@ -29,3 +29,10 @@
         {/each}
     </select>
 </div>
+
+<style>
+    .form-select {
+        display: inline;
+        width: auto;
+    }
+</style>

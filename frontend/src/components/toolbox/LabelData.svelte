@@ -29,6 +29,19 @@
 </script>
 
 <div>
-    <input bind:value={newLabelName} />
-    <button on:click={putLabel}>Label Data</button>
+    <input
+        type="text"
+        class="form-control form-control-sm"
+        bind:value={newLabelName}
+    />
+    <button type="button" class="btn btn-secondary btn-sm" on:click={putLabel}>
+        Label Data
+    </button>
 </div>
+
+<style>
+    .form-control {
+        width: auto;
+        display: inline;
+    }
+</style>

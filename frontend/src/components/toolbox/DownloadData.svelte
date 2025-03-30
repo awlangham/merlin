@@ -25,4 +25,6 @@
     };
 </script>
 
-<button on:click={downloadData}> Download Data </button>
+<button type="button" class="btn btn-secondary btn-sm" on:click={downloadData}>
+    Download Data
+</button>

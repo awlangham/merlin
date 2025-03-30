@@ -7,6 +7,8 @@
 </script>
 
 <button
+    type="button"
+    class="btn btn-secondary btn-sm"
     class:visible={$eventIndexStore != -1}
     id="unselect-btn"
     on:click={unselectPoint}

@@ -15,7 +15,7 @@
 
     <div>
         Tool:
-        <select bind:value={$modeStore}>
+        <select class="form-select form-select-sm" bind:value={$modeStore}>
             <option value="explore">Explore 🔦</option>
             <option value="crossbrush">CrossBrush 🖌️</option>
             <option value="mds">MDS 🔍</option>
@@ -31,6 +31,8 @@
                 on:click={() => {
                     dispatch("clear");
                 }}
+                type="button"
+                class="btn btn-secondary btn-sm"
             >
                 Clear Brush Selection
             </button>
@@ -41,21 +43,16 @@
 
 <style>
     #tool-div {
-        /* height: 110px; */
         border: 2px solid gray;
         border-radius: 10px;
         box-shadow: 3px 3px 4px #888;
         padding: 10px;
         margin-bottom: 10px;
-        /* padding-top: 10px; */
-        /* padding-bottom: 10px; */
-        /* padding-left: 5px; */
-        /* padding-right: 5px; */
-        /* margin-left: 10px; */
         background-color: white;
     }
 
-    #tool-div div {
-        /* padding-bottom: 5px; */
+    .form-select {
+        display: inline;
+        width: auto;
     }
 </style>
