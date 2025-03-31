@@ -5,13 +5,18 @@
 
     $: selected = $eventIndexStore === eventData.id;
 
+    let thisItem;
+    $: if (selected) {
+        thisItem.scrollIntoView();
+    }
+
     const formatTime = (timestampString) => {
         const timestampDate = new Date(timestampString);
         return timestampDate.toLocaleTimeString(undefined, { hour12: false });
     };
 </script>
 
-<div class="transient-list-item">
+<div bind:this={thisItem} class="transient-list-item">
     <button
         class="transient-button"
         on:click={() => {
@@ -41,7 +46,6 @@
 <style>
     .transient-button.selected {
         font-weight: bold;
-        /* border-bottom: none; */
     }
 
     .transient-button {
@@ -71,10 +75,6 @@
     .load-family {
         border-right: 1px solid lightgray;
     }
-
-    /* .transient-button.selected .event-timestamp {
-        border-right-color: gray;
-    } */
 
     .transient-list-item {
         padding-bottom: 10px;
