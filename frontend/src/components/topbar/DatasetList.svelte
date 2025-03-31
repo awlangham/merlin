@@ -7,7 +7,6 @@
 </script>
 
 {#await datasetListPromise}
-    <!-- Loading dataset list... -->
     Connecting...
     <select disabled class="stream-select form-select form-select-sm">
         <option hidden value="">-- select a stream --</option>
@@ -38,6 +37,5 @@
         display: inline;
         width: auto;
         margin-left: 10px;
-        margin-right: 10px;
     }
 </style>

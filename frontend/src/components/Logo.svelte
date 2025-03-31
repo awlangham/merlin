@@ -1,15 +1,13 @@
 <div class="logo-bar">
-    <span class="logo"> ⚡️ Merlin </span>
+    <img id="img-logo" src="/merlin.png" alt="MERLIN logo" />
 </div>
 
 <style>
-    .logo-bar {
-        text-align: center;
+    #img-logo {
+        height: 65px;
     }
 
-    .logo {
-        font-size: 2.3em;
-        margin-left: auto;
-        margin-right: auto;
+    .logo-bar {
+        text-align: center;
     }
 </style>
