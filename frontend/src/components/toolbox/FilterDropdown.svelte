@@ -37,5 +37,7 @@ Filter by:
     .form-select {
         display: inline;
         width: auto;
+        margin-left: 10px;
+        margin-right: 10px;
     }
 </style>
