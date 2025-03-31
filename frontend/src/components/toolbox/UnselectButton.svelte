@@ -9,20 +9,19 @@
 <button
     type="button"
     class="btn btn-secondary btn-sm"
-    class:visible={$eventIndexStore != -1}
+    disabled={$eventIndexStore === -1}
     id="unselect-btn"
     on:click={unselectPoint}
 >
-    Unselect Point ⭕️
+    Unselect Point
 </button>
 
 <style>
     #unselect-btn {
-        visibility: hidden;
-        margin-left: auto;
+        margin-right: 10px;
     }
 
-    #unselect-btn.visible {
+    /* #unselect-btn.visible {
         visibility: visible;
-    }
+    } */
 </style>

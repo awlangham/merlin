@@ -14,6 +14,7 @@
     <DatasetList />
 
     <button
+        id="button-refresh"
         disabled={$datasetStore == ""}
         type="button"
         class="btn btn-secondary btn-sm"
@@ -40,5 +41,11 @@
         border-radius: 10px;
         box-shadow: 3px 1px 4px #888;
         background-color: white;
+        display: flex;
+        align-items: center;
+    }
+
+    #button-refresh {
+        margin-right: 10px;
     }
 </style>

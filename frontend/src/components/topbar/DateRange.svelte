@@ -66,7 +66,8 @@
 
     #date-range-span {
         margin-left: auto;
-        margin-right: auto;
+        /* margin-right: auto; */
+        /* align-self: flex-end; */
     }
 
     .form-control {

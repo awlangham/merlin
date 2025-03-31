@@ -34,6 +34,7 @@
     bind:value={newLabelName}
 />
 <button
+    id="button-label"
     disabled={$brushedStore.length === 0}
     type="button"
     class="btn btn-secondary btn-sm"
@@ -46,5 +47,10 @@
     .form-control {
         width: auto;
         display: inline;
+    }
+
+    #button-label {
+        margin-left: 5px;
+        margin-right: 10px;
     }
 </style>

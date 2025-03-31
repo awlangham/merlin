@@ -24,11 +24,11 @@
         <option value="mds">MDS 🔍</option>
     </select>
 
-    <UnselectButton />
-
     <span id="span-right">
+        <UnselectButton />
         <LabelData />
         <button
+            id="button-clear"
             disabled={$brushedStore.length === 0}
             on:click={() => {
                 dispatch("clear");
@@ -63,6 +63,11 @@
     }
 
     #span-right {
-        align-self: flex-end;
+        margin-left: auto;
+        display: flex;
+    }
+
+    #button-clear {
+        margin-right: 10px;
     }
 </style>
