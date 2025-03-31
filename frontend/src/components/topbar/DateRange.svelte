@@ -1,6 +1,11 @@
 <script>
     import { getEvents } from "../api-calls";
-    import { rangeStartStore, rangeEndStore, rangeModeStore } from "../stores";
+    import {
+        rangeStartStore,
+        rangeEndStore,
+        rangeModeStore,
+        datasetStore,
+    } from "../stores";
 
     let interval;
     $: if ($rangeModeStore === "live") {
@@ -21,6 +26,7 @@
 
 <span id="date-range-span">
     <select
+        disabled={$datasetStore == ""}
         id="mode-select"
         class="form-select form-select-sm"
         bind:value={selectedMode}
@@ -34,16 +40,17 @@
         type="date"
         class="form-control form-control-sm"
         bind:value={$rangeStartStore}
-        disabled={selectedMode != "start"}
+        disabled={selectedMode != "start" || $datasetStore == ""}
     />
     to
     <input
         type="date"
         class="form-control form-control-sm"
         bind:value={$rangeEndStore}
-        disabled={selectedMode != "end"}
+        disabled={selectedMode != "end" || $datasetStore == ""}
     />
     <button
+        disabled={$datasetStore == ""}
         type="button"
         class="btn btn-secondary btn-sm"
         id="set-daterange-btn"

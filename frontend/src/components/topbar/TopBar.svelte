@@ -13,17 +13,28 @@
 <div class="top-bar">
     <DatasetList />
 
-    {#if $datasetStore != ""}
-        <button type="button" class="btn btn-secondary btn-sm" on:click={getEvents}>Refresh</button>
-        <button type="button" class="btn btn-secondary btn-sm" on:click={getClusters}>Cluster</button>
+    <button
+        disabled={$datasetStore == ""}
+        type="button"
+        class="btn btn-secondary btn-sm"
+        on:click={getEvents}
+    >
+        Refresh
+    </button>
+    <button
+        disabled={$datasetStore == ""}
+        type="button"
+        class="btn btn-secondary btn-sm"
+        on:click={getClusters}
+    >
+        Cluster
+    </button>
 
-        <DateRange />
-    {/if}
+    <DateRange />
 </div>
 
 <style>
     .top-bar {
-        margin-bottom: 10px;
         padding: 10px 10px 10px 10px;
         border: 2px solid gray;
         border-radius: 10px;

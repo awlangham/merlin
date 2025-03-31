@@ -28,16 +28,19 @@
     };
 </script>
 
-<div>
-    <input
-        type="text"
-        class="form-control form-control-sm"
-        bind:value={newLabelName}
-    />
-    <button type="button" class="btn btn-secondary btn-sm" on:click={putLabel}>
-        Label Data
-    </button>
-</div>
+<input
+    type="text"
+    class="form-control form-control-sm"
+    bind:value={newLabelName}
+/>
+<button
+    disabled={$brushedStore.length === 0}
+    type="button"
+    class="btn btn-secondary btn-sm"
+    on:click={putLabel}
+>
+    Label Data
+</button>
 
 <style>
     .form-control {

@@ -25,6 +25,11 @@
     };
 </script>
 
-<button type="button" class="btn btn-secondary btn-sm" on:click={downloadData}>
+<button
+    disabled={$brushedStore.length === 0}
+    type="button"
+    class="btn btn-secondary btn-sm"
+    on:click={downloadData}
+>
     Download Data
 </button>

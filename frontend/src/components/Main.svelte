@@ -19,7 +19,7 @@
 </script>
 
 <div class="main container vh-100">
-    <div class="row" id="top-row">
+    <div class="row pb-2" id="top-row">
         <div class="col-3">
             <Logo />
         </div>
@@ -29,12 +29,7 @@
     </div>
     <div class="row" id="bottom-row">
         <div class="col-4">
-            <div class="row h-25 pb-2">
-                <div class="col">
-                    <Toolbox on:clear={featurePlots.clearBrushedSelection} />
-                </div>
-            </div>
-            <div class="row h-75">
+            <div class="row h-100">
                 <div class="col">
                     <div class="row h-50 pb-2">
                         <div class="col">
@@ -50,6 +45,11 @@
             </div>
         </div>
         <Features bind:this={featurePlots} />
+    </div>
+    <div class="row pt-2">
+        <div class="col-12">
+            <Toolbox on:clear={featurePlots.clearBrushedSelection} />
+        </div>
     </div>
 </div>
 

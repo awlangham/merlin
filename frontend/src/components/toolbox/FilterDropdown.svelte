@@ -4,6 +4,7 @@
         eventStore,
         eventIndexStore,
         brushedStore,
+        datasetStore,
     } from "../stores";
 
     $: loadLabels = [
@@ -16,19 +17,21 @@
     });
 </script>
 
-<div>
-    Filter by:
-    <select class="form-select form-select-sm" bind:value={$filterStore}>
-        <option value="">-- show all --</option>
-        {#each loadLabels as loadLabel}
-            {#if loadLabel != null}
-                <option>{loadLabel}</option>
-            {:else}
-                <option value={loadLabel}>-- unlabeled --</option>
-            {/if}
-        {/each}
-    </select>
-</div>
+Filter by:
+<select
+    disabled={$datasetStore == ""}
+    class="form-select form-select-sm"
+    bind:value={$filterStore}
+>
+    <option value="">-- show all --</option>
+    {#each loadLabels as loadLabel}
+        {#if loadLabel != null}
+            <option>{loadLabel}</option>
+        {:else}
+            <option value={loadLabel}>-- unlabeled --</option>
+        {/if}
+    {/each}
+</select>
 
 <style>
     .form-select {

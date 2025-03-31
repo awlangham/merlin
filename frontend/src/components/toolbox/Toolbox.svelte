@@ -13,32 +13,27 @@
 <div id="tool-div" class="h-100">
     <FilterDropdown />
 
-    <div>
-        Tool:
-        <select class="form-select form-select-sm" bind:value={$modeStore}>
-            <option value="explore">Explore 🔦</option>
-            <option value="crossbrush">CrossBrush 🖌️</option>
-            <option value="mds">MDS 🔍</option>
-        </select>
+    Tool:
+    <select class="form-select form-select-sm" bind:value={$modeStore}>
+        <option value="explore">Explore 🔦</option>
+        <option value="crossbrush">CrossBrush 🖌️</option>
+        <option value="mds">MDS 🔍</option>
+    </select>
 
-        <UnselectButton />
-    </div>
+    <UnselectButton />
 
-    {#if $brushedStore}
-        <LabelData />
-        <div>
-            <button
-                on:click={() => {
-                    dispatch("clear");
-                }}
-                type="button"
-                class="btn btn-secondary btn-sm"
-            >
-                Clear Brush Selection
-            </button>
-            <DownloadData />
-        </div>
-    {/if}
+    <LabelData />
+    <button
+        disabled={$brushedStore.length === 0}
+        on:click={() => {
+            dispatch("clear");
+        }}
+        type="button"
+        class="btn btn-secondary btn-sm"
+    >
+        Clear Brush Selection
+    </button>
+    <DownloadData />
 </div>
 
 <style>
@@ -47,7 +42,6 @@
         border-radius: 10px;
         box-shadow: 3px 3px 4px #888;
         padding: 10px;
-        margin-bottom: 10px;
         background-color: white;
     }
 
