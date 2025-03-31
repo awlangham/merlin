@@ -12,7 +12,9 @@
         <option hidden value="">-- select a stream --</option>
     </select>
 {:then data}
-    Connected to [{data.joule_node}]
+    Connected to <span id="span-node" class="badge text-bg-primary">
+        {data.joule_node}
+    </span>
     <select
         class="stream-select form-select form-select-sm"
         bind:value={$datasetStore}
@@ -33,6 +35,10 @@
 {/await}
 
 <style>
+    #span-node {
+        margin-left: 5px;
+    }
+
     .stream-select {
         display: inline;
         width: auto;
