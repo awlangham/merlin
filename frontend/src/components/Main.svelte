@@ -60,6 +60,7 @@
         max-width: 100%;
         padding-top: 10px;
         padding-bottom: 10px;
+        background-color: #f2f2f2;
     }
 
     #bottom-row {
