@@ -1,36 +1,31 @@
 <script>
     import { eventStore } from "../stores";
 
-    // import VirtualList from "svelte-virtual-list-ce";
-
     import TransientListItem from "./TransientListItem.svelte";
-
-    // let scrollToIndex;
 
     let firstVisibleTimestamp = "",
         lastVisibleTimestamp = "";
 
-    // const scrollToSelected = async () => {
-    //     scrollToIndex($eventIndexStore, { behavior: "instant" });
+    let transientsInner;
 
-    //     await tick();
+    const updateStartEndTimes = () => {
+        const itemHeight = 47;
 
-    //     const selectedElementList = document.getElementsByClassName("selected");
-    //     if (selectedElementList.length > 0) {
-    //         selectedElementList[0].scrollIntoView({
-    //             block: "start",
-    //         });
-    //     }
-    // };
+        const firstIndex = Math.floor(transientsInner.scrollTop / itemHeight);
+        const lastIndex = Math.min(
+            Math.floor(
+                (transientsInner.scrollTop + transientsInner.clientHeight) /
+                    itemHeight,
+            ),
+            $eventStore.length - 1,
+        );
 
-    // $: if ($eventIndexStore != -1) {
-    //     scrollToSelected();
-    // }
+        firstVisibleTimestamp = $eventStore[firstIndex].timestamp;
+        lastVisibleTimestamp = $eventStore[lastIndex].timestamp;
+    };
 
-    let virtualListStart, virtualListEnd;
-    $: if (virtualListStart && virtualListEnd) {
-        firstVisibleTimestamp = $eventStore[virtualListStart].timestamp;
-        lastVisibleTimestamp = $eventStore[virtualListEnd - 1].timestamp;
+    $: if ($eventStore.length > 0) {
+        updateStartEndTimes();
     }
 </script>
 
@@ -39,20 +34,16 @@
         Start: {firstVisibleTimestamp}
     </div>
 
-    <div id="transients-inner">
+    <div
+        bind:this={transientsInner}
+        on:scroll={updateStartEndTimes}
+        id="transients-inner"
+    >
         {#if $eventStore}
             <div class="list">
-                <!-- <VirtualList
-                bind:start={virtualListStart}
-                bind:end={virtualListEnd}
-                bind:scrollToIndex
-                items={$eventStore}
-                let:item
-            > -->
                 {#each $eventStore as item}
                     <TransientListItem eventData={item} />
                 {/each}
-                <!-- </VirtualList> -->
             </div>
         {/if}
     </div>
