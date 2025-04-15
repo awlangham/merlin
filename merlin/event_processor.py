@@ -46,7 +46,7 @@ class EventProcessor(FilterModule):
         if parsed_args.method == 'supervised':
             current_installation = CurrentInstallation(self.node)
 
-        while not self.stop_requested:
+        while not self.stop_requested and not await transients_pipe.is_empty():
             sarray_in = await self.read_from_input(transients_pipe)
 
             if len(sarray_in) == 0:
@@ -60,7 +60,7 @@ class EventProcessor(FilterModule):
                 # there's still more transient data left to process.
                 # The downside is that events can't be ended before another begins.
 
-                if transients_pipe.end_of_interval or transients_pipe.is_empty():
+                if transients_pipe.closed:
                     # Flush the pipe
                     end_index = len(timestamps) - 1
                 else:
@@ -114,7 +114,8 @@ class EventProcessor(FilterModule):
 
             new_event = Event(start_time=timestamps[0],
                               end_time=timestamps[-1],
-                              content=event_content
+                              content=event_content,
+                              event_stream_id=out_event_stream.id
                               )
 
             await self.write_to_output(out_event_stream, [new_event])
