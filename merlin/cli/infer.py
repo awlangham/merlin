@@ -17,10 +17,10 @@ def infer(node, event_stream) -> None:
 
     from tabulate import tabulate
     import numpy as np
-    from merlin.unsupervised.clustering import Clustering
+    from merlin.lib.inference.clustering import cluster_events, infer_loads
 
     table = []
-    clustering = Clustering(node, event_stream)
+    clustering = cluster_events(node, event_stream)[1]
     for cluster in clustering:
         table.append([cluster.id_ + 1,
                       len(cluster),
@@ -33,7 +33,7 @@ def infer(node, event_stream) -> None:
 
     load_dict = {}
     exemplar_list = []
-    for load in clustering.infer_loads():
+    for load in infer_loads(clustering):
         load_dict[load.name] = load.to_json()
 
     for cluster in clustering:

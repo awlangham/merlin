@@ -21,3 +21,9 @@ Utilities
 
 .. automodule:: merlin.lib.utilities
     :members:
+
+Inference
++++++++++
+
+.. automodule:: merlin.lib.inference.clustering
+    :members:
