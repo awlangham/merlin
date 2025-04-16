@@ -4,7 +4,7 @@ from importlib.resources import files
 from itertools import combinations, product
 
 import merlin
-from merlin.supervised.trainola import trainola
+from merlin.lib.inference.trainola import trainola
 
 config_filename = str(files(merlin) / 'config.json')
 

@@ -64,7 +64,7 @@ def initialize(node) -> None:
 
 
 def _supervised_setup(selected_folder, node_name) -> None:
-    from merlin.models import GenericLoad
+    from merlin.lib.models import GenericLoad
     from merlin.installation import config_filename
 
     click.echo('\n~~~ Load Configuration ~~~')

@@ -1,13 +1,14 @@
+import asyncio
 from fastapi import APIRouter, Request
-from merlin.unsupervised.mds import mds_data
+from merlin.lib.inference.mds import mds_data
 
 router = APIRouter()
 
 
 @router.post('/mds')
-async def mds(stream_name: str, request: Request) -> dict:
-    intervals = (await request.json())['intervals']
-    transformed_data = await mds_data(request.app.node, stream_name, intervals)
+def mds(stream_name: str, request: Request) -> dict:
+    intervals = asyncio.run(request.json())['intervals']
+    transformed_data = mds_data(request.app.node, stream_name, intervals)
 
     return {
         'data0': transformed_data[:, 0].tolist(),

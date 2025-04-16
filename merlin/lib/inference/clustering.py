@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from itertools import combinations
 
 from merlin.lib.events import read_events
-from merlin.models import Exemplar, Cluster, OnOffLoad
+from merlin.lib.models import Exemplar, Cluster, OnOffLoad
 
 
 def cluster_events(node_name: str, event_stream_name: str, start=None, end=None) -> tuple[list, list]:

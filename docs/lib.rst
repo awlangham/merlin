@@ -22,8 +22,20 @@ Utilities
 .. automodule:: merlin.lib.utilities
     :members:
 
-Inference
+Clustering
 +++++++++
 
 .. automodule:: merlin.lib.inference.clustering
+    :members:
+
+Multidimensional Scaling (MDS)
+++++++++++++++++++++++++++++++
+
+.. automodule:: merlin.lib.inference.mds
+    :members:
+
+Trainola
+++++++++
+
+.. automodule:: merlin.lib.inference.trainola
     :members:
