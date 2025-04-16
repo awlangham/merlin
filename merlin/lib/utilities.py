@@ -19,30 +19,19 @@ def get_joule_node(node_name):
         asyncio.run(node.close())
 
 
-def async_run(func):
-    """
-    Decorator to run a coroutine and block until done.
-    """
-
-    def wrapper(*args, **kwargs):
-        return asyncio.run(func(*args, **kwargs))
-    return wrapper
-
-
-@async_run
-async def create_event_stream(node_name, path) -> bool:
+def create_event_stream(node_name, path) -> bool:
     """
     Create new event stream at [path]/events and return True.
     If one already exists, do nothing and return False.
     """
 
-    async with get_joule_node(node_name) as node:
+    with get_joule_node(node_name) as node:
         try:
-            await node.event_stream_get(f'{path}/events')
+            asyncio.run(node.event_stream_get(f'{path}/events'))
             return False
         except ApiError:
             new_stream = EventStream(name='events')
-            await node.event_stream_create(new_stream, path)
+            asyncio.run(node.event_stream_create(new_stream, path))
             return True
 
 
@@ -69,16 +58,13 @@ def search_for_stream(node_name, stream_name) -> list:
         root = asyncio.run(node.folder_root())
         traverse_folder(root)
 
-    # await node.close()
-
     return stream_names
 
 
-@async_run
-async def clear_stream(node_name, stream_name) -> None:
+def clear_stream(node_name, stream_name) -> None:
     """
     Remove all events from the specified stream.
     """
 
-    async with get_joule_node(node_name) as node:
-        await node.event_stream_remove(stream_name + '/events')
+    with get_joule_node(node_name) as node:
+        asyncio.run(node.event_stream_remove(stream_name + '/events'))
