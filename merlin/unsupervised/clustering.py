@@ -3,7 +3,7 @@ from sklearn.cluster import HDBSCAN
 from sklearn.preprocessing import MinMaxScaler
 from itertools import combinations
 
-from merlin.lib.events import get_events
+from merlin.lib.events import read_events
 from merlin.models import Exemplar, Cluster, OnOffLoad
 
 
@@ -17,7 +17,7 @@ class Clustering:
     """
 
     def _get_events(self, node_name, event_stream_name, start = None, end = None):
-        return get_events(node_name, event_stream_name, start, end)
+        return read_events(node_name, event_stream_name, start, end)
 
     def __init__(self, node_name, event_stream_name, start = None, end = None) -> None:
         # TODO: handle case where there are no events

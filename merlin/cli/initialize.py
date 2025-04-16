@@ -15,7 +15,8 @@ def initialize(node) -> None:
     level, and to supply any initial load information.
     """
 
-    from merlin.lib.utilities import search_for_stream, create_event_stream
+    from merlin.lib.events import create_event_stream
+    from merlin.lib.utilities import search_for_stream
 
     click.echo('Select a transient source:')
 
