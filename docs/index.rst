@@ -23,5 +23,6 @@ a web-based visualization tool.
 
    levels
    cli
+   lib
    event_processor
    visualizer

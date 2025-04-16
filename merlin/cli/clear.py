@@ -1,7 +1,7 @@
 import click
 
 from merlin.cli.decorators import pass_node_name
-from merlin.utilities import clear_stream
+from merlin.lib.utilities import clear_stream
 
 
 @click.command(name='clear')

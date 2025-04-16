@@ -1,14 +1,14 @@
 from fastapi import APIRouter
 from fastapi import Request
 
-from merlin.utilities import read_interval
+from merlin.lib.transients import read_single_transient
 
 router = APIRouter()
 
 
 @router.get('/transient')
-async def transients(request: Request, stream_name: str, start_ts: int, end_ts: int) -> dict:
-    sarray = await read_interval(request.app.node, stream_name, start_ts, end_ts)
+def transients(request: Request, stream_name: str, start_ts: int, end_ts: int) -> dict:
+    sarray = read_single_transient(request.app.node, stream_name, start_ts, end_ts)
 
     timestamps, data = sarray[:, 0], sarray[:, 1:]
     timestamps -= timestamps[0]

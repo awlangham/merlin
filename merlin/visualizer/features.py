@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Request, Response
 import orjson
 from joule.utilities import timestamp_to_human as ts2h
-from merlin.utilities import get_events, read_interval
+from merlin.lib.events import get_events
+from merlin.lib.transients import read_single_transient
 
 router = APIRouter()
 
@@ -9,7 +10,7 @@ router = APIRouter()
 @router.get('/features')
 def features(request: Request, stream_name: str, start_ts: int = None, end_ts: int = None) -> Response:
     # Invalidate LRU cache of transients
-    read_interval.cache_clear()
+    read_single_transient.cache_clear()
 
     events = get_events(request.app.node, stream_name, start=start_ts, end=end_ts)
 

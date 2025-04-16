@@ -1,16 +1,17 @@
+import asyncio
 from fastapi import APIRouter, Request, Response
 import numpy as np
 from io import BytesIO
 
-from merlin.utilities import get_transients
+from merlin.lib.transients import read_multiple_transients
 
 router = APIRouter()
 
 
 @router.post('/download')
-async def download(stream_name: str, request: Request) -> Response:
-    intervals = (await request.json())['intervals']
-    transients = await get_transients(request.app.node, stream_name, intervals)
+def download(stream_name: str, request: Request) -> Response:
+    intervals = asyncio.run(request.json())['intervals']
+    transients = read_multiple_transients(request.app.node, stream_name, intervals)
     ids = range(len(transients))
 
     buffer = BytesIO()

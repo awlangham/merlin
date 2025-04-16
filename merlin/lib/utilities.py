@@ -1,13 +1,12 @@
 import joule
 from joule.api import EventStream
 from joule.errors import ApiError
-from contextlib import asynccontextmanager
+from contextlib import contextmanager
 import asyncio
-from async_lru import alru_cache
 
 
-@asynccontextmanager
-async def get_joule_node(node_name):
+@contextmanager
+def get_joule_node(node_name):
     """
     Context manager for a Joule node handle.
     Automatically handles closing network resources.
@@ -17,7 +16,7 @@ async def get_joule_node(node_name):
     try:
         yield node
     finally:
-        await node.close()
+        asyncio.run(node.close())
 
 
 def async_run(func):
@@ -47,18 +46,7 @@ async def create_event_stream(node_name, path) -> bool:
             return True
 
 
-@async_run
-async def get_events(node_name, stream_name, start = None, end = None) -> list:
-    """
-    Return a list of all events in the specified stream.
-    """
-
-    async with get_joule_node(node_name) as node:
-        return await node.event_stream_read(stream_name + '/events', start=start, end=end, limit=1000)
-
-
-@async_run
-async def search_for_stream(node_name, stream_name) -> list:
+def search_for_stream(node_name, stream_name) -> list:
     """
     Return list of Joule folder paths that include a stream named [stream_name].
     Checks both data streams and event streams.
@@ -77,11 +65,11 @@ async def search_for_stream(node_name, stream_name) -> list:
             traverse_folder(child)
             path.pop()
 
-    async with get_joule_node(node_name) as node:
-        root = await node.folder_root()
+    with get_joule_node(node_name) as node:
+        root = asyncio.run(node.folder_root())
         traverse_folder(root)
 
-    await node.close()
+    # await node.close()
 
     return stream_names
 
@@ -96,32 +84,7 @@ async def clear_stream(node_name, stream_name) -> None:
         await node.event_stream_remove(stream_name + '/events')
 
 
-@alru_cache(maxsize=8192)
-async def read_interval(node_name, stream_name, interval_start, interval_end):
-    """
-    Cache recently-viewed transients in the back-end program.
-    """
-
-    async with get_joule_node(node_name) as node:
-        sarray = await node.data_read_array(stream_name + '/transients', start=interval_start, end=interval_end, flatten=True)
-    return sarray
-
-
-async def get_transients(node_name, stream_name, intervals) -> list:
-    """
-    Return a list of the transients corresponding
-    to the specified intervals in the provided stream.
-    """
-
-    transients = []
-    for interval in intervals:
-        sarray = await read_interval(node_name, stream_name, interval[0], interval[1])
-        transients.append(sarray.T)
-
-    return transients
-
-
-async def label_data(node_name, stream_name, intervals, label_name) -> None:
+def label_data(node_name, stream_name, intervals, label_name) -> None:
     """
     Apply the specified label to the events in the
     provided stream that correspond to the specified
@@ -129,12 +92,12 @@ async def label_data(node_name, stream_name, intervals, label_name) -> None:
     """
 
     new_events = []
-    async with get_joule_node(node_name) as node:
+    with get_joule_node(node_name) as node:
         for interval in intervals:
-            old_events = await node.event_stream_read(stream_name + '/events', start=interval[0], end=interval[1])
+            old_events = asyncio.run(node.event_stream_read(stream_name + '/events', start=interval[0], end=interval[1]))
             new_event = old_events[0]
             new_event.content['label'] = label_name
             new_events.append(new_event)
             # await node.event_stream_remove(stream_name + '/events', start=interval[0], end=interval[1])
 
-        await node.event_stream_write(stream_name + '/events', new_events)
+        asyncio.run(node.event_stream_write(stream_name + '/events', new_events))

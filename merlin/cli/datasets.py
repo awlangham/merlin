@@ -10,7 +10,7 @@ def datasets(node) -> None:
     List all event datasets.
     """
 
-    from merlin.utilities import search_for_stream
+    from merlin.lib.utilities import search_for_stream
 
     for dataset in search_for_stream(node, 'events'):
         click.echo(dataset)

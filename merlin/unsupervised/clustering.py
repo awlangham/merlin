@@ -3,7 +3,7 @@ from sklearn.cluster import HDBSCAN
 from sklearn.preprocessing import MinMaxScaler
 from itertools import combinations
 
-from merlin.utilities import get_events
+from merlin.lib.events import get_events
 from merlin.models import Exemplar, Cluster, OnOffLoad
 
 

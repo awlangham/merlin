@@ -2,7 +2,7 @@ from itertools import combinations
 import numpy as np
 from sklearn.manifold import MDS
 
-from merlin.utilities import get_transients
+from merlin.lib.transients import read_multiple_transients
 from merlin.supervised.trainola import trainola
 
 
@@ -13,7 +13,7 @@ async def mds_data(node_name, stream_name, intervals):
     as the distance metric.
     """
 
-    mds_events = await get_transients(node_name, stream_name, intervals)
+    mds_events = await read_multiple_transients(node_name, stream_name, intervals)
 
     num_events = len(mds_events)
     trainola_distances = np.zeros((num_events, num_events))
