@@ -12,14 +12,15 @@ def cluster_events(node_name: str, event_stream_name: str, start=None, end=None)
     Cluster the events in time interval [start, end]. Returns a tuple of (cluster assignments, cluster objects).
     """
 
-    # TODO: handle case where there are no events
-
     feature_names = ['P_ss', 'Q_ss', 'P_pk', 'Q_pk']
 
     features, intervals = [], []
     for event in read_events(node_name, event_stream_name, start, end):
         features.append([event.content[name] for name in feature_names])
         intervals.append((event.start_time, event.end_time))
+
+    if len(features) == 0:
+        return np.array([]), []
 
     features = np.array(features)
 
