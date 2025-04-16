@@ -82,22 +82,3 @@ async def clear_stream(node_name, stream_name) -> None:
 
     async with get_joule_node(node_name) as node:
         await node.event_stream_remove(stream_name + '/events')
-
-
-def label_data(node_name, stream_name, intervals, label_name) -> None:
-    """
-    Apply the specified label to the events in the
-    provided stream that correspond to the specified
-    time intervals.
-    """
-
-    new_events = []
-    with get_joule_node(node_name) as node:
-        for interval in intervals:
-            old_events = asyncio.run(node.event_stream_read(stream_name + '/events', start=interval[0], end=interval[1]))
-            new_event = old_events[0]
-            new_event.content['label'] = label_name
-            new_events.append(new_event)
-            # await node.event_stream_remove(stream_name + '/events', start=interval[0], end=interval[1])
-
-        asyncio.run(node.event_stream_write(stream_name + '/events', new_events))

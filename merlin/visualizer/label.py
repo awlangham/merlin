@@ -1,6 +1,6 @@
 import asyncio
 from fastapi import APIRouter, Request
-from merlin.lib.utilities import label_data
+from merlin.lib.events import label_events
 
 
 router = APIRouter()
@@ -12,4 +12,4 @@ def label(stream_name: str, request: Request) -> None:
     intervals = request_json['intervals']
     label_name = request_json['label']
 
-    label_data(request.app.node, stream_name, intervals, label_name)
+    label_events(request.app.node, stream_name, intervals, label_name)
