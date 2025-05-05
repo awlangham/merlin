@@ -1,14 +1,18 @@
 import click
 import json
+from joule.utilities import human_to_timestamp as h2ts
 
 from merlin.installation import config_filename
 from merlin.cli.decorators import pass_node_name
+from merlin.inference import level_zero
 
 
-@click.command(name='infer')
+@click.command(name='infer-zero')
 @click.argument('event_stream')
+@click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
+@click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
 @pass_node_name
-def infer(node, event_stream) -> None:
+def infer_zero(node, event_stream, start, end) -> None:
     """
     Infer loads and exemplars from EVENT_STREAM.
 
@@ -16,36 +20,32 @@ def infer(node, event_stream) -> None:
     """
 
     from tabulate import tabulate
-    import numpy as np
-    from merlin.unsupervised.clustering import Clustering
+
+    inferred_exemplars, inferred_loads = level_zero(node, event_stream, h2ts(start), h2ts(end))
 
     table = []
-    clustering = Clustering(node, event_stream)
-    for cluster in clustering:
-        table.append([cluster.id_ + 1,
-                      len(cluster),
-                      *[np.round(m, 1) for m in cluster.exemplar.features_]]
-                     )
+    for load in inferred_loads:
+        table.append([load.name, load.family, *load.states['ON']])
 
-    headers = ['Index', 'Size', 'P_ss', 'Q_ss', 'P_pk', 'Q_pk']
-
+    headers = ['Load name', 'Family', 'P_ss (W)', 'Q_ss (Var)']
     click.echo(tabulate(table, headers=headers))
 
-    load_dict = {}
-    exemplar_list = []
-    for load in clustering.infer_loads():
-        load_dict[load.name] = load.to_json()
+    if click.confirm('Save configuration?'):
+        load_dict = {}
+        exemplar_list = []
+        for load in inferred_loads:
+            load_dict[load.name] = load.to_json()
 
-    for cluster in clustering:
-        exemplar_list.append(cluster.to_json())
+        for exemplar in inferred_exemplars:
+            exemplar_list.append(exemplar.to_json())
 
-    config = {}
-    config['node'] = node
-    config['stream_name'] = event_stream
-    config['exemplars'] = exemplar_list
-    config['loads'] = load_dict
+        config = {}
+        config['node'] = node
+        config['stream_name'] = event_stream
+        config['exemplars'] = exemplar_list
+        config['loads'] = load_dict
 
-    with open(config_filename, 'w') as f:
-        json.dump(config, f, indent=4)
+        with open(config_filename, 'w') as f:
+            json.dump(config, f, indent=4)
 
-    click.echo(f'Saved to {config_filename}')
+        click.echo(f'Saved to {config_filename}')
