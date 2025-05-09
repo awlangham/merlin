@@ -103,7 +103,8 @@ async def read_interval(node_name, stream_name, interval_start, interval_end):
     """
 
     async with get_joule_node(node_name) as node:
-        sarray = await node.data_read_array(stream_name + '/transients', start=interval_start, end=interval_end, flatten=True)
+        pipe = await node.data_read(stream_name + '/transients', start=interval_start, end=interval_end)
+        sarray = await pipe.read_all(flatten=True)
     return sarray
 
 
