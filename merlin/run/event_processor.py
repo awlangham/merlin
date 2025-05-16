@@ -69,7 +69,10 @@ class EventProcessor(FilterModule):
                 end_index = np.argmax(timestamps_diff >= self.gap_time)
 
             timestamps = timestamps[:end_index + 1]
-            P, Q = sarray_in['data'][:end_index + 1, 0], sarray_in['data'][:end_index + 1, 1]
+            truncated_data = sarray_in['data'][:end_index + 1]
+            # P, Q = sarray_in['data'][:end_index + 1, 0], sarray_in['data'][:end_index + 1, 1]
+            P = truncated_data[:, 0] + truncated_data[:, 8] + truncated_data[:, 16]
+            Q = truncated_data[:, 1] + truncated_data[:, 9] + truncated_data[:, 17]
 
             P_ss = self._extract_ss(P)
             Q_ss = self._extract_ss(Q)

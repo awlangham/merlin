@@ -13,8 +13,8 @@ async def transients(request: Request, stream_name: str, start_ts: int, end_ts: 
     timestamps, data = sarray[:, 0], sarray[:, 1:]
     timestamps -= timestamps[0]
     timestamps = timestamps / 1e6
-    P = data[:, 0]
-    Q = data[:, 1]
+    P = data[:, 0] + data[:, 8] + data[:, 16]
+    Q = data[:, 1] + data[:, 9] + data[:, 17]
 
     return {
         'timestamps': timestamps.tolist(),

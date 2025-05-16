@@ -37,21 +37,19 @@ class EdgeDetector(FilterModule):
             interval_list = self.process_window(sarray_in)
 
             for (interval_start, interval_end) in interval_list:
-                prep_interval = sarray_in['data'][interval_start + self.settling_window_length // 2:interval_end + self.settling_window_length // 2]
-                P = prep_interval[:, 0] + prep_interval[:, 8] + prep_interval[:, 16]
-                Q = prep_interval[:, 1] + prep_interval[:, 9] + prep_interval[:, 17]
                 timestamps = sarray_in['timestamp'][interval_start + self.settling_window_length // 2:interval_end + self.settling_window_length // 2]
+                prep_interval = sarray_in['data'][interval_start + self.settling_window_length // 2:interval_end + self.settling_window_length // 2]
 
                 # If this interval overlaps with a previous interval, just trim it
                 valid_indices = np.where(timestamps > last_timestamp)
-                timestamps, P, Q = timestamps[valid_indices], P[valid_indices], Q[valid_indices]
+                timestamps, prep_interval = timestamps[valid_indices], prep_interval[valid_indices]
 
                 if len(timestamps) == 0:
                     # Something went wrong, just skip this interval
                     continue
 
                 last_timestamp = timestamps[-1]
-                await transients_pipe.write(np.column_stack((timestamps, P, Q)))
+                await transients_pipe.write(np.column_stack((timestamps, prep_interval)))
 
             # Leave invalid rows for the next read
             prep_pipe.consume(num_rows - 2 * self.settling_window_length + 1)
