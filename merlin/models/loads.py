@@ -21,5 +21,5 @@ class OnOffLoad(GenericLoad):
     """
 
     def __init__(self, name, on_ss, family=None) -> None:
-        states = {'OFF': [0, 0], 'ON': on_ss.tolist()}
+        states = {'OFF': [0, 0, 0, 0, 0, 0], 'ON': on_ss.tolist()}
         super().__init__(name, states, family)

@@ -8,7 +8,13 @@ from merlin.models import Exemplar, Cluster, OnOffLoad
 
 
 def level_zero(node_name, dataset, start, end):
-    feature_names = ['P_ss', 'Q_ss', 'P_pk', 'Q_pk']
+    feature_names = ['PA_ss', 'QA_ss',
+                     'PB_ss', 'QB_ss',
+                     'PC_ss', 'QC_ss',
+                     'PA_pk', 'QA_pk',
+                     'PB_pk', 'QB_pk',
+                     'PC_pk', 'QC_pk'
+                     ]
 
     features, intervals = [], []
     for event in get_events(node_name, dataset, start, end):
@@ -60,20 +66,21 @@ def level_zero(node_name, dataset, start, end):
         new_load_name = f'Load {len(loads)}'
 
         # Figure out which exemplar is ON and which is OFF
+        # TO DO: Change to sum of features rather than just first
         on_exemplar, off_exemplar = (best_cluster1.exemplar, best_cluster2.exemplar) if best_cluster1.exemplar.features_[
             0] > best_cluster2.exemplar.features_[0] else (best_cluster2.exemplar, best_cluster1.exemplar)
         on_exemplar.transitions = [[new_load_name, 'OFF', 'ON']]
         off_exemplar.transitions = [[new_load_name, 'ON', 'OFF']]
 
-        if on_exemplar.features_[1] < 500:
+        if (on_exemplar.features_[1] + on_exemplar.features_[3] + on_exemplar.features_[5]) < 500:
             family = 'Resistive'
-        elif on_exemplar.features_[2] > 2 * on_exemplar.features_[0]:
+        elif (on_exemplar.features_[6] + on_exemplar.features_[8] + on_exemplar.features_[10]) > 2 * (on_exemplar.features_[0] + on_exemplar.features_[2] + on_exemplar.features_[4]):
             # TODO: Refactor this into some sort of classifier that's well documented
             family = 'Motor'
         else:
             family = None
 
-        new_load = OnOffLoad(new_load_name, on_exemplar.features_[:2], family)
+        new_load = OnOffLoad(new_load_name, on_exemplar.features_[:6], family)
         loads.append(new_load)
 
         return True

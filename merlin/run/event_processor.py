@@ -74,27 +74,52 @@ class EventProcessor(FilterModule):
             P = truncated_data[:, 0] + truncated_data[:, 8] + truncated_data[:, 16]
             Q = truncated_data[:, 1] + truncated_data[:, 9] + truncated_data[:, 17]
 
-            P_ss = self._extract_ss(P)
-            Q_ss = self._extract_ss(Q)
+            PA_ss = self._extract_ss(truncated_data[:, 0])
+            QA_ss = self._extract_ss(truncated_data[:, 1])
+            
+            PB_ss = self._extract_ss(truncated_data[:, 8])
+            QB_ss = self._extract_ss(truncated_data[:, 9])
 
-            P_pk = self._extract_pk(P)
-            Q_pk = self._extract_pk(Q)
+            PC_ss = self._extract_ss(truncated_data[:, 16])
+            QC_ss = self._extract_ss(truncated_data[:, 17])
+
+            PA_pk = self._extract_pk(truncated_data[:, 0])
+            QA_pk = self._extract_pk(truncated_data[:, 1])
+            
+            PB_pk = self._extract_pk(truncated_data[:, 8])
+            QB_pk = self._extract_pk(truncated_data[:, 9])
+
+            PC_pk = self._extract_pk(truncated_data[:, 16])
+            QC_pk = self._extract_pk(truncated_data[:, 17])
 
             event_content = {
-                'P_ss': float(P_ss),
-                'Q_ss': float(Q_ss),
-                'P_pk': float(P_pk),
-                'Q_pk': float(Q_pk)
+                'PA_ss': float(PA_ss),
+                'QA_ss': float(QA_ss),
+
+                'PB_ss': float(PB_ss),
+                'QB_ss': float(QB_ss),
+                
+                'PC_ss': float(PC_ss),
+                'QC_ss': float(QC_ss),
+                
+                'PA_pk': float(PA_pk),
+                'QA_pk': float(QA_pk),
+                
+                'PB_pk': float(PB_pk),
+                'QB_pk': float(QB_pk),
+                
+                'PC_pk': float(PC_pk),
+                'QC_pk': float(QC_pk),
             }
 
             if parsed_args.method == 'unsupervised':
-                event_content['type'] = 'OFF to ON' if P_ss > 0 else 'ON to OFF'
+                event_content['type'] = 'OFF to ON' if (PA_ss + PB_ss + PC_ss) > 0 else 'ON to OFF'
             else:
                 # Find closest matching exemplar
                 matching_exemplar, match_score = await current_installation.find_matching_exemplar(P, Q)
 
                 if matching_exemplar is None:
-                    comb_match = await current_installation.combinatorial_match(P_ss, Q_ss)
+                    comb_match = await current_installation.combinatorial_match(PA_ss + PB_ss + PC_ss, QA_ss + QB_ss + QC_ss)
                     if comb_match is not None:
                         event_content['label'] = comb_match[0]
                         event_content['type'] = comb_match[1]

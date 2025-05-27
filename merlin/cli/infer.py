@@ -27,7 +27,7 @@ def infer_zero(node, event_stream, start, end) -> None:
     for load in inferred_loads:
         table.append([load.name, load.family, *load.states['ON']])
 
-    headers = ['Load name', 'Family', 'P_ss (W)', 'Q_ss (Var)']
+    headers = ['Load name', 'Family', 'PA_ss (W)', 'QA_ss (Var)', 'PB_ss (W)', 'QB_ss (Var)', 'PC_ss (W)', 'QC_ss (Var)']
     click.echo(tabulate(table, headers=headers))
 
     if click.confirm('Save configuration?'):
