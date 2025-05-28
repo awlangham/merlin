@@ -26,4 +26,4 @@ def run(node) -> None:
     app.node = node
     static_path = files(merlin).joinpath('static')
     app.mount('/', StaticFiles(directory=static_path, html=True), name='static')
-    uvicorn.run('merlin.visualizer.main:app', host='', port=8050)
+    uvicorn.run('merlin.visualizer.main:app', port=8050)
