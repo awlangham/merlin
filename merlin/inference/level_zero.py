@@ -63,7 +63,7 @@ def level_zero(node_name, dataset, start, end):
         cluster_list.remove(best_cluster1)
         cluster_list.remove(best_cluster2)
 
-        new_load_name = f'Load {len(loads)}'
+        new_load_name = f'Load {len(loads) + 1}'
 
         # Figure out which exemplar is ON and which is OFF
         # TO DO: Change to sum of features rather than just first
