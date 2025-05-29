@@ -110,6 +110,11 @@ class EventProcessor(FilterModule):
                 
                 'PC_pk': float(PC_pk),
                 'QC_pk': float(QC_pk),
+
+                'P_ss': float(PA_ss + PB_ss + PC_ss),
+                'Q_ss': float(QA_ss + QB_ss + QC_ss),
+                'P_pk': float(PA_pk + PB_pk + PC_pk),
+                'Q_pk': float(QA_pk + QB_pk + QC_pk)
             }
 
             if parsed_args.method == 'unsupervised':
