@@ -1,19 +1,14 @@
 <script>
     import { config, layout } from "./plot-settings";
     import { eventStore, eventIndexStore, datasetStore } from "../stores";
+    import { getBaseline } from "../../utilities";
 
     import Plot from "../Plot.svelte";
 
-    let timestamps,
-        transient_P,
-        transient_Q,
-        transientData = [{ name: "Real" }, { name: "Reactive" }];
+    let transientData = [];
 
     export const clearTransientPlot = () => {
-        timestamps = undefined;
-        transient_P = undefined;
-        transient_Q = undefined;
-        transientData = [{ name: "Real" }, { name: "Reactive" }];
+        transientData = [];
     };
 
     $: if ($eventIndexStore != -1) {
@@ -30,39 +25,29 @@
         )
             .then((response) => response.json())
             .then((j) => {
-                timestamps = j.timestamps;
-                transient_P = j.P;
-                transient_Q = j.Q;
+                transientData = [
+                    { name: "A Real", line: { color: "#0072B2" } },
+                    { name: "A Reactive", line: { color: "#E69F00" } },
+                    { name: "B Real", line: { color: "#56B4E9" } },
+                    { name: "B Reactive", line: { color: "#F0E442" } },
+                    { name: "C Real", line: { color: "#92C5DE" } },
+                    { name: "C Reactive", line: { color: "#D55E00" } },
+                ];
+
+                for (const index of Array(6).keys()) {
+                    transientData[index].x = j.timestamps;
+                }
+
+                transientData[0].y = j.PA.map((p) => p - getBaseline(j.PA));
+                transientData[2].y = j.PB.map((p) => p - getBaseline(j.PB));
+                transientData[4].y = j.PC.map((p) => p - getBaseline(j.PC));
+
+                transientData[1].y = j.QA.map((q) => q - getBaseline(j.QA));
+                transientData[3].y = j.QB.map((q) => q - getBaseline(j.QB));
+                transientData[5].y = j.QC.map((q) => q - getBaseline(j.QC));
             });
     } else {
         clearTransientPlot();
-    }
-
-    const getBaseline = (dataArray) => {
-        const baselineLength = 5;
-
-        if (dataArray.length <= baselineLength) {
-            return 0;
-        }
-
-        const startAvg =
-            dataArray.slice(0, baselineLength).reduce((a, b) => a + b) /
-            baselineLength;
-        const endAvg =
-            dataArray.slice(-baselineLength).reduce((a, b) => a + b) /
-            baselineLength;
-        return startAvg < endAvg ? startAvg : endAvg;
-    };
-
-    $: if (timestamps && transient_P && transient_Q) {
-        transientData[0].x = timestamps;
-        transientData[1].x = timestamps;
-
-        const pBaseline = getBaseline(transient_P);
-        transientData[0].y = transient_P.map((x) => x - pBaseline);
-
-        const qBaseline = getBaseline(transient_Q);
-        transientData[1].y = transient_Q.map((x) => x - qBaseline);
     }
 
     const copyTimestamps = () => {

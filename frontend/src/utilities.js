@@ -16,15 +16,43 @@ export const colors = [
 ];
 
 export const powerFeatures = [
-    "Steady-State P",
-    "Steady-State Q",
-    "Peak P",
-    "Peak Q",
+    "Total Steady-State P",
+    "Total Steady-State Q",
+    "A Steady-State P",
+    "A Steady-State Q",
+    "B Steady-State P",
+    "B Steady-State Q",
+    "C Steady-State P",
+    "C Steady-State Q",
+    "Total Peak P",
+    "Total Peak Q",
 ];
 
 export const labels = {
-    "Steady-State P": "Steady-State Active Power (W)",
-    "Steady-State Q": "Steady-State Reactive Power (Var)",
-    "Peak P": "Peak Active Power (W)",
-    "Peak Q": "Peak Reactive Power (Var)",
+    "Total Steady-State P": "Total Steady-State Active Power (W)",
+    "Total Steady-State Q": "Total Steady-State Reactive Power (Var)",
+    "A Steady-State P": "A Steady-State Active Power (W)",
+    "A Steady-State Q": "A Steady-State Reactive Power (Var)",
+    "B Steady-State P": "B Steady-State Active Power (W)",
+    "B Steady-State Q": "B Steady-State Reactive Power (Var)",
+    "C Steady-State P": "C Steady-State Active Power (W)",
+    "C Steady-State Q": "C Steady-State Reactive Power (Var)",
+    "Total Peak P": "Total Peak Active Power (W)",
+    "Total Peak Q": "Total Peak Reactive Power (Var)",
+};
+
+export const getBaseline = (dataArray) => {
+    const baselineLength = 5;
+
+    if (dataArray.length <= baselineLength) {
+        return 0;
+    }
+
+    const startAvg =
+        dataArray.slice(0, baselineLength).reduce((a, b) => a + b) /
+        baselineLength;
+    const endAvg =
+        dataArray.slice(-baselineLength).reduce((a, b) => a + b) /
+        baselineLength;
+    return startAvg < endAvg ? startAvg : endAvg;
 };
