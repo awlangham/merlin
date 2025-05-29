@@ -41,18 +41,20 @@ export const labels = {
     "Total Peak Q": "Total Peak Reactive Power (Var)",
 };
 
-export const getBaseline = (dataArray) => {
-    const baselineLength = 5;
+const baselineLength = 5;
 
+export const getStartBaseline = (dataArray) => {
     if (dataArray.length <= baselineLength) {
         return 0;
     }
 
-    const startAvg =
-        dataArray.slice(0, baselineLength).reduce((a, b) => a + b) /
-        baselineLength;
-    const endAvg =
-        dataArray.slice(-baselineLength).reduce((a, b) => a + b) /
-        baselineLength;
-    return startAvg < endAvg ? startAvg : endAvg;
+    return dataArray.slice(0, baselineLength).reduce((a, b) => a + b) / baselineLength;
+};
+
+export const getEndBaseline = (dataArray) => {
+    if (dataArray.length <= baselineLength) {
+        return 0;
+    }
+
+    return dataArray.slice(-baselineLength).reduce((a, b) => a + b) / baselineLength;
 };

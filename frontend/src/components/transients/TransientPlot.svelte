@@ -1,7 +1,7 @@
 <script>
     import { config, layout } from "./plot-settings";
     import { eventStore, eventIndexStore, datasetStore } from "../stores";
-    import { getBaseline } from "../../utilities";
+    import { getStartBaseline, getEndBaseline } from "../../utilities";
 
     import Plot from "../Plot.svelte";
 
@@ -38,13 +38,23 @@
                     transientData[index].x = j.timestamps;
                 }
 
-                transientData[0].y = j.PA.map((p) => p - getBaseline(j.PA));
-                transientData[2].y = j.PB.map((p) => p - getBaseline(j.PB));
-                transientData[4].y = j.PC.map((p) => p - getBaseline(j.PC));
+                if (selectedEvent.type === "ON to OFF") {
+                    transientData[0].y = j.PA.map((p) => p - getEndBaseline(j.PA));
+                    transientData[2].y = j.PB.map((p) => p - getEndBaseline(j.PB));
+                    transientData[4].y = j.PC.map((p) => p - getEndBaseline(j.PC));
 
-                transientData[1].y = j.QA.map((q) => q - getBaseline(j.QA));
-                transientData[3].y = j.QB.map((q) => q - getBaseline(j.QB));
-                transientData[5].y = j.QC.map((q) => q - getBaseline(j.QC));
+                    transientData[1].y = j.QA.map((q) => q - getEndBaseline(j.QA));
+                    transientData[3].y = j.QB.map((q) => q - getEndBaseline(j.QB));
+                    transientData[5].y = j.QC.map((q) => q - getEndBaseline(j.QC));
+                } else {
+                    transientData[0].y = j.PA.map((p) => p - getStartBaseline(j.PA));
+                    transientData[2].y = j.PB.map((p) => p - getStartBaseline(j.PB));
+                    transientData[4].y = j.PC.map((p) => p - getStartBaseline(j.PC));
+
+                    transientData[1].y = j.QA.map((q) => q - getStartBaseline(j.QA));
+                    transientData[3].y = j.QB.map((q) => q - getStartBaseline(j.QB));
+                    transientData[5].y = j.QC.map((q) => q - getStartBaseline(j.QC));
+                }
             });
     } else {
         clearTransientPlot();
