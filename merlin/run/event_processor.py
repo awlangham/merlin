@@ -121,7 +121,7 @@ class EventProcessor(FilterModule):
                 event_content['type'] = 'OFF to ON' if (PA_ss + PB_ss + PC_ss) > 0 else 'ON to OFF'
             else:
                 # Find closest matching exemplar
-                matching_exemplar, match_score = await current_installation.find_matching_exemplar(P, Q)
+                matching_exemplar, match_score = await current_installation.find_matching_exemplar(truncated_data)
 
                 if matching_exemplar is None:
                     comb_match = await current_installation.combinatorial_match(PA_ss + PB_ss + PC_ss, QA_ss + QB_ss + QC_ss)
