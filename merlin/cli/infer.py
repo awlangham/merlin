@@ -4,7 +4,7 @@ from joule.utilities import human_to_timestamp as h2ts
 
 from merlin.installation import config_filename
 from merlin.cli.decorators import pass_node_name
-from merlin.inference import level_zero
+from merlin.inference import level_zero, level_one
 
 
 @click.command(name='infer-zero')
@@ -49,3 +49,12 @@ def infer_zero(node, event_stream, start, end) -> None:
             json.dump(config, f, indent=4)
 
         click.echo(f'Saved to {config_filename}')
+
+
+@click.command(name='infer-one')
+@click.argument('event_stream')
+@click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
+@click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
+@pass_node_name
+def infer_one(node, event_stream, start, end) -> None:
+    level_one(node, event_stream, h2ts(start), h2ts(end))
