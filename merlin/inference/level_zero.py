@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import HDBSCAN
 
 from merlin.utilities import get_events
-from merlin.models import Exemplar, Cluster, OnOffLoad
+from merlin.models import Exemplar, OnOffLoad
 
 
 def level_zero(node_name, dataset, start, end):
@@ -26,25 +26,23 @@ def level_zero(node_name, dataset, start, end):
     scaler = MinMaxScaler()
     scaled_features = scaler.fit_transform(features)
 
-    hdbscan = HDBSCAN(min_cluster_size=25, store_centers='medoid').fit(scaled_features)
+    hdbscan = HDBSCAN(min_cluster_size=25, store_centers='medoid', cluster_selection_epsilon=0.1).fit(scaled_features)
 
     cluster_assignments = hdbscan.labels_
-    medoids_values = scaler.inverse_transform(hdbscan.medoids_)
 
     distinct_ids = list(set(cluster_assignments))
-    clusters = []
+    exemplar_event_indices = []
     for cluster_id in distinct_ids:
         if cluster_id < 0:
+            # Skip anything unlabeled
             continue
 
+        # Find index of representative event for this cluster
         medoid_index = np.where(np.all(scaled_features == hdbscan.medoids_[cluster_id], axis=1))[0][0]
-
-        cluster_indices = np.where(cluster_assignments == cluster_id)[0]
-        cluster_exemplar = Exemplar(medoids_values[cluster_id], intervals[medoid_index])
-        clusters.append(Cluster(cluster_id, cluster_indices, cluster_exemplar))
+        exemplar_event_indices.append(medoid_index)
 
     # Load inference
-    loads = []
+    exemplars, loads = [], []
 
     def _best_matching_pair(cluster_list):
         if len(cluster_list) < 2:
@@ -53,7 +51,8 @@ def level_zero(node_name, dataset, start, end):
         best_mean_sq_error = np.inf
         best_cluster1, best_cluster2 = None, None
         for cluster1, cluster2 in combinations(cluster_list, 2):
-            mean_sq_error = np.linalg.norm(cluster1.exemplar.steady_state_diff + cluster2.exemplar.steady_state_diff)
+            ss_1, ss_2 = features[cluster1, :6], features[cluster2, :6]
+            mean_sq_error = np.linalg.norm(ss_1 + ss_2)
 
             if mean_sq_error < best_mean_sq_error:
                 best_mean_sq_error = mean_sq_error
@@ -66,28 +65,49 @@ def level_zero(node_name, dataset, start, end):
         new_load_name = f'Load {len(loads) + 1}'
 
         # Figure out which exemplar is ON and which is OFF
-        # TO DO: Change to sum of features rather than just first
-        on_exemplar, off_exemplar = (best_cluster1.exemplar, best_cluster2.exemplar) if best_cluster1.exemplar.features_[
-            0] > best_cluster2.exemplar.features_[0] else (best_cluster2.exemplar, best_cluster1.exemplar)
-        on_exemplar.transitions = [[new_load_name, 'OFF', 'ON']]
-        off_exemplar.transitions = [[new_load_name, 'ON', 'OFF']]
+        if np.sum(features[best_cluster1, (0, 2, 4)]) > np.sum(features[best_cluster2, (0, 2, 4)]):
+            # best_cluster1 is ON, best_cluster2 is OFF
+            on_exemplar = Exemplar()
+            on_exemplar.start_ts = intervals[best_cluster1][0]
+            on_exemplar.end_ts = intervals[best_cluster1][1]
 
-        if (on_exemplar.features_[1] + on_exemplar.features_[3] + on_exemplar.features_[5]) < 500:
+            off_exemplar = Exemplar()
+            off_exemplar.start_ts = intervals[best_cluster2][0]
+            off_exemplar.end_ts = intervals[best_cluster2][1]
+
+            on_ss = features[best_cluster1, :6]
+            on_pk = features[best_cluster1, 6:]
+        else:
+            # best_cluster2 is ON, best_cluster1 is OFF
+            on_exemplar = Exemplar()
+            on_exemplar.start_ts = intervals[best_cluster2][0]
+            on_exemplar.end_ts = intervals[best_cluster2][1]
+
+            off_exemplar = Exemplar()
+            off_exemplar.start_ts = intervals[best_cluster1][0]
+            off_exemplar.end_ts = intervals[best_cluster1][1]
+
+            on_ss = features[best_cluster2, :6]
+            on_pk = features[best_cluster2, 6:]
+
+        if (on_ss[1] + on_ss[3] + on_ss[5]) < 500:
             family = 'Resistive'
-        elif (on_exemplar.features_[6] + on_exemplar.features_[8] + on_exemplar.features_[10]) > 2 * (on_exemplar.features_[0] + on_exemplar.features_[2] + on_exemplar.features_[4]):
+        elif (on_pk[0] + on_pk[2] + on_pk[4]) > 2 * (on_ss[0] + on_ss[2] + on_ss[4]):
             # TODO: Refactor this into some sort of classifier that's well documented
             family = 'Motor'
         else:
             family = None
 
-        new_load = OnOffLoad(new_load_name, on_exemplar.features_[:6], family)
+        new_load = OnOffLoad(new_load_name, on_ss, family)
         loads.append(new_load)
+
+        exemplars.append(on_exemplar)
+        exemplars.append(off_exemplar)
 
         return True
 
-    cluster_list_copy = clusters.copy()
-    found_pair = _best_matching_pair(cluster_list_copy)
+    found_pair = _best_matching_pair(exemplar_event_indices)
     while found_pair:
-        found_pair = _best_matching_pair(cluster_list_copy)
+        found_pair = _best_matching_pair(exemplar_event_indices)
 
-    return clusters, loads
+    return exemplars, loads

@@ -57,4 +57,15 @@ def infer_zero(node, event_stream, start, end) -> None:
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
 @pass_node_name
 def infer_one(node, event_stream, start, end) -> None:
-    level_one(node, event_stream, h2ts(start), h2ts(end))
+    inferred_exemplars = level_one(node, event_stream, h2ts(start), h2ts(end))
+    print(inferred_exemplars)
+
+    with open(config_filename, 'r') as f:
+        config_json = json.load(f)
+
+    config_json['exemplars'] = [inferred_exemplar.to_json() for inferred_exemplar in inferred_exemplars]
+    
+    with open(config_filename, 'w') as f:
+        json.dump(config_json, f, indent=4)
+
+    click.echo(f'Saved to {config_filename}')

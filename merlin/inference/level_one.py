@@ -4,23 +4,26 @@ import numpy as np
 
 from merlin.installation import config_filename
 from merlin.utilities import get_events
+from merlin.models import Exemplar
+
 
 def level_one(node_name, dataset, start, end):
     """
     Given a configuration file with loads filled in,
     identify exemplars that correspond with state changes.
     """
-    
+
     with open(config_filename, 'r') as f:
         config_json = json.load(f)
 
     config_json['exemplars'] = []
-    
+
     events = get_events(node_name, dataset, start, end)
-    
+
+    exemplars = []
     for load in config_json['loads'].keys():
         states = config_json['loads'][load]['states']
-        
+
         for state1, state2 in permutations(states.keys(), 2):
             print(f'Searching for {load}::{state1}->{state2}')
 
@@ -43,7 +46,12 @@ def level_one(node_name, dataset, start, end):
                 if sse < best_sse:
                     best_sse = sse
                     best_event_match = event
-            
-            print(best_event_match.content['type'], best_event_match.content['label'])
 
-        print('---')
+            # Create exemplar for best match
+            new_exemplar = Exemplar()
+            new_exemplar.start_ts = best_event_match.start_time
+            new_exemplar.end_ts = best_event_match.end_time
+            new_exemplar.transitions.append([load, state1, state2])
+            exemplars.append(new_exemplar)
+
+    return exemplars

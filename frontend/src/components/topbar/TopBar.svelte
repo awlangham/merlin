@@ -22,14 +22,14 @@
     >
         Refresh
     </button>
-    <button
+    <!-- <button
         disabled={$datasetStore == ""}
         type="button"
         class="btn btn-secondary btn-sm"
         on:click={getClusters}
     >
         Cluster
-    </button>
+    </button> -->
 
     <DateRange />
 </div>
