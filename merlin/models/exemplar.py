@@ -3,7 +3,7 @@ class Exemplar:
     Exemplar class for the transient signature of a load state change.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.start_ts = None
         self.end_ts = None
         self.transitions = []
