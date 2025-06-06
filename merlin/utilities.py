@@ -7,7 +7,7 @@ from async_lru import alru_cache
 
 
 @asynccontextmanager
-async def get_joule_node(node_name):
+async def get_joule_node(node_name: str):
     """
     Context manager for a Joule node handle.
     Automatically handles closing network resources.
@@ -31,7 +31,7 @@ def async_run(func):
 
 
 @async_run
-async def create_event_stream(node_name, path) -> bool:
+async def create_event_stream(node_name: str, path: str) -> bool:
     """
     Create new event stream at [path]/events and return True.
     If one already exists, do nothing and return False.
@@ -48,17 +48,17 @@ async def create_event_stream(node_name, path) -> bool:
 
 
 @async_run
-async def get_events(node_name, stream_name, start = None, end = None) -> list:
+async def get_events(node_name: str, stream_name: str, start: int = None, end: int = None) -> list:
     """
     Return a list of all events in the specified stream.
     """
 
     async with get_joule_node(node_name) as node:
-        return await node.event_stream_read(stream_name + '/events', start=start, end=end, limit=1000)
+        return await node.event_stream_read_list(stream_name + '/events', start=start, end=end, limit=1000)
 
 
 @async_run
-async def search_for_stream(node_name, stream_name) -> list:
+async def search_for_stream(node_name: str, stream_name: str) -> list:
     """
     Return list of Joule folder paths that include a stream named [stream_name].
     Checks both data streams and event streams.
@@ -87,7 +87,7 @@ async def search_for_stream(node_name, stream_name) -> list:
 
 
 @async_run
-async def clear_stream(node_name, stream_name) -> None:
+async def clear_stream(node_name: str, stream_name: str) -> None:
     """
     Remove all events from the specified stream.
     """
@@ -97,7 +97,7 @@ async def clear_stream(node_name, stream_name) -> None:
 
 
 @alru_cache(maxsize=8192)
-async def read_interval(node_name, stream_name, interval_start, interval_end):
+async def read_interval(node_name: str, stream_name: str, interval_start: int, interval_end: int):
     """
     Cache recently-viewed transients in the back-end program.
     """
@@ -108,7 +108,7 @@ async def read_interval(node_name, stream_name, interval_start, interval_end):
     return sarray
 
 
-async def get_transients(node_name, stream_name, intervals) -> list:
+async def get_transients(node_name: str, stream_name: str, intervals: list[list[int]]) -> list:
     """
     Return a list of the transients corresponding
     to the specified intervals in the provided stream.
@@ -122,20 +122,24 @@ async def get_transients(node_name, stream_name, intervals) -> list:
     return transients
 
 
-async def label_data(node_name, stream_name, intervals, label_name) -> None:
+async def label_data(node_name: str, stream_name: str, intervals: list[list[int]], label_name: str) -> None:
     """
     Apply the specified label to the events in the
     provided stream that correspond to the specified
     time intervals.
     """
 
+    starts = [interval[0] for interval in intervals]
+    min_start_ts = min(starts)
+    max_end_ts = max([interval[1] for interval in intervals])
+
     new_events = []
     async with get_joule_node(node_name) as node:
-        for interval in intervals:
-            old_events = await node.event_stream_read(stream_name + '/events', start=interval[0], end=interval[1])
-            new_event = old_events[0]
-            new_event.content['label'] = label_name
-            new_events.append(new_event)
-            # await node.event_stream_remove(stream_name + '/events', start=interval[0], end=interval[1])
+        events = await node.event_stream_read_list(stream_name + '/events', start=min_start_ts, end=max_end_ts)
+
+        for event in events:
+            if event.start_time in starts:
+                event.content['label'] = label_name
+                new_events.append(event)
 
         await node.event_stream_write(stream_name + '/events', new_events)
