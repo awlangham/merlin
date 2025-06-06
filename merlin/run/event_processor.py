@@ -33,7 +33,7 @@ class EventProcessor(FilterModule):
             new_stream = EventStream(name=event_stream_name)
             return await self.node.event_stream_create(new_stream, output_stream_path[:-len(event_stream_name) - 1])
 
-    async def run(self, parsed_args, inputs, outputs):
+    async def run(self, parsed_args, inputs, outputs) -> None:
         """
         Run module, either in real-time or historic mode.
 
@@ -70,13 +70,10 @@ class EventProcessor(FilterModule):
 
             timestamps = timestamps[:end_index + 1]
             truncated_data = sarray_in['data'][:end_index + 1]
-            # P, Q = sarray_in['data'][:end_index + 1, 0], sarray_in['data'][:end_index + 1, 1]
-            P = truncated_data[:, 0] + truncated_data[:, 8] + truncated_data[:, 16]
-            Q = truncated_data[:, 1] + truncated_data[:, 9] + truncated_data[:, 17]
 
             PA_ss = self._extract_ss(truncated_data[:, 0])
             QA_ss = self._extract_ss(truncated_data[:, 1])
-            
+
             PB_ss = self._extract_ss(truncated_data[:, 8])
             QB_ss = self._extract_ss(truncated_data[:, 9])
 
@@ -85,7 +82,7 @@ class EventProcessor(FilterModule):
 
             PA_pk = self._extract_pk(truncated_data[:, 0])
             QA_pk = self._extract_pk(truncated_data[:, 1])
-            
+
             PB_pk = self._extract_pk(truncated_data[:, 8])
             QB_pk = self._extract_pk(truncated_data[:, 9])
 
@@ -98,16 +95,16 @@ class EventProcessor(FilterModule):
 
                 'PB_ss': float(PB_ss),
                 'QB_ss': float(QB_ss),
-                
+
                 'PC_ss': float(PC_ss),
                 'QC_ss': float(QC_ss),
-                
+
                 'PA_pk': float(PA_pk),
                 'QA_pk': float(QA_pk),
-                
+
                 'PB_pk': float(PB_pk),
                 'QB_pk': float(QB_pk),
-                
+
                 'PC_pk': float(PC_pk),
                 'QC_pk': float(QC_pk),
 
@@ -157,17 +154,17 @@ class EventProcessor(FilterModule):
     async def read_from_input(self, transients_pipe):
         return await transients_pipe.read()
 
-    async def write_to_output(self, event_stream_name, event_list):
+    async def write_to_output(self, event_stream_name: str, event_list: list[Event]):
         await self.node.event_stream_write(event_stream_name, event_list)
 
-    def _extract_ss(self, x):
+    def _extract_ss(self, x: np.array):
         return np.mean(x[-5:]) - np.mean(x[:5])
 
-    def _extract_pk(self, x):
+    def _extract_pk(self, x: np.array):
         return np.max(x) - np.mean(x[:5])
 
 
-def main():
+def main() -> None:
     merlin_event_processor = EventProcessor()
     merlin_event_processor.start()
 
