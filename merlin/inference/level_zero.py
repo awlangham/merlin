@@ -101,6 +101,9 @@ def level_zero(node_name, dataset, start, end):
         new_load = OnOffLoad(new_load_name, on_ss, family)
         loads.append(new_load)
 
+        on_exemplar.transitions = [[new_load_name, 'OFF', 'ON']]
+        off_exemplar.transitions = [[new_load_name, 'ON', 'OFF']]
+
         exemplars.append(on_exemplar)
         exemplars.append(off_exemplar)
 
