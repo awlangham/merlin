@@ -24,6 +24,10 @@
         <option value="mds">MDS 🔍</option>
     </select>
 
+    {#if $brushedStore.length > 0}
+        {$brushedStore.length} events selected
+    {/if}
+
     <span id="span-right">
         <UnselectButton />
         <LabelData />
@@ -45,6 +49,7 @@
 <style>
     #select-tool {
         margin-left: 10px;
+        margin-right: 10px;
     }
 
     #tool-div {
