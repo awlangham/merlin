@@ -12,7 +12,7 @@ async def features(request: Request, stream_name: str, start_ts: int = None, end
     read_interval.cache_clear()
 
     async with get_joule_node(request.app.node) as node:
-        events = await node.event_stream_read(stream_name + '/events', limit=1000, start=start_ts, end=end_ts)
+        events = await node.event_stream_read_list(stream_name + '/events', limit=1500, start=start_ts, end=end_ts)
 
     result = {
         'events': [{

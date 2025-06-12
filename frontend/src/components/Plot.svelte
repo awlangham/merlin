@@ -13,6 +13,8 @@
     onMount(() => {
         Plotly.newPlot(plotDiv, []);
         plotDiv.on("plotly_click", onClick);
+        // TO DO: allow the user to choose click or hover
+        // plotDiv.on("plotly_hover", onClick);
         plotDiv.on("plotly_selected", onSelected);
     });
 

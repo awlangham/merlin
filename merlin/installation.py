@@ -40,7 +40,7 @@ class CurrentInstallation:
             if exemplar['transitions'] == [[load_name, state1, state2]]:
                 return await self.node.data_read_array(stream_name + '/transients', start=exemplar['start_ts'], end=exemplar['end_ts'], flatten=True)
 
-    async def find_matching_exemplar(self, data, trainola_threshold=0.15):
+    async def find_matching_exemplar(self, data, trainola_threshold=0.1):
         """
         Returns the exemplar in the config file that best
         matches the provided transient, or None if no exemplar
@@ -52,8 +52,8 @@ class CurrentInstallation:
 
         for exemplar in self.config_json['exemplars']:
             pipe = await self.node.data_read(self.config_json['stream_name'] + '/transients',
-                                                        start=exemplar['start_ts'],
-                                                        end=exemplar['end_ts'])
+                                             start=exemplar['start_ts'],
+                                             end=exemplar['end_ts'])
             exemplar_sarray = await pipe.read_all()
             exemplar_PQ = exemplar_sarray['data']
             exemplar_PQ -= np.mean(exemplar_PQ[:5], axis=0)
@@ -82,7 +82,7 @@ class CurrentInstallation:
         for load1, load2 in combinations(load_names, 2):
             PA_ss_1, QA_ss_1, PB_ss_1, QB_ss_1, PC_ss_1, QC_ss_1 = self.config_json['loads'][load1]['states']['ON']
             P_ss_1, Q_ss_1 = PA_ss_1 + PB_ss_1 + PC_ss_1, QA_ss_1 + QB_ss_1 + QC_ss_1
-            
+
             PA_ss_2, QA_ss_2, PB_ss_2, QB_ss_2, PC_ss_2, QC_ss_2 = self.config_json['loads'][load2]['states']['ON']
             P_ss_2, Q_ss_2 = PA_ss_2 + PB_ss_2 + PC_ss_2, QA_ss_2 + QB_ss_2 + QC_ss_2
 
