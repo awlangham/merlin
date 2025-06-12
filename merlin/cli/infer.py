@@ -5,7 +5,7 @@ import asyncio
 
 from merlin.installation import config_filename
 from merlin.cli.decorators import pass_node_name
-from merlin.inference import level_zero, level_one, level_two
+from merlin.inference import level_zero, level_one, level_two, level_three
 
 
 @click.command(name='infer-zero')
@@ -81,7 +81,17 @@ def infer_two(node, event_stream, start, end) -> None:
     inferred_exemplar, match_score = asyncio.run(level_two(node, event_stream, h2ts(start), h2ts(end)))
 
     if inferred_exemplar is None:
-        click.echo('No exemplar matched.')
+        click.echo(f'No exemplar matched (Best score: {match_score})')
     else:
         click.echo(f'Exemplar match (Score: {match_score}):')
-    click.echo(inferred_exemplar)
+        click.echo(inferred_exemplar)
+
+
+@click.command(name='infer-three')
+@click.argument('event_stream')
+@click.argument('load_name')
+@click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
+@click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
+@pass_node_name
+def infer_three(node, event_stream, load_name, start, end) -> None:
+    asyncio.run(level_three(node, event_stream, load_name, h2ts(start), h2ts(end)))

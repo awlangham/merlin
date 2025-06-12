@@ -90,7 +90,7 @@ def level_zero(node_name, dataset, start, end):
             on_ss = features[best_cluster2, :6]
             on_pk = features[best_cluster2, 6:]
 
-        if (on_ss[1] + on_ss[3] + on_ss[5]) < 500:
+        if (on_ss[1] + on_ss[3] + on_ss[5]) < 0.1 * (on_ss[0] + on_ss[2] + on_ss[4]):
             family = 'Resistive'
         elif (on_pk[0] + on_pk[2] + on_pk[4]) > 2 * (on_ss[0] + on_ss[2] + on_ss[4]):
             # TODO: Refactor this into some sort of classifier that's well documented
