@@ -1,6 +1,6 @@
 import numpy as np
 import json
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from scipy import stats
 
 from merlin.utilities import get_joule_node
