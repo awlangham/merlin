@@ -4,6 +4,7 @@
     import { getStartBaseline, getEndBaseline } from "../../utilities";
 
     import Plot from "../Plot.svelte";
+    import Learn from "./Learn.svelte";
 
     let transientData = [];
 
@@ -26,12 +27,12 @@
             .then((response) => response.json())
             .then((j) => {
                 transientData = [
-                    { name: "A Real", line: { color: "#0072B2" } },
-                    { name: "A Reactive", line: { color: "#E69F00" } },
-                    { name: "B Real", line: { color: "#56B4E9" } },
-                    { name: "B Reactive", line: { color: "#F0E442" } },
-                    { name: "C Real", line: { color: "#92C5DE" } },
-                    { name: "C Reactive", line: { color: "#D55E00" } },
+                    { name: "PA", line: { color: "#0072B2" } },
+                    { name: "QA", line: { color: "#E69F00" } },
+                    { name: "PB", line: { color: "#56B4E9" } },
+                    { name: "QB", line: { color: "#F0E442" } },
+                    { name: "PC", line: { color: "#92C5DE" } },
+                    { name: "QC", line: { color: "#D55E00" } },
                 ];
 
                 for (const index of Array(6).keys()) {
@@ -39,21 +40,45 @@
                 }
 
                 if (selectedEvent.type === "ON to OFF") {
-                    transientData[0].y = j.PA.map((p) => p - getEndBaseline(j.PA));
-                    transientData[2].y = j.PB.map((p) => p - getEndBaseline(j.PB));
-                    transientData[4].y = j.PC.map((p) => p - getEndBaseline(j.PC));
+                    transientData[0].y = j.PA.map(
+                        (p) => p - getEndBaseline(j.PA),
+                    );
+                    transientData[2].y = j.PB.map(
+                        (p) => p - getEndBaseline(j.PB),
+                    );
+                    transientData[4].y = j.PC.map(
+                        (p) => p - getEndBaseline(j.PC),
+                    );
 
-                    transientData[1].y = j.QA.map((q) => q - getEndBaseline(j.QA));
-                    transientData[3].y = j.QB.map((q) => q - getEndBaseline(j.QB));
-                    transientData[5].y = j.QC.map((q) => q - getEndBaseline(j.QC));
+                    transientData[1].y = j.QA.map(
+                        (q) => q - getEndBaseline(j.QA),
+                    );
+                    transientData[3].y = j.QB.map(
+                        (q) => q - getEndBaseline(j.QB),
+                    );
+                    transientData[5].y = j.QC.map(
+                        (q) => q - getEndBaseline(j.QC),
+                    );
                 } else {
-                    transientData[0].y = j.PA.map((p) => p - getStartBaseline(j.PA));
-                    transientData[2].y = j.PB.map((p) => p - getStartBaseline(j.PB));
-                    transientData[4].y = j.PC.map((p) => p - getStartBaseline(j.PC));
+                    transientData[0].y = j.PA.map(
+                        (p) => p - getStartBaseline(j.PA),
+                    );
+                    transientData[2].y = j.PB.map(
+                        (p) => p - getStartBaseline(j.PB),
+                    );
+                    transientData[4].y = j.PC.map(
+                        (p) => p - getStartBaseline(j.PC),
+                    );
 
-                    transientData[1].y = j.QA.map((q) => q - getStartBaseline(j.QA));
-                    transientData[3].y = j.QB.map((q) => q - getStartBaseline(j.QB));
-                    transientData[5].y = j.QC.map((q) => q - getStartBaseline(j.QC));
+                    transientData[1].y = j.QA.map(
+                        (q) => q - getStartBaseline(j.QA),
+                    );
+                    transientData[3].y = j.QB.map(
+                        (q) => q - getStartBaseline(j.QB),
+                    );
+                    transientData[5].y = j.QC.map(
+                        (q) => q - getStartBaseline(j.QC),
+                    );
                 }
             });
     } else {
@@ -69,20 +94,31 @@
 </script>
 
 <div class="transient-plot-div h-100">
-    <Plot data={transientData} {layout} {config} />
-    {#if $eventIndexStore != -1}
+    <div id="plot">
+        <Plot data={transientData} {layout} {config}></Plot>
+    </div>
+
+    <div>
         <button
             id="copy-timestamps-btn"
             type="button"
             class="btn btn-secondary btn-sm"
+            disabled={$eventIndexStore == -1}
             on:click={copyTimestamps}
         >
             Copy timestamps
         </button>
-    {/if}
+
+        <Learn></Learn>
+    </div>
 </div>
 
 <style>
+    #plot {
+        height: 88%;
+        padding-bottom: 5px;
+    }
+
     .transient-plot-div {
         border: 2px solid gray;
         border-radius: 10px;
@@ -94,8 +130,6 @@
     }
 
     #copy-timestamps-btn {
-        position: absolute;
-        right: 10px;
-        bottom: 4px;
+        margin-left: 10px;
     }
 </style>

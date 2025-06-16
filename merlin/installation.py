@@ -9,6 +9,7 @@ from merlin.supervised.trainola import trainola
 config_filename = str(files(merlin) / 'config.json')
 
 
+# TO DO: Change to get_current_installation() and Installation class
 class CurrentInstallation:
     def __init__(self, node) -> None:
         """
@@ -19,6 +20,12 @@ class CurrentInstallation:
             self.config_json = json.load(config_file)
 
         self.node = node
+
+    def add_exemplar(self, exemplar) -> None:
+        self.config_json['exemplars'].append(exemplar.to_json())
+
+        with open(config_filename, 'w') as f:
+            json.dump(self.config_json, f, indent=4)
 
     def get_load_names(self) -> list:
         """
