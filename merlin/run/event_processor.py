@@ -139,7 +139,8 @@ class EventProcessor(FilterModule):
                         event_content['label'] = transition[0]
                         event_content['type'] = transition[1] + ' to ' + transition[2]
 
-                        load_family = current_installation.config_json['loads'][transition[0]]['family']
+                        with current_installation.config() as cf:
+                            load_family = cf['loads'][transition[0]]['family']
                         event_content['load_family'] = load_family
 
                         event_content['distance'] = float(match_score)
