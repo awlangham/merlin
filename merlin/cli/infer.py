@@ -3,7 +3,7 @@ import json
 from joule.utilities import human_to_timestamp as h2ts
 import asyncio
 
-from merlin.installation import config_filename
+from merlin.installation import CurrentInstallation, config_filename
 from merlin.cli.decorators import pass_node_name
 from merlin.inference import level_zero, level_one, level_two, level_three
 
@@ -63,15 +63,9 @@ def infer_one(node, event_stream, start, end) -> None:
     """
 
     inferred_exemplars = level_one(node, event_stream, h2ts(start), h2ts(end))
-    print(inferred_exemplars)
 
-    with open(config_filename, 'r') as f:
-        config_json = json.load(f)
-
-    config_json['exemplars'] = [inferred_exemplar.to_json() for inferred_exemplar in inferred_exemplars]
-
-    with open(config_filename, 'w') as f:
-        json.dump(config_json, f, indent=4)
+    with CurrentInstallation(None).config() as cf:
+        cf['exemplars'] = [inferred_exemplar.to_json() for inferred_exemplar in inferred_exemplars]
 
     click.echo(f'Saved to {config_filename}')
 
