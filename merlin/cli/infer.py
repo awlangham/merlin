@@ -64,7 +64,7 @@ def infer_one(node, event_stream, start, end) -> None:
 
     inferred_exemplars = level_one(node, event_stream, h2ts(start), h2ts(end))
 
-    with CurrentInstallation(None).config() as cf:
+    with CurrentInstallation().config() as cf:
         cf['exemplars'] = [inferred_exemplar.to_json() for inferred_exemplar in inferred_exemplars]
 
     click.echo(f'Saved to {config_filename}')

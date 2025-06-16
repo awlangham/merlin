@@ -10,9 +10,8 @@ from merlin.utilities import trainola
 config_filename = str(files(merlin) / 'config.json')
 
 
-# TO DO: Change to get_current_installation() and Installation class
 class CurrentInstallation:
-    def __init__(self, node) -> None:
+    def __init__(self, node=None) -> None:
         self.node = node
 
     @contextmanager
