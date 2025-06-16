@@ -2,6 +2,7 @@ import numpy as np
 from joule.client import FilterModule
 from joule.api import Event, EventStream
 from joule.errors import ApiError
+from joule.utilities import yesno
 
 from merlin.installation import CurrentInstallation
 
@@ -18,6 +19,7 @@ class EventProcessor(FilterModule):
         grp = parser.add_argument_group('Merlin', 'Module-specific arguments')
         grp.add_argument('--output', type=str, required=True, help='Output event stream name')
         grp.add_argument('--method', type=str, required=True, help='Learning method')
+        grp.add_argument('--combinatorial', type=yesno, required=True, help='Use combinatorial matching')
 
     async def _get_output_stream(self, output_stream_path: str) -> EventStream:
         """
@@ -120,7 +122,7 @@ class EventProcessor(FilterModule):
                 # Find closest matching exemplar
                 matching_exemplar, match_score = await current_installation.find_matching_exemplar(truncated_data)
 
-                if matching_exemplar is None:
+                if matching_exemplar is None and parsed_args.combinatorial:
                     comb_match = await current_installation.combinatorial_match(PA_ss + PB_ss + PC_ss, QA_ss + QB_ss + QC_ss)
                     if comb_match is not None:
                         event_content['label'] = comb_match[0]
