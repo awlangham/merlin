@@ -11,7 +11,7 @@ def configuration(node) -> None:
     """
     Show current Merlin configuration, including loads, exemplars, transitions, and states.
 
-    The configuration is stored in config.json in the MERLIN intallation folder.
+    The configuration is stored in config.json in the MERLIN installation folder.
     """
 
     from merlin.installation import CurrentInstallation
@@ -25,35 +25,35 @@ def configuration(node) -> None:
     load_tree.create_node(click.style('Loads', bold=True), 'loads')
 
     current_installation = CurrentInstallation(node)
-    cf = current_installation.config_json
 
-    try:
-        for i, exemplar in enumerate(cf['exemplars']):
-            exemplar_tree.create_node(f'[ {ts2h(exemplar["start_ts"])}, {ts2h(exemplar["end_ts"])}]', i, parent='exemplars')
-            for transition in exemplar['transitions']:
-                exemplar_tree.create_node(f'{transition[0]}::{transition[1]}->{transition[2]}', parent=i)
+    with current_installation.config() as cf:
+        try:
+            for i, exemplar in enumerate(cf['exemplars']):
+                exemplar_tree.create_node(f'[ {ts2h(exemplar["start_ts"])}, {ts2h(exemplar["end_ts"])}]', i, parent='exemplars')
+                for transition in exemplar['transitions']:
+                    exemplar_tree.create_node(f'{transition[0]}::{transition[1]}->{transition[2]}', parent=i)
 
-        for i, load_name in enumerate(cf['loads']):
-            load_dict = cf['loads'][load_name]
-            if load_dict['family'] is None:
-                load_tree.create_node(f'{load_name}', i, parent='loads')
-            else:
-                load_tree.create_node(f'{load_name} ({load_dict["family"]})', i, parent='loads')
+            for i, load_name in enumerate(cf['loads']):
+                load_dict = cf['loads'][load_name]
+                if load_dict['family'] is None:
+                    load_tree.create_node(f'{load_name}', i, parent='loads')
+                else:
+                    load_tree.create_node(f'{load_name} ({load_dict["family"]})', i, parent='loads')
 
-            for state_name in load_dict['states']:
-                PA, QA, PB, QB, PC, QC = load_dict['states'][state_name]
-                load_tree.create_node(f'{state_name}: ({round(PA, 2)} W, {round(QA, 2)} Var) [A], ({round(PB, 2)} W, {round(QB, 2)} Var) [B], ({round(PC, 2)} W, {round(QC, 2)} Var) [C]', parent=i)
+                for state_name in load_dict['states']:
+                    PA, QA, PB, QB, PC, QC = load_dict['states'][state_name]
+                    load_tree.create_node(f'{state_name}: ({round(PA, 2)} W, {round(QA, 2)} Var) [A], ({round(PB, 2)} W, {round(QB, 2)} Var) [B], ({round(PC, 2)} W, {round(QC, 2)} Var) [C]', parent=i)
 
-        config_valid = True
-    except KeyError:
-        click.echo('Invalid configuration file.')
+            config_valid = True
+        except KeyError:
+            click.echo('Invalid configuration file.')
 
-    if config_valid:
-        cli_output = ''
-        cli_output += click.style('Node:', bold=True) + f' {cf["node"]}\n'
-        cli_output += click.style('Input:', bold=True) + f' {cf["stream_name"]}/transients\n'
-        cli_output += click.style('Output:', bold=True) + f' {cf["stream_name"]}/events\n\n'
-        cli_output += exemplar_tree.show(stdout=False) + '\n'
-        cli_output += load_tree.show(stdout=False)
+        if config_valid:
+            cli_output = ''
+            cli_output += click.style('Node:', bold=True) + f' {cf["node"]}\n'
+            cli_output += click.style('Input:', bold=True) + f' {cf["stream_name"]}/transients\n'
+            cli_output += click.style('Output:', bold=True) + f' {cf["stream_name"]}/events\n\n'
+            cli_output += exemplar_tree.show(stdout=False) + '\n'
+            cli_output += load_tree.show(stdout=False)
 
-        click.echo_via_pager(cli_output)
+            click.echo_via_pager(cli_output)

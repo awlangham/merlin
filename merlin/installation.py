@@ -2,6 +2,7 @@ import numpy as np
 import json
 from importlib.resources import files
 from itertools import combinations, product
+from contextlib import contextmanager
 
 import merlin
 from merlin.utilities import trainola
@@ -16,10 +17,21 @@ class CurrentInstallation:
         Read JSON configuration and construct installation object.
         """
 
-        with open(config_filename, 'r') as config_file:
-            self.config_json = json.load(config_file)
+        # with open(config_filename, 'r') as config_file:
+        #     self.config_json = json.load(config_file)
 
         self.node = node
+
+    @contextmanager
+    def config(self):
+        with open(config_filename, 'r') as config_file:
+            config_json = json.load(config_file)
+
+        try:
+            yield config_json
+        finally:
+            with open(config_filename, 'w') as config_file:
+                json.dump(config_json, config_file, indent=4)
 
     def add_exemplar(self, exemplar) -> None:
         self.config_json['exemplars'].append(exemplar.to_json())
