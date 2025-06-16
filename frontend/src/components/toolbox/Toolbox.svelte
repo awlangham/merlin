@@ -21,7 +21,7 @@
     >
         <option value="explore">Explore 🔦</option>
         <option value="crossbrush">CrossBrush 🖌️</option>
-        <option value="mds">MDS 🔍</option>
+        <!-- <option value="mds">MDS 🔍</option> -->
     </select>
 
     {#if $brushedStore.length > 0}

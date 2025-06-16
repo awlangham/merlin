@@ -7,31 +7,31 @@ export const featureConfig = {
 
 }
 
-export const mdsConfig = {
-    showTips: false,
-    modeBarButtonsToRemove: ["zoom2d", "pan2d", "select2d", "lasso2d"],
-    displaylogo: false,
-    scrollZoom: true,
-    responsive: true,
-};
+// export const mdsConfig = {
+//     showTips: false,
+//     modeBarButtonsToRemove: ["zoom2d", "pan2d", "select2d", "lasso2d"],
+//     displaylogo: false,
+//     scrollZoom: true,
+//     responsive: true,
+// };
 
-export let mdsLayout = {
-    autosize: true,
-    margin: { l: 70, r: 20, b: 40, t: 20 },
-    dragmode: "pan",
-    uirevision: true,
-    xaxis: {
-        title: { text: "MDS 0" },
-        fixedrange: false,
-        range: [-1, 1],
-    },
-    yaxis: {
-        title: { text: "MDS 1" },
-        fixedrange: false,
-        range: [-1, 1],
-    },
-    showlegend: false,
-};
+// export let mdsLayout = {
+//     autosize: true,
+//     margin: { l: 70, r: 20, b: 40, t: 20 },
+//     dragmode: "pan",
+//     uirevision: true,
+//     xaxis: {
+//         title: { text: "MDS 0" },
+//         fixedrange: false,
+//         range: [-1, 1],
+//     },
+//     yaxis: {
+//         title: { text: "MDS 1" },
+//         fixedrange: false,
+//         range: [-1, 1],
+//     },
+//     showlegend: false,
+// };
 
 export const makeSelectionShape = (x, y) => {
     const selectedRadius = 16;
