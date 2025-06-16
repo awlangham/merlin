@@ -9,7 +9,7 @@ from merlin.installation import CurrentInstallation
 
 class EventProcessor(FilterModule):
     """
-    Filter module to process a fragmented time-domain prep stream
+    Filter module to process a sparse time-domain prep stream
     into a collection of Joule events.
     """
 

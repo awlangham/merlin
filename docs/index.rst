@@ -23,5 +23,5 @@ a web-based visualization tool.
 
    levels
    cli
-   event_processor
+   filters
    visualizer

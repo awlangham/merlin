@@ -15,7 +15,7 @@ from merlin.inference import level_zero, level_one, level_two, level_three
 @pass_node_name
 def infer_zero(node, event_stream, start, end) -> None:
     """
-    Infer loads and exemplars from EVENT_STREAM.
+    Infer loads and exemplars from EVENT_STREAM. All loads are assumed to be two-state (ON, OFF).
 
     Clusters with fewer than 25 data points are excluded.
     """
@@ -58,6 +58,10 @@ def infer_zero(node, event_stream, start, end) -> None:
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
 @pass_node_name
 def infer_one(node, event_stream, start, end) -> None:
+    """
+    Find exemplars in EVENT_STREAM over the specified period that match load state changes in the config file.
+    """
+
     inferred_exemplars = level_one(node, event_stream, h2ts(start), h2ts(end))
     print(inferred_exemplars)
 
@@ -78,6 +82,10 @@ def infer_one(node, event_stream, start, end) -> None:
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
 @pass_node_name
 def infer_two(node, event_stream, start, end) -> None:
+    """
+    Find the exemplar in the config file that matches the specified data in EVENT_STREAM.
+    """
+    
     inferred_exemplar, match_score = asyncio.run(level_two(node, event_stream, h2ts(start), h2ts(end)))
 
     if inferred_exemplar is None:
@@ -94,4 +102,8 @@ def infer_two(node, event_stream, start, end) -> None:
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
 @pass_node_name
 def infer_three(node, event_stream, load_name, start, end) -> None:
+    """
+    Infer a the statistical behavior of a load.
+    """
+    
     asyncio.run(level_three(node, event_stream, load_name, h2ts(start), h2ts(end)))

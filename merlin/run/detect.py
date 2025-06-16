@@ -5,9 +5,7 @@ from joule.client import FilterModule
 
 class EdgeDetector(FilterModule):
     """
-    Name: MERLIN Edge Detector
-    Author: Aaron Langham
-    Description: Extract event edges from 3-phase prep stream
+    Detect edges in a three-phase prep stream, outputting a sparse stream containing only edge events.
     """
 
     def custom_args(self, parser) -> None:
@@ -17,6 +15,12 @@ class EdgeDetector(FilterModule):
         grp.add_argument('--settling_std_dev', type=float, required=True, help='Standard deviation threshold for flatness detection')
 
     async def run(self, parsed_args, inputs, outputs) -> None:
+        """
+        Run module, either in real-time or historic mode.
+
+        Must be run from an async function or from the command line with ``merlin-process-events``.
+        """
+                
         prep_pipe = inputs['prep']
         transients_pipe = outputs['transients']
 
