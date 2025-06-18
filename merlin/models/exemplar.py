@@ -14,3 +14,6 @@ class Exemplar:
             'end_ts': self.end_ts,
             'transitions': self.transitions
         }
+
+    def __repr__(self):
+        return f'<merlin.models.Exemplar start_ts: {self.start_ts} end_ts: {self.end_ts} transitions: {self.transitions}>'
