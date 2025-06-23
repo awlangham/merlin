@@ -26,4 +26,4 @@ class OnOffLoad(GenericLoad):
 
     def __repr__(self):
         ss_string = [round(s) for s in self.states['ON']]
-        return f'<merlin.models.OnOffLoad on_ss: {ss_string} W>'
+        return f'<merlin.models.OnOffLoad name: {self.name} family: {self.family} on_ss: {ss_string} W>'
