@@ -3,13 +3,12 @@ import json
 # import matplotlib.pyplot as plt
 from scipy import stats
 
-from merlin.utilities import get_joule_node
+from merlin.utilities import async_run
 
-
-async def level_three(node_name, dataset, load_name, start, end):
-    async with get_joule_node(node_name) as node:
-        json_filter = json.dumps([[['label', 'is', load_name]]])
-        events = await node.event_stream_read_list(dataset + '/events', start=start, end=end, json_filter=json_filter)
+@async_run
+async def level_three(self, load_name, start_ts: int, end_ts: int):
+    json_filter = json.dumps([[['label', 'is', load_name]]])
+    events = await self.node.event_stream_read_list(self.stream_name + '/events', start=start_ts, end=end_ts, json_filter=json_filter)
 
     arrival_times = [event.start_time for event in events if event.content['type'] == 'OFF to ON']
     interarrival_times = np.diff(arrival_times) / 1e6  # scale to seconds
@@ -33,6 +32,8 @@ async def level_three(node_name, dataset, load_name, start, end):
         # Exponential is better fit
         print('Exponential', exponential_res.params.scale)
 
+
+    print('Avg interarrival time:', np.mean(interarrival_times))
 
     # period = res.params.loc
 

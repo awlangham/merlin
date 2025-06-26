@@ -2,7 +2,7 @@ import click
 from joule.api import get_node
 
 from merlin.cli.datasets import datasets
-from merlin.cli.initialize import initialize
+# from merlin.cli.initialize import initialize
 from merlin.cli.infer import infer_zero, infer_one, infer_two, infer_three
 from merlin.cli.clear import cli_clear
 from merlin.cli.docs import docs
@@ -22,7 +22,7 @@ def main(context, node) -> None:
 
 
 main.add_command(datasets)
-main.add_command(initialize)
+# main.add_command(initialize)
 main.add_command(infer_zero)
 main.add_command(infer_one)
 main.add_command(infer_two)

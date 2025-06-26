@@ -3,11 +3,10 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import HDBSCAN
 
-from merlin.utilities import get_events
 from merlin.models import Exemplar, OnOffLoad
 
 
-def level_zero(node_name, dataset, start, end):
+def level_zero(self, start_ts: int, end_ts: int):
     feature_names = ['PA_ss', 'QA_ss',
                      'PB_ss', 'QB_ss',
                      'PC_ss', 'QC_ss',
@@ -17,7 +16,7 @@ def level_zero(node_name, dataset, start, end):
                      ]
 
     features, intervals = [], []
-    for event in get_events(node_name, dataset, start, end):
+    for event in self.get_events(start_ts, end_ts):
         features.append([event.content[name] for name in feature_names])
         intervals.append((event.start_time, event.end_time))
 

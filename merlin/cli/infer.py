@@ -1,11 +1,10 @@
 import click
-import json
 from joule.utilities import human_to_timestamp as h2ts
+from joule.api import get_node
 import asyncio
 
-from merlin.installation import CurrentInstallation, config_filename
+from merlin.installation import config_filename, CurrentInstallation, new_installation
 from merlin.cli.decorators import pass_node_name
-from merlin.inference import level_zero, level_one, level_two, level_three
 
 
 @click.command(name='infer-zero')
@@ -22,7 +21,10 @@ def infer_zero(node, event_stream, start, end) -> None:
 
     from tabulate import tabulate
 
-    inferred_exemplars, inferred_loads = level_zero(node, event_stream, h2ts(start), h2ts(end))
+    joule_node = get_node(node)
+    installation = new_installation(joule_node, event_stream)
+    inferred_exemplars, inferred_loads = installation.level_zero(h2ts(start), h2ts(end))
+    asyncio.run(joule_node.close())
 
     table = []
     for load in inferred_loads:
@@ -40,29 +42,26 @@ def infer_zero(node, event_stream, start, end) -> None:
         for exemplar in inferred_exemplars:
             exemplar_list.append(exemplar.to_json())
 
-        config = {}
-        config['node'] = node
-        config['stream_name'] = event_stream
-        config['exemplars'] = exemplar_list
-        config['loads'] = load_dict
-
-        with open(config_filename, 'w') as f:
-            json.dump(config, f, indent=4)
+        with installation.config() as config:
+            config['exemplars'] = exemplar_list
+            config['loads'] = load_dict
 
         click.echo(f'Saved to {config_filename}')
 
 
 @click.command(name='infer-one')
-@click.argument('event_stream')
 @click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
 @pass_node_name
-def infer_one(node, event_stream, start, end) -> None:
+def infer_one(node, start, end) -> None:
     """
     Find exemplars in EVENT_STREAM over the specified period that match load state changes in the config file.
     """
 
-    inferred_exemplars = level_one(node, event_stream, h2ts(start), h2ts(end))
+    joule_node = get_node(node)
+    current_installation = CurrentInstallation(joule_node)
+    inferred_exemplars = current_installation.level_one(h2ts(start), h2ts(end))
+    asyncio.run(joule_node.close())
 
     with CurrentInstallation().config() as cf:
         cf['exemplars'] = [inferred_exemplar.to_json() for inferred_exemplar in inferred_exemplars]
@@ -71,16 +70,18 @@ def infer_one(node, event_stream, start, end) -> None:
 
 
 @click.command(name='infer-two')
-@click.argument('event_stream')
 @click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
 @pass_node_name
-def infer_two(node, event_stream, start, end) -> None:
+def infer_two(node, start, end) -> None:
     """
     Find the exemplar in the config file that matches the specified data in EVENT_STREAM.
     """
-    
-    inferred_exemplar, match_score = asyncio.run(level_two(node, event_stream, h2ts(start), h2ts(end)))
+
+    joule_node = get_node(node)
+    current_installation = CurrentInstallation(joule_node)
+    inferred_exemplar, match_score = current_installation.level_two(h2ts(start), h2ts(end))
+    asyncio.run(joule_node.close())
 
     if inferred_exemplar is None:
         click.echo(f'No exemplar matched (Best score: {match_score})')
@@ -90,14 +91,16 @@ def infer_two(node, event_stream, start, end) -> None:
 
 
 @click.command(name='infer-three')
-@click.argument('event_stream')
 @click.argument('load_name')
 @click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
 @pass_node_name
-def infer_three(node, event_stream, load_name, start, end) -> None:
+def infer_three(node, load_name, start, end) -> None:
     """
     Infer a the statistical behavior of a load.
     """
-    
-    asyncio.run(level_three(node, event_stream, load_name, h2ts(start), h2ts(end)))
+
+    joule_node = get_node(node)
+    current_installation = CurrentInstallation(joule_node)
+    current_installation.level_three(load_name, h2ts(start), h2ts(end))
+    asyncio.run(joule_node.close())

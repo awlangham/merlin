@@ -1,6 +1,7 @@
 import click
 import configparser
-import json
+import asyncio
+from joule.api import get_node
 
 from merlin.cli.decorators import pass_node_name
 
@@ -64,7 +65,7 @@ def initialize(node) -> None:
 
 def _supervised_setup(selected_folder, node_name) -> None:
     from merlin.models import GenericLoad
-    from merlin.installation import config_filename
+    from merlin.installation import CurrentInstallation
 
     click.echo('\n~~~ Load Configuration ~~~')
 
@@ -106,16 +107,18 @@ def _supervised_setup(selected_folder, node_name) -> None:
         create_new_exemplar = click.confirm('Continue adding exemplars')
 
     
-    config = {}
-    config['node'] = node_name
-    config['stream_name'] = selected_folder
-    config['exemplars'] = exemplar_list
-    config['loads'] = load_dict
 
-    with open(config_filename, 'w') as f:
-        json.dump(config, f, indent=4)
+    joule_node = get_node(node_name)
+    installation = CurrentInstallation(joule_node)
+    with installation.config() as config:
+        config = {}
+        config['stream_name'] = selected_folder
+        config['exemplars'] = exemplar_list
+        config['loads'] = load_dict
+    asyncio.run(joule_node.close())
+    
 
-    click.echo(f'Saved to {config_filename}')
+    click.echo(f'Saved to {installation.config_filename}')
 
 
 def _comma_separated_to_strings(string) -> list[str]:

@@ -1,18 +1,19 @@
 import numpy as np
 import json
-from importlib.resources import files
 from itertools import combinations, product
 from contextlib import contextmanager
+import asyncio
 
-import merlin
+from merlin.installation import config_filename
 from merlin.utilities import trainola
-
-config_filename = str(files(merlin) / 'config.json')
 
 
 class CurrentInstallation:
     def __init__(self, node=None) -> None:
         self.node = node
+
+        with self.config() as cf:
+            self.stream_name = cf['stream_name']
 
     @contextmanager
     def config(self):
@@ -24,6 +25,13 @@ class CurrentInstallation:
         finally:
             with open(config_filename, 'w') as config_file:
                 json.dump(config_json, config_file, indent=4)
+
+    def get_events(self, start: int = None, end: int = None) -> list:
+        """
+        Return a list of all events in the specified stream.
+        """
+
+        return asyncio.run(self.node.event_stream_read_list(self.stream_name + '/events', start=start, end=end, limit=1000))
 
     def add_exemplar(self, exemplar) -> None:
         with self.config() as cf:
@@ -37,11 +45,10 @@ class CurrentInstallation:
 
         with self.config() as cf:
             exemplars = cf['exemplars']
-            stream_name = cf['stream_name']
 
         for exemplar in exemplars:
             if exemplar['transitions'] == [[load_name, state1, state2]]:
-                return await self.node.data_read_array(stream_name + '/transients', start=exemplar['start_ts'], end=exemplar['end_ts'], flatten=True)
+                return await self.get_transient(exemplar['start_ts'], exemplar['end_ts'])
 
     async def find_matching_exemplar(self, data, trainola_threshold=0.1):
         """
@@ -113,3 +120,13 @@ class CurrentInstallation:
             return best_loads, best_type
         else:
             return None
+
+    async def get_transient(self, start_ts, end_ts):
+        pipe = await self.node.data_read(self.stream_name + '/transients', start=start_ts, end=end_ts)
+        sarray = await pipe.read_all(flatten=True)
+        return sarray
+
+    from merlin.inference.level_zero import level_zero
+    from merlin.inference.level_one import level_one
+    from merlin.inference.level_two import level_two
+    from merlin.inference.level_three import level_three

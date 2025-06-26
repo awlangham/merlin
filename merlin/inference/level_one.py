@@ -1,22 +1,19 @@
-import json
 from itertools import permutations
 import numpy as np
 
-from merlin.installation import CurrentInstallation
-from merlin.utilities import get_events
 from merlin.models import Exemplar
 
 
-def level_one(node_name, dataset, start, end):
+def level_one(self, start_ts: int, end_ts: int):
     """
     Given a configuration file with loads filled in,
     identify exemplars that correspond with state changes.
     """
 
-    with CurrentInstallation().config() as cf:
+    with self.config() as cf:
         cf['exemplars'] = []
 
-        events = get_events(node_name, dataset, start, end)
+        events = self.get_events(start_ts, end_ts)
 
         exemplars = []
         for load in cf['loads'].keys():
