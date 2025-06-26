@@ -65,7 +65,7 @@ def initialize(node) -> None:
 
 def _supervised_setup(selected_folder, node_name) -> None:
     from merlin.models import GenericLoad
-    from merlin.installation import CurrentInstallation
+    from merlin.api import Installation
 
     click.echo('\n~~~ Load Configuration ~~~')
 
@@ -109,7 +109,7 @@ def _supervised_setup(selected_folder, node_name) -> None:
     
 
     joule_node = get_node(node_name)
-    installation = CurrentInstallation(joule_node)
+    installation = Installation(joule_node)
     with installation.config() as config:
         config = {}
         config['stream_name'] = selected_folder

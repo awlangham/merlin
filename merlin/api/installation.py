@@ -4,11 +4,11 @@ from itertools import combinations, product
 from contextlib import contextmanager
 import asyncio
 
-from merlin.installation import config_filename
+from merlin.api import config_filename
 from merlin.utilities import trainola
 
 
-class CurrentInstallation:
+class Installation:
     def __init__(self, node=None) -> None:
         self.node = node
 
@@ -126,7 +126,7 @@ class CurrentInstallation:
         sarray = await pipe.read_all(flatten=True)
         return sarray
 
-    from merlin.inference.level_zero import level_zero
-    from merlin.inference.level_one import level_one
-    from merlin.inference.level_two import level_two
-    from merlin.inference.level_three import level_three
+    from merlin.api.level_zero import level_zero
+    from merlin.api.level_one import level_one
+    from merlin.api.level_two import level_two
+    from merlin.api.level_three import level_three

@@ -14,7 +14,7 @@ def configuration(node) -> None:
     The configuration is stored in config.json in the MERLIN installation folder.
     """
 
-    from merlin.installation import CurrentInstallation
+    from merlin.api import Installation
 
     config_valid = False
 
@@ -24,7 +24,7 @@ def configuration(node) -> None:
     load_tree = Tree()
     load_tree.create_node(click.style('Loads', bold=True), 'loads')
 
-    current_installation = CurrentInstallation(node)
+    current_installation = Installation(node)
 
     with current_installation.config() as cf:
         try:
@@ -50,7 +50,7 @@ def configuration(node) -> None:
 
         if config_valid:
             cli_output = ''
-            cli_output += click.style('Node:', bold=True) + f' {cf["node"]}\n'
+            # cli_output += click.style('Node:', bold=True) + f' {cf["node"]}\n'
             cli_output += click.style('Input:', bold=True) + f' {cf["stream_name"]}/transients\n'
             cli_output += click.style('Output:', bold=True) + f' {cf["stream_name"]}/events\n\n'
             cli_output += exemplar_tree.show(stdout=False) + '\n'

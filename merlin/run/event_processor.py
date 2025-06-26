@@ -4,7 +4,7 @@ from joule.api import Event, EventStream
 from joule.errors import ApiError
 from joule.utilities import yesno
 
-from merlin.installation import CurrentInstallation
+from merlin.api import Installation
 
 
 class EventProcessor(FilterModule):
@@ -46,7 +46,7 @@ class EventProcessor(FilterModule):
         out_event_stream = await self._get_output_stream(parsed_args.output)
 
         if parsed_args.method == 'supervised':
-            current_installation = CurrentInstallation(self.node)
+            current_installation = Installation(self.node)
 
         while not self.stop_requested and not await transients_pipe.is_empty():
             sarray_in = await self.read_from_input(transients_pipe)

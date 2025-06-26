@@ -3,7 +3,7 @@ from joule.utilities import human_to_timestamp as h2ts
 from joule.api import get_node
 import asyncio
 
-from merlin.installation import config_filename, CurrentInstallation, new_installation
+from merlin.api import config_filename, Installation, new_installation
 from merlin.cli.decorators import pass_node_name
 
 
@@ -59,11 +59,11 @@ def infer_one(node, start, end) -> None:
     """
 
     joule_node = get_node(node)
-    current_installation = CurrentInstallation(joule_node)
+    current_installation = Installation(joule_node)
     inferred_exemplars = current_installation.level_one(h2ts(start), h2ts(end))
     asyncio.run(joule_node.close())
 
-    with CurrentInstallation().config() as cf:
+    with Installation().config() as cf:
         cf['exemplars'] = [inferred_exemplar.to_json() for inferred_exemplar in inferred_exemplars]
 
     click.echo(f'Saved to {config_filename}')
@@ -79,7 +79,7 @@ def infer_two(node, start, end) -> None:
     """
 
     joule_node = get_node(node)
-    current_installation = CurrentInstallation(joule_node)
+    current_installation = Installation(joule_node)
     inferred_exemplar, match_score = current_installation.level_two(h2ts(start), h2ts(end))
     asyncio.run(joule_node.close())
 
@@ -101,6 +101,6 @@ def infer_three(node, load_name, start, end) -> None:
     """
 
     joule_node = get_node(node)
-    current_installation = CurrentInstallation(joule_node)
+    current_installation = Installation(joule_node)
     current_installation.level_three(load_name, h2ts(start), h2ts(end))
     asyncio.run(joule_node.close())

@@ -4,7 +4,6 @@ from joule.api import EventStream
 from joule.errors import ApiError
 from contextlib import asynccontextmanager
 import asyncio
-from async_lru import alru_cache
 
 
 @asynccontextmanager
@@ -97,7 +96,6 @@ async def clear_stream(node_name: str, stream_name: str) -> None:
         await node.event_stream_remove(stream_name + '/events')
 
 
-@alru_cache(maxsize=8192)
 async def read_interval(node_name: str, stream_name: str, interval_start: int, interval_end: int):
     """
     Cache recently-viewed transients in the back-end program.

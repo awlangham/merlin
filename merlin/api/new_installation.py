@@ -1,6 +1,6 @@
 import json
 
-from merlin.installation import config_filename, CurrentInstallation
+from merlin.api import config_filename, Installation
 
 
 def new_installation(node, stream_name):
@@ -9,4 +9,4 @@ def new_installation(node, stream_name):
         config['stream_name'] = stream_name
         json.dump(config, config_file, indent=4)
 
-    return CurrentInstallation(node)
+    return Installation(node)
