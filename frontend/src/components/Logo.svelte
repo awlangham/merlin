@@ -1,5 +1,5 @@
 <div class="logo-bar">
-    <img id="img-logo" src="/merlin.png" alt="MERLIN logo" />
+    <img id="img-logo" src="merlin.png" alt="MERLIN logo" />
 </div>
 
 <style>
