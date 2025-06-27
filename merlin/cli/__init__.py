@@ -8,6 +8,8 @@ from merlin.cli.clear import cli_clear
 from merlin.cli.docs import docs
 from merlin.cli.configuration import configuration
 
+from merlin.cli.load import load
+
 
 @click.group()
 @click.version_option()
@@ -30,3 +32,5 @@ main.add_command(infer_three)
 main.add_command(cli_clear)
 main.add_command(docs)
 main.add_command(configuration)
+
+main.add_command(load)

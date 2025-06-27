@@ -55,7 +55,7 @@ def infer_zero(node, event_stream, start, end) -> None:
 @pass_node_name
 def infer_one(node, start, end) -> None:
     """
-    Find exemplars in EVENT_STREAM over the specified period that match load state changes in the config file.
+    Find exemplars over the specified period that match load state changes in the config file.
     """
 
     joule_node = get_node(node)
@@ -75,7 +75,7 @@ def infer_one(node, start, end) -> None:
 @pass_node_name
 def infer_two(node, start, end) -> None:
     """
-    Find the exemplar in the config file that matches the specified data in EVENT_STREAM.
+    Find the exemplar in the config file that matches the specified data.
     """
 
     joule_node = get_node(node)
