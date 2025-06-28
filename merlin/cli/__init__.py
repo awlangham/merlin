@@ -9,6 +9,7 @@ from merlin.cli.docs import docs
 from merlin.cli.configuration import configuration
 
 from merlin.cli.load import load
+from merlin.cli.exemplar import exemplar
 
 
 @click.group()
@@ -34,3 +35,4 @@ main.add_command(docs)
 main.add_command(configuration)
 
 main.add_command(load)
+main.add_command(exemplar)

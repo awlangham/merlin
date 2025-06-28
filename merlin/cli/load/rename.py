@@ -7,6 +7,10 @@ from merlin.api import config_filename
 @click.argument('old_name')
 @click.argument('new_name')
 def rename(old_name: str, new_name: str) -> None:
+    """
+    Rename a load.
+    """
+
     with open(config_filename, 'r') as file:
         config_text = file.read()
 

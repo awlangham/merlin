@@ -6,6 +6,10 @@ from merlin.api import Installation
 @click.command('remove')
 @click.argument('load_name')
 def remove(load_name: str) -> None:
+    """
+    Remove a load from the active configuration.
+    """
+
     with Installation(None).config() as cf:
         try:
             del cf['loads'][load_name]

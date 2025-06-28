@@ -2,11 +2,16 @@ import click
 
 from merlin.models import GenericLoad
 from merlin.api import Installation
+from merlin.cli.utilities import _comma_separated_to_strings, _comma_separated_to_floats
 
 
 @click.command('add')
 @click.argument('load_name')
 def add(load_name: str) -> None:
+    """
+    Add a load to the configuration.
+    """
+
     state_names = _comma_separated_to_strings(click.prompt('Enter a comma-separated list of states', default='OFF, ON'))
 
     states_dict = {}
@@ -28,10 +33,3 @@ def add(load_name: str) -> None:
 
     click.echo(f'Added {load_name} to configuration.')
 
-
-def _comma_separated_to_strings(string) -> list[str]:
-    return [substring.strip() for substring in string.split(',')]
-
-
-def _comma_separated_to_floats(string) -> list[int]:
-    return [float(substring.strip()) for substring in string.split(',')]
