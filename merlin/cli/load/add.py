@@ -27,9 +27,6 @@ def add(load_name: str) -> None:
         states_dict[state_name] = PQ_ss
 
     new_load = GenericLoad(load_name, states_dict)
-
-    with Installation(None).config() as cf:
-        cf['loads'][load_name] = new_load.to_json()
+    Installation(None).add_load(new_load)
 
     click.echo(f'Added {load_name} to configuration.')
-

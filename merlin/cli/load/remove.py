@@ -10,9 +10,8 @@ def remove(load_name: str) -> None:
     Remove a load from the active configuration.
     """
 
-    with Installation(None).config() as cf:
-        try:
-            del cf['loads'][load_name]
-            click.echo(f'Removed {load_name} from configuration.')
-        except KeyError:
-            click.echo(f'No load found named {load_name}.')
+    try:
+        Installation(None).remove_load(load_name)
+        click.echo(f'Removed {load_name} from configuration.')
+    except KeyError:
+        click.echo(f'No load found named {load_name}.')

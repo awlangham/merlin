@@ -6,7 +6,7 @@ import asyncio
 
 from merlin.api import config_filename
 from merlin.utilities import trainola
-from merlin.models import Exemplar
+from merlin.models import Exemplar, GenericLoad
 
 
 class Installation:
@@ -42,6 +42,14 @@ class Installation:
         # index starts at 1
         with self.config() as cf:
             del cf['exemplars'][index - 1]
+
+    def add_load(self, new_load: GenericLoad) -> None:
+        with self.config() as cf:
+            cf['loads'][new_load.name] = new_load.to_json()
+
+    def remove_load(self, load_name: str) -> None:
+        with self.config() as cf:
+            del cf['loads'][load_name]
 
     async def load_exemplar(self, load_name: str, state1: str, state2: str):
         """
