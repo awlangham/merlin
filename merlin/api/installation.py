@@ -38,6 +38,11 @@ class Installation:
         with self.config() as cf:
             cf['exemplars'].append(exemplar.to_json())
 
+    def remove_exemplar(self, index: int) -> None:
+        # index starts at 1
+        with self.config() as cf:
+            del cf['exemplars'][index - 1]
+
     async def load_exemplar(self, load_name: str, state1: str, state2: str):
         """
         Find the exemplar corresponding to
