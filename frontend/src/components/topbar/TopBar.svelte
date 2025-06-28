@@ -1,24 +1,27 @@
 <script>
     import { datasetStore } from "../stores";
-    import { getEvents, getClusters } from "../api-calls";
+    import { getEvents } from "../api-calls";
 
     import DatasetList from "./DatasetList.svelte";
     import DateRange from "./DateRange.svelte";
+    import Configuration from "./Configuration.svelte";
 
-    $: if ($datasetStore !== "") {
-        getEvents();
-    }
+    $effect(() => {
+        if ($datasetStore != "") {
+            getEvents();
+        }
+    });
 </script>
 
 <div class="top-bar">
-    <DatasetList />
+    <DatasetList></DatasetList>
 
     <button
         id="button-refresh"
         disabled={$datasetStore == ""}
         type="button"
         class="btn btn-secondary btn-sm"
-        on:click={getEvents}
+        onclick={getEvents}
     >
         Refresh
     </button>
@@ -30,6 +33,8 @@
     >
         Cluster
     </button> -->
+
+    <Configuration></Configuration>
 
     <DateRange />
 </div>

@@ -9,7 +9,7 @@
     import TransientPlot from "./transients/TransientPlot.svelte";
 
     import "bootstrap/dist/css/bootstrap.min.css";
-    // import 'bootstrap/dist/js/bootstrap.min.js';
+    import 'bootstrap/dist/js/bootstrap.min.js';
 
     let featurePlots;
 

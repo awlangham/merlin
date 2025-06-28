@@ -5,7 +5,7 @@ from importlib.resources import files
 import click
 
 import merlin
-from merlin.visualizer import datasets, features, transient, download, label, learn
+from merlin.visualizer import datasets, features, transient, download, label, learn, config
 
 
 app = FastAPI()
@@ -19,6 +19,7 @@ app.include_router(download.router, prefix='/api')
 app.include_router(label.router, prefix='/api')
 app.include_router(learn.router, prefix='/api')
 # app.include_router(clusters.router, prefix='/api')
+app.include_router(config.router, prefix='/api')
 
 
 @click.command()
