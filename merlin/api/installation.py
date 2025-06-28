@@ -6,6 +6,7 @@ import asyncio
 
 from merlin.api import config_filename
 from merlin.utilities import trainola
+from merlin.models import Exemplar
 
 
 class Installation:
@@ -33,11 +34,11 @@ class Installation:
 
         return asyncio.run(self.node.event_stream_read_list(self.stream_name + '/events', start=start, end=end, limit=1000))
 
-    def add_exemplar(self, exemplar) -> None:
+    def add_exemplar(self, exemplar: Exemplar) -> None:
         with self.config() as cf:
             cf['exemplars'].append(exemplar.to_json())
 
-    async def load_exemplar(self, load_name, state1, state2):
+    async def load_exemplar(self, load_name: str, state1: str, state2: str):
         """
         Find the exemplar corresponding to
         the transition load_name::state1->state2
@@ -50,7 +51,7 @@ class Installation:
             if exemplar['transitions'] == [[load_name, state1, state2]]:
                 return await self.get_transient(exemplar['start_ts'], exemplar['end_ts'])
 
-    async def find_matching_exemplar(self, data, trainola_threshold=0.1):
+    async def find_matching_exemplar(self, data, trainola_threshold: float = 0.1):
         """
         Returns the exemplar in the config file that best
         matches the provided transient, or None if no exemplar
@@ -82,7 +83,7 @@ class Installation:
 
         return matching_exemplar, best_score
 
-    async def combinatorial_match(self, P_ss, Q_ss):
+    async def combinatorial_match(self, P_ss: float, Q_ss: float):
         """
         Match the steady-state changes in real and reactive power
         to combinations of two loads in the configuration.
@@ -121,7 +122,7 @@ class Installation:
         else:
             return None
 
-    async def get_transient(self, start_ts, end_ts):
+    async def get_transient(self, start_ts: int, end_ts: int):
         pipe = await self.node.data_read(self.stream_name + '/transients', start=start_ts, end=end_ts)
         sarray = await pipe.read_all(flatten=True)
         return sarray

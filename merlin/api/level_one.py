@@ -43,10 +43,7 @@ def level_one(self, start_ts: int, end_ts: int):
                         best_event_match = event
 
                 # Create exemplar for best match
-                new_exemplar = Exemplar()
-                new_exemplar.start_ts = best_event_match.start_time
-                new_exemplar.end_ts = best_event_match.end_time
-                new_exemplar.transitions.append([load, state1, state2])
+                new_exemplar = Exemplar(best_event_match.start_time, best_event_match.end_time, [[load, state1, state2]])
                 exemplars.append(new_exemplar)
 
     return exemplars

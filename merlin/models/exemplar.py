@@ -3,10 +3,10 @@ class Exemplar:
     Exemplar class for the transient signature of a load state change.
     """
 
-    def __init__(self) -> None:
-        self.start_ts = None
-        self.end_ts = None
-        self.transitions = []
+    def __init__(self, start_ts: int, end_ts: int, transitions: list) -> None:
+        self.start_ts = start_ts
+        self.end_ts = end_ts
+        self.transitions = transitions
 
     def to_json(self) -> dict:
         return {

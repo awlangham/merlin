@@ -6,8 +6,7 @@ from merlin.cli.decorators import pass_node_name
 
 
 @click.command('configuration')
-@pass_node_name
-def configuration(node) -> None:
+def configuration() -> None:
     """
     Show current Merlin configuration, including loads, exemplars, transitions, and states.
 
@@ -24,7 +23,7 @@ def configuration(node) -> None:
     load_tree = Tree()
     load_tree.create_node(click.style('Loads', bold=True), 'loads')
 
-    current_installation = Installation(node)
+    current_installation = Installation(None)
 
     with current_installation.config() as cf:
         try:

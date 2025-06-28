@@ -66,25 +66,21 @@ def level_zero(self, start_ts: int, end_ts: int):
         # Figure out which exemplar is ON and which is OFF
         if np.sum(features[best_cluster1, (0, 2, 4)]) > np.sum(features[best_cluster2, (0, 2, 4)]):
             # best_cluster1 is ON, best_cluster2 is OFF
-            on_exemplar = Exemplar()
-            on_exemplar.start_ts = intervals[best_cluster1][0]
-            on_exemplar.end_ts = intervals[best_cluster1][1]
+            on_start_ts = intervals[best_cluster1][0]
+            on_end_ts = intervals[best_cluster1][1]
 
-            off_exemplar = Exemplar()
-            off_exemplar.start_ts = intervals[best_cluster2][0]
-            off_exemplar.end_ts = intervals[best_cluster2][1]
+            off_start_ts = intervals[best_cluster2][0]
+            off_end_ts = intervals[best_cluster2][1]
 
             on_ss = features[best_cluster1, :6]
             on_pk = features[best_cluster1, 6:]
         else:
             # best_cluster2 is ON, best_cluster1 is OFF
-            on_exemplar = Exemplar()
-            on_exemplar.start_ts = intervals[best_cluster2][0]
-            on_exemplar.end_ts = intervals[best_cluster2][1]
+            on_start_ts = intervals[best_cluster2][0]
+            on_end_ts = intervals[best_cluster2][1]
 
-            off_exemplar = Exemplar()
-            off_exemplar.start_ts = intervals[best_cluster1][0]
-            off_exemplar.end_ts = intervals[best_cluster1][1]
+            off_start_ts = intervals[best_cluster1][0]
+            off_end_ts = intervals[best_cluster1][1]
 
             on_ss = features[best_cluster2, :6]
             on_pk = features[best_cluster2, 6:]
@@ -100,8 +96,8 @@ def level_zero(self, start_ts: int, end_ts: int):
         new_load = OnOffLoad(new_load_name, on_ss, family)
         loads.append(new_load)
 
-        on_exemplar.transitions = [[new_load_name, 'OFF', 'ON']]
-        off_exemplar.transitions = [[new_load_name, 'ON', 'OFF']]
+        on_exemplar = Exemplar(on_start_ts, on_end_ts, [[new_load_name, 'OFF', 'ON']])
+        off_exemplar = Exemplar(off_start_ts, off_end_ts, [[new_load_name, 'ON', 'OFF']])
 
         exemplars.append(on_exemplar)
         exemplars.append(off_exemplar)
