@@ -18,7 +18,7 @@ def add(load_name: str) -> None:
     for state_name in state_names:
         click.echo(f'\nConfiguring {load_name}::{state_name}')
         P_ss = _comma_separated_to_floats(click.prompt('Enter per-phase real power (PA, PB, PC)'))
-        Q_ss = _comma_separated_to_floats(click.prompt('Enter per-phase real power (QA, QB, QC)'))
+        Q_ss = _comma_separated_to_floats(click.prompt('Enter per-phase reactive power (QA, QB, QC)'))
 
         PQ_ss = [None] * 6
         PQ_ss[::2] = P_ss
