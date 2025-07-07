@@ -13,6 +13,7 @@ class EdgeDetector(FilterModule):
         grp.add_argument('--min_ss_change', type=float, required=True, help='Minimum steady-state change required to be an event')
         grp.add_argument('--settling_window_length', type=int, required=True, help='Length of rolling standard deviation filter for flatness detection')
         grp.add_argument('--settling_std_dev', type=float, required=True, help='Standard deviation threshold for flatness detection')
+        grp.add_argument('--mean_filter_length', type=int, default=7, help='Length of rolling mean filter applied on input data (default: 7)')
 
     async def run(self, parsed_args, inputs, outputs) -> None:
         """
@@ -20,14 +21,14 @@ class EdgeDetector(FilterModule):
 
         Must be run from an async function or from the command line with ``merlin-process-events``.
         """
-                
+
         prep_pipe = inputs['prep']
         transients_pipe = outputs['transients']
 
         self.minimum_ss_change = parsed_args.min_ss_change
         self.settling_std_dev = parsed_args.settling_std_dev
         self.settling_window_length = parsed_args.settling_window_length
-        self.mean_filter_length = 7
+        self.mean_filter_length = parsed_args.mean_filter_length
 
         last_timestamp = -1
         while not self.stop_requested and not await prep_pipe.is_empty():
@@ -42,8 +43,10 @@ class EdgeDetector(FilterModule):
             interval_list = self.process_window(sarray_in)
 
             for (interval_start, interval_end) in interval_list:
-                timestamps = sarray_in['timestamp'][interval_start + self.settling_window_length // 2:interval_end + self.settling_window_length // 2]
-                prep_interval = sarray_in['data'][interval_start + self.settling_window_length // 2:interval_end + self.settling_window_length // 2]
+                timestamps = sarray_in['timestamp'][interval_start + self.mean_filter_length // 2 + self.settling_window_length //
+                                                    2:interval_end + self.mean_filter_length // 2 + self.settling_window_length // 2]
+                prep_interval = sarray_in['data'][interval_start + self.mean_filter_length // 2 + self.settling_window_length //
+                                                  2:interval_end + self.mean_filter_length // 2 + self.settling_window_length // 2]
 
                 # If this interval overlaps with a previous interval, just trim it
                 valid_indices = np.where(timestamps > last_timestamp)
@@ -62,11 +65,13 @@ class EdgeDetector(FilterModule):
     def process_window(self, sarray_in: np.ndarray) -> list[tuple]:
         prep_in = sarray_in['data']
 
-        PQ = prep_in[:, (0, 1, 8, 9, 16, 17)]
+        prep_in_filtered = np.apply_along_axis(np.convolve, 0, prep_in, np.ones(self.mean_filter_length)/self.mean_filter_length, mode='valid')
+
+        PQ = prep_in_filtered[:, (0, 1, 8, 9, 16, 17)]
         P_total = PQ[:, 0] + PQ[:, 2] + PQ[:, 4]
         Q_total = PQ[:, 1] + PQ[:, 3] + PQ[:, 5]
 
-        P_total, Q_total = self.rolling_mean(P_total), self.rolling_mean(Q_total)
+        P_total, Q_total = self.rolling_median(P_total), self.rolling_median(Q_total)
         P_sigma, Q_sigma = self.rolling_std(P_total), self.rolling_std(Q_total)
 
         flat_indices = np.where(np.logical_and(P_sigma < self.settling_std_dev, Q_sigma < self.settling_std_dev))[0]
@@ -110,8 +115,8 @@ class EdgeDetector(FilterModule):
     def rolling_mean(self, data: np.ndarray) -> np.ndarray:
         return Series(data).rolling(window=self.mean_filter_length, center=True, min_periods=1).mean().values
 
-# def rolling_median(data, window_size: int):
-#     return Series(data).rolling(window=window_size, center=True, min_periods=1).median().values
+    def rolling_median(self, data):
+        return Series(data).rolling(window=7, center=True, min_periods=1).median().values
 
 
 def main() -> None:
