@@ -25,7 +25,7 @@ def configuration() -> None:
 
     current_installation = Installation(None)
 
-    with current_installation.config() as cf:
+    with current_installation.modify_config() as cf:
         try:
             for i, exemplar in enumerate(cf['exemplars']):
                 exemplar_tree.create_node(f'{i + 1}: [ {ts2h(exemplar["start_ts"])}, {ts2h(exemplar["end_ts"])}]', i, parent='exemplars')

@@ -13,11 +13,11 @@ class Installation:
     def __init__(self, node=None) -> None:
         self.node = node
 
-        with self.config() as cf:
-            self.stream_name = cf['stream_name']
+        cf = self.read_config()
+        self.stream_name = cf['stream_name']
 
     @contextmanager
-    def config(self):
+    def modify_config(self):
         with open(config_filename, 'r') as config_file:
             config_json = json.load(config_file)
 
@@ -27,6 +27,11 @@ class Installation:
             with open(config_filename, 'w') as config_file:
                 json.dump(config_json, config_file, indent=4)
 
+    def read_config(self):
+        with open(config_filename, 'r') as config_file:
+            config_json = json.load(config_file)
+        return config_json
+
     def get_events(self, start: int = None, end: int = None) -> list:
         """
         Return a list of all events in the specified stream.
@@ -35,20 +40,20 @@ class Installation:
         return asyncio.run(self.node.event_stream_read_list(self.stream_name + '/events', start=start, end=end, limit=1000))
 
     def add_exemplar(self, exemplar: Exemplar) -> None:
-        with self.config() as cf:
+        with self.modify_config() as cf:
             cf['exemplars'].append(exemplar.to_json())
 
     def remove_exemplar(self, index: int) -> None:
         # index starts at 1
-        with self.config() as cf:
+        with self.modify_config() as cf:
             del cf['exemplars'][index - 1]
 
     def add_load(self, new_load: GenericLoad) -> None:
-        with self.config() as cf:
+        with self.modify_config() as cf:
             cf['loads'][new_load.name] = new_load.to_json()
 
     def remove_load(self, load_name: str) -> None:
-        with self.config() as cf:
+        with self.modify_config() as cf:
             del cf['loads'][load_name]
 
     async def load_exemplar(self, load_name: str, state1: str, state2: str):
@@ -57,8 +62,8 @@ class Installation:
         the transition load_name::state1->state2
         """
 
-        with self.config() as cf:
-            exemplars = cf['exemplars']
+        cf = self.read_config()
+        exemplars = cf['exemplars']
 
         for exemplar in exemplars:
             if exemplar['transitions'] == [[load_name, state1, state2]]:
@@ -74,9 +79,9 @@ class Installation:
         best_score = np.inf
         matching_exemplar = None
 
-        with self.config() as cf:
-            exemplars = cf['exemplars']
-            stream_name = cf['stream_name']
+        cf = self.read_config()
+        exemplars = cf['exemplars']
+        stream_name = cf['stream_name']
 
         for exemplar in exemplars:
             pipe = await self.node.data_read(stream_name + '/transients',
@@ -102,33 +107,34 @@ class Installation:
         to combinations of two loads in the configuration.
         """
 
-        with self.config() as cf:
-            load_names = list(cf['loads'].keys())
+        cf = self.read_config()
 
-            best_error = np.inf
-            best_loads, best_type = None, None
+        load_names = list(cf['loads'].keys())
 
-            for load1, load2 in combinations(load_names, 2):
-                PA_ss_1, QA_ss_1, PB_ss_1, QB_ss_1, PC_ss_1, QC_ss_1 = cf['loads'][load1]['states']['ON']
-                P_ss_1, Q_ss_1 = PA_ss_1 + PB_ss_1 + PC_ss_1, QA_ss_1 + QB_ss_1 + QC_ss_1
+        best_error = np.inf
+        best_loads, best_type = None, None
 
-                PA_ss_2, QA_ss_2, PB_ss_2, QB_ss_2, PC_ss_2, QC_ss_2 = cf['loads'][load2]['states']['ON']
-                P_ss_2, Q_ss_2 = PA_ss_2 + PB_ss_2 + PC_ss_2, QA_ss_2 + QB_ss_2 + QC_ss_2
+        for load1, load2 in combinations(load_names, 2):
+            PA_ss_1, QA_ss_1, PB_ss_1, QB_ss_1, PC_ss_1, QC_ss_1 = cf['loads'][load1]['states']['ON']
+            P_ss_1, Q_ss_1 = PA_ss_1 + PB_ss_1 + PC_ss_1, QA_ss_1 + QB_ss_1 + QC_ss_1
 
-                for a, b in product([1, -1], repeat=2):
-                    P_ss_combo = a * P_ss_1 + b * P_ss_2
-                    Q_ss_combo = a * Q_ss_1 + b * Q_ss_2
+            PA_ss_2, QA_ss_2, PB_ss_2, QB_ss_2, PC_ss_2, QC_ss_2 = cf['loads'][load2]['states']['ON']
+            P_ss_2, Q_ss_2 = PA_ss_2 + PB_ss_2 + PC_ss_2, QA_ss_2 + QB_ss_2 + QC_ss_2
 
-                    error = (P_ss - P_ss_combo) ** 2 + (Q_ss - Q_ss_combo) ** 2
-                    error /= P_ss_combo ** 2 + Q_ss_combo ** 2
-                    if error < best_error:
-                        best_error = error
-                        best_loads = f'{load1},{load2}'
+            for a, b in product([1, -1], repeat=2):
+                P_ss_combo = a * P_ss_1 + b * P_ss_2
+                Q_ss_combo = a * Q_ss_1 + b * Q_ss_2
 
-                        type1 = 'OFF to ON' if a == 1 else 'ON to OFF'
-                        type2 = 'OFF to ON' if b == 1 else 'ON to OFF'
+                error = (P_ss - P_ss_combo) ** 2 + (Q_ss - Q_ss_combo) ** 2
+                error /= P_ss_combo ** 2 + Q_ss_combo ** 2
+                if error < best_error:
+                    best_error = error
+                    best_loads = f'{load1},{load2}'
 
-                        best_type = f'{type1},{type2}'
+                    type1 = 'OFF to ON' if a == 1 else 'ON to OFF'
+                    type2 = 'OFF to ON' if b == 1 else 'ON to OFF'
+
+                    best_type = f'{type1},{type2}'
 
         if best_error < 0.1:
             return best_loads, best_type

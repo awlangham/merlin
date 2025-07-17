@@ -42,7 +42,7 @@ def infer_zero(node, event_stream, start, end) -> None:
         for exemplar in inferred_exemplars:
             exemplar_list.append(exemplar.to_json())
 
-        with installation.config() as config:
+        with installation.modify_config() as config:
             config['exemplars'] = exemplar_list
             config['loads'] = load_dict
 
@@ -63,7 +63,7 @@ def infer_one(node, start, end) -> None:
     inferred_exemplars = current_installation.level_one(h2ts(start), h2ts(end))
     asyncio.run(joule_node.close())
 
-    with Installation().config() as cf:
+    with Installation().modify_config() as cf:
         cf['exemplars'] = [inferred_exemplar.to_json() for inferred_exemplar in inferred_exemplars]
 
     click.echo(f'Saved to {config_filename}')

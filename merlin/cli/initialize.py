@@ -110,7 +110,7 @@ def _supervised_setup(selected_folder, node_name) -> None:
 
     joule_node = get_node(node_name)
     installation = Installation(joule_node)
-    with installation.config() as config:
+    with installation.modify_config() as config:
         config = {}
         config['stream_name'] = selected_folder
         config['exemplars'] = exemplar_list

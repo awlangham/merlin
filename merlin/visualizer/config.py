@@ -7,7 +7,5 @@ router = APIRouter()
 
 @router.get('/config')
 def config() -> dict:
-    with Installation(None).config() as cf:
-        config_json = cf
-
+    config_json = Installation(None).read_config()
     return config_json

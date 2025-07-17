@@ -13,7 +13,7 @@ class EventProcessor(FilterModule):
     into a collection of Joule events.
     """
 
-    gap_time = 0.5 * 1e6  # microseconds
+    gap_time = 20000 # microseconds
 
     def custom_args(self, parser):
         grp = parser.add_argument_group('Merlin', 'Module-specific arguments')
@@ -139,8 +139,8 @@ class EventProcessor(FilterModule):
                         event_content['label'] = transition[0]
                         event_content['type'] = transition[1] + ' to ' + transition[2]
 
-                        with current_installation.config() as cf:
-                            load_family = cf['loads'][transition[0]]['family']
+                        cf = current_installation.read_config()
+                        load_family = cf['loads'][transition[0]]['family']
                         event_content['load_family'] = load_family
 
                         event_content['distance'] = float(match_score)
