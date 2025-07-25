@@ -1,12 +1,15 @@
 from itertools import combinations
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import HDBSCAN
+from sklearn.manifold import MDS
+import matplotlib.pyplot as plt
 
 from merlin.models import Exemplar, OnOffLoad
 
+from min_distance import transverse_distance
 
-def level_zero(self, start_ts: int, end_ts: int):
+
+async def level_zero(self, start_ts: int, end_ts: int):
     feature_names = ['PA_ss', 'QA_ss',
                      'PB_ss', 'QB_ss',
                      'PC_ss', 'QC_ss',
@@ -15,19 +18,43 @@ def level_zero(self, start_ts: int, end_ts: int):
                      'PC_pk', 'QC_pk'
                      ]
 
-    features, intervals = [], []
-    for event in self.get_events(start_ts, end_ts):
+    transient_pipe = await self.node.data_read(self.stream_name + '/transients', start=start_ts, end=end_ts)
+    transient_data = await transient_pipe.read_all(flatten=True)
+
+    features, intervals, transients = [], [], []
+    events = await self.node.event_stream_read_list(self.stream_name + '/events', start=start_ts, end=end_ts, limit=5000)
+    for event in events:
         features.append([event.content[name] for name in feature_names])
         intervals.append((event.start_time, event.end_time))
 
+        start_idx = np.searchsorted(transient_data[:, 0], event.start_time)
+        end_idx = np.searchsorted(transient_data[:, 0], event.end_time) + 1
+
+        transients.append(transient_data[start_idx:end_idx].T)
+
     features = np.array(features)
+    print(f'Processing {len(transients)} events...')
 
-    scaler = MinMaxScaler()
-    scaled_features = scaler.fit_transform(features)
+    num_events = len(transients)
+    distance_matrix = np.zeros((num_events, num_events))
 
-    hdbscan = HDBSCAN(min_cluster_size=25, store_centers='medoid', cluster_selection_epsilon=0.1).fit(scaled_features)
+    for t1, t2 in combinations(range(num_events), 2):
+        pair_distance = transverse_distance(transients[t1][1:], transients[t2][1:])
+        distance_matrix[t1, t2] = pair_distance
+        distance_matrix[t2, t1] = pair_distance
+
+    transformed = MDS(n_components=3, dissimilarity='precomputed', normalized_stress='auto', n_init=4).fit_transform(distance_matrix)
+
+    hdbscan = HDBSCAN(min_cluster_size=5, store_centers='medoid', cluster_selection_epsilon=0.04).fit(transformed)
 
     cluster_assignments = hdbscan.labels_
+
+    plt.figure()
+    plt.scatter(transformed[:, 0], transformed[:, 1], c=hdbscan.labels_)
+    plt.scatter(hdbscan.medoids_[:, 0], hdbscan.medoids_[:, 1], marker='x', color='red')
+    plt.xlabel('MDS 0')
+    plt.ylabel('MDS 1')
+    plt.grid()
 
     distinct_ids = list(set(cluster_assignments))
     exemplar_event_indices = []
@@ -37,8 +64,18 @@ def level_zero(self, start_ts: int, end_ts: int):
             continue
 
         # Find index of representative event for this cluster
-        medoid_index = np.where(np.all(scaled_features == hdbscan.medoids_[cluster_id], axis=1))[0][0]
+        medoid_index = np.where(np.all(transformed == hdbscan.medoids_[cluster_id], axis=1))[0][0]
         exemplar_event_indices.append(medoid_index)
+
+    plt.figure()
+    plt.scatter(features[:, 0] + features[:, 2] + features[:, 4], features[:, 1] + features[:, 3] + features[:, 5], c=hdbscan.labels_)
+    for exemplar_event_index in exemplar_event_indices:
+        plt.scatter(features[exemplar_event_index, 0] + features[exemplar_event_index, 2] + features[exemplar_event_index, 4],
+                    features[exemplar_event_index, 1] + features[exemplar_event_index, 3] + features[exemplar_event_index, 5], marker='x', color='red')
+    plt.xlabel('Total Steady-State P')
+    plt.ylabel('Total Steady-State Q')
+    plt.grid()
+    plt.show()
 
     # Load inference
     exemplars, loads = [], []

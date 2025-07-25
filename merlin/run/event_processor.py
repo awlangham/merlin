@@ -13,7 +13,7 @@ class EventProcessor(FilterModule):
     into a collection of Joule events.
     """
 
-    gap_time = 20000 # microseconds
+    gap_time = 20000  # microseconds
 
     def custom_args(self, parser):
         grp = parser.add_argument_group('Merlin', 'Module-specific arguments')

@@ -3,6 +3,9 @@ import json
 from itertools import combinations, product
 from contextlib import contextmanager
 import asyncio
+import matplotlib.pyplot as plt
+
+from min_distance import transverse_distance
 
 from merlin.api import config_filename
 from merlin.utilities import trainola
@@ -32,12 +35,12 @@ class Installation:
             config_json = json.load(config_file)
         return config_json
 
-    def get_events(self, start: int = None, end: int = None) -> list:
+    async def get_events(self, start: int = None, end: int = None) -> list:
         """
         Return a list of all events in the specified stream.
         """
 
-        return asyncio.run(self.node.event_stream_read_list(self.stream_name + '/events', start=start, end=end, limit=1000))
+        return await self.node.event_stream_read_list(self.stream_name + '/events', start=start, end=end, limit=2000)
 
     def add_exemplar(self, exemplar: Exemplar) -> None:
         with self.modify_config() as cf:
@@ -69,7 +72,7 @@ class Installation:
             if exemplar['transitions'] == [[load_name, state1, state2]]:
                 return await self.get_transient(exemplar['start_ts'], exemplar['end_ts'])
 
-    async def find_matching_exemplar(self, data, trainola_threshold: float = 0.1):
+    async def find_matching_exemplar(self, data, trainola_threshold: float = 0.2):
         """
         Returns the exemplar in the config file that best
         matches the provided transient, or None if no exemplar
@@ -92,10 +95,21 @@ class Installation:
             exemplar_PQ -= np.mean(exemplar_PQ[:5], axis=0)
 
             observed_data = data - np.mean(data[:5], axis=0)
+            observed_data = observed_data[2:-2]
 
-            trainola_score = trainola(observed_data.T, exemplar_PQ.T)
+            print('----')
+            print(exemplar)
+
+            trainola_score = transverse_distance(observed_data.T, exemplar_PQ.T)
+            print(trainola_score)
+
+            # print(trainola_score, exemplar)
 
             if trainola_score < best_score and trainola_score < trainola_threshold:
+                # plt.plot(exemplar_PQ, marker='o')
+                # plt.plot(observed_data, marker='o')
+                # plt.show()
+
                 best_score = trainola_score
                 matching_exemplar = exemplar
 
@@ -145,6 +159,19 @@ class Installation:
         pipe = await self.node.data_read(self.stream_name + '/transients', start=start_ts, end=end_ts)
         sarray = await pipe.read_all(flatten=True)
         return sarray
+
+    async def get_transients(self, intervals: list[list[int]]) -> list:
+        """
+        Return a list of the transients corresponding
+        to the specified intervals in the provided stream.
+        """
+
+        transients = []
+        for interval in intervals:
+            pipe = await self.node.data_read(self.stream_name + '/transients', start=interval[0], end=interval[1])
+            sarray = await pipe.read_all(flatten=True)
+            transients.append(sarray.T)
+        return transients
 
     from merlin.api.level_zero import level_zero
     from merlin.api.level_one import level_one

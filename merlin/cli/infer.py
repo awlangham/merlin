@@ -23,7 +23,7 @@ def infer_zero(node, event_stream, start, end) -> None:
 
     joule_node = get_node(node)
     installation = new_installation(joule_node, event_stream)
-    inferred_exemplars, inferred_loads = installation.level_zero(h2ts(start), h2ts(end))
+    inferred_exemplars, inferred_loads = asyncio.run(installation.level_zero(h2ts(start), h2ts(end)))
     asyncio.run(joule_node.close())
 
     table = []
