@@ -2,10 +2,7 @@ import numpy as np
 import json
 from itertools import combinations, product
 from contextlib import contextmanager
-import asyncio
-import matplotlib.pyplot as plt
 
-from min_distance import transverse_distance
 
 from merlin.api import config_filename
 from merlin.utilities import trainola
@@ -95,21 +92,10 @@ class Installation:
             exemplar_PQ -= np.mean(exemplar_PQ[:5], axis=0)
 
             observed_data = data - np.mean(data[:5], axis=0)
-            observed_data = observed_data[2:-2]
 
-            print('----')
-            print(exemplar)
-
-            trainola_score = transverse_distance(observed_data.T, exemplar_PQ.T)
-            print(trainola_score)
-
-            # print(trainola_score, exemplar)
+            trainola_score = trainola(observed_data.T, exemplar_PQ.T)
 
             if trainola_score < best_score and trainola_score < trainola_threshold:
-                # plt.plot(exemplar_PQ, marker='o')
-                # plt.plot(observed_data, marker='o')
-                # plt.show()
-
                 best_score = trainola_score
                 matching_exemplar = exemplar
 

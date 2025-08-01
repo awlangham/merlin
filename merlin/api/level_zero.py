@@ -1,15 +1,13 @@
 from itertools import combinations
 import numpy as np
 from sklearn.cluster import HDBSCAN
-from sklearn.manifold import MDS
 import matplotlib.pyplot as plt
 
 from merlin.models import Exemplar, OnOffLoad
+from merlin.utilities import trainola
 
-from min_distance import transverse_distance
 
-
-async def level_zero(self, start_ts: int, end_ts: int):
+async def level_zero(self, start_ts: int, end_ts: int, max_ss_error=500):
     feature_names = ['PA_ss', 'QA_ss',
                      'PB_ss', 'QB_ss',
                      'PC_ss', 'QC_ss',
@@ -19,7 +17,7 @@ async def level_zero(self, start_ts: int, end_ts: int):
                      ]
 
     transient_pipe = await self.node.data_read(self.stream_name + '/transients', start=start_ts, end=end_ts)
-    transient_data = await transient_pipe.read_all(flatten=True)
+    transient_data = await transient_pipe.read_all(flatten=True, error_on_overflow=True, maxrows=10000000)
 
     features, intervals, transients = [], [], []
     events = await self.node.event_stream_read_list(self.stream_name + '/events', start=start_ts, end=end_ts, limit=5000)
@@ -39,22 +37,13 @@ async def level_zero(self, start_ts: int, end_ts: int):
     distance_matrix = np.zeros((num_events, num_events))
 
     for t1, t2 in combinations(range(num_events), 2):
-        pair_distance = transverse_distance(transients[t1][1:], transients[t2][1:])
+        pair_distance = trainola(transients[t1][1:], transients[t2][1:])
         distance_matrix[t1, t2] = pair_distance
         distance_matrix[t2, t1] = pair_distance
 
-    transformed = MDS(n_components=3, dissimilarity='precomputed', normalized_stress='auto', n_init=4).fit_transform(distance_matrix)
-
-    hdbscan = HDBSCAN(min_cluster_size=5, store_centers='medoid', cluster_selection_epsilon=0.04).fit(transformed)
+    hdbscan = HDBSCAN(min_cluster_size=5, metric='precomputed', cluster_selection_epsilon=0.01).fit(distance_matrix)
 
     cluster_assignments = hdbscan.labels_
-
-    plt.figure()
-    plt.scatter(transformed[:, 0], transformed[:, 1], c=hdbscan.labels_)
-    plt.scatter(hdbscan.medoids_[:, 0], hdbscan.medoids_[:, 1], marker='x', color='red')
-    plt.xlabel('MDS 0')
-    plt.ylabel('MDS 1')
-    plt.grid()
 
     distinct_ids = list(set(cluster_assignments))
     exemplar_event_indices = []
@@ -63,8 +52,11 @@ async def level_zero(self, start_ts: int, end_ts: int):
             # Skip anything unlabeled
             continue
 
+        this_cluster_indices = np.where(cluster_assignments == cluster_id)[0]
+        this_cluster_pair_distances = distance_matrix[this_cluster_indices][:, this_cluster_indices]
+        medoid_index = this_cluster_indices[np.argmin(np.sum(this_cluster_pair_distances, axis=0))]
+
         # Find index of representative event for this cluster
-        medoid_index = np.where(np.all(transformed == hdbscan.medoids_[cluster_id], axis=1))[0][0]
         exemplar_event_indices.append(medoid_index)
 
     plt.figure()
@@ -99,6 +91,10 @@ async def level_zero(self, start_ts: int, end_ts: int):
         cluster_list.remove(best_cluster2)
 
         new_load_name = f'Load {len(loads) + 1}'
+
+        ss_error = features[best_cluster1, :6] + features[best_cluster2, :6]
+        if np.any(np.abs(ss_error) > max_ss_error):
+            return False
 
         # Figure out which exemplar is ON and which is OFF
         if np.sum(features[best_cluster1, (0, 2, 4)]) > np.sum(features[best_cluster2, (0, 2, 4)]):

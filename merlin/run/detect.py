@@ -74,7 +74,7 @@ class EdgeDetector(FilterModule):
         P_total, Q_total = self.rolling_median(P_total), self.rolling_median(Q_total)
         P_sigma, Q_sigma = self.rolling_std(P_total), self.rolling_std(Q_total)
 
-        flat_indices = np.where(np.logical_and(P_sigma < self.settling_std_dev, Q_sigma < self.settling_std_dev))[0]
+        flat_indices = np.where(P_sigma + Q_sigma < self.settling_std_dev)[0]
 
         is_flat = np.zeros(len(P_sigma))
         is_flat[flat_indices] = 1
@@ -87,10 +87,6 @@ class EdgeDetector(FilterModule):
 
         output_events = []
         for interval_start, interval_end in intervals:
-            if interval_end - interval_start < self.settling_window_length - 4:
-                # Interval too short
-                continue
-
             ss_window = 5
             ss_start = np.mean(PQ[interval_start + self.settling_window_length // 2:interval_start + self.settling_window_length // 2 + ss_window], axis=0)
             ss_end = np.mean(PQ[interval_end + self.settling_window_length // 2 - ss_window:interval_end + self.settling_window_length // 2], axis=0)

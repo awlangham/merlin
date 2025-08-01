@@ -1,4 +1,6 @@
 import numpy as np
+from numpy.lib.stride_tricks import sliding_window_view
+from numpy.linalg import norm
 import joule
 from joule.api import EventStream
 from joule.errors import ApiError
@@ -151,43 +153,27 @@ def trainola(a, b):
     a and b are 2-D arrays with the same number of rows,
     but they do not need to have the same number of columns.
 
-    Returns a score within [0, infinity] such that
+    Returns a score within [0, 2] such that
     0 indicates a match, 1 indicates no correlation,
-    and infinity indicates negative correlation
+    and 2 indicates negative correlation
     """
 
     # Remove mean of first 5 samples
     a = (a.T - np.mean(a[:, :5], axis=1)).T
     b = (b.T - np.mean(b[:, :5], axis=1)).T
 
-    max_length = max(a.shape[-1], b.shape[-1])
+    long_array, short_array = (a, b) if a.shape[1] > b.shape[1] else (b, a)
+    long_array_slices = sliding_window_view(long_array, short_array.shape)[0]
 
-    # Find the next power of 2 from max_length
-    # since FFT works best with n as a power of 2.
-    max_length_base_2 = int(2**np.ceil(np.log2(max_length)))
+    distances = []
+    for long_array_slice in long_array_slices:
+        match_score = np.sum(long_array_slice * short_array) / (max(norm(long_array_slice), norm(short_array)) ** 2)
+        distances.append(max(1 - match_score, 0))
 
-    A = np.fft.fft(a, n=max_length_base_2)
-    B = np.fft.fft(b, n=max_length_base_2)
-
-    circular_corr = np.fft.ifft(A * B.conj()).real
-    corr_scores = np.sum(circular_corr / (max(np.linalg.norm(a), np.linalg.norm(b)) ** 2), axis=0)
-    mapped_scores = mapping(corr_scores)
-
-    return max(min(mapped_scores), 0)
+    return min(distances)
 
 
 def mapping(x):
-    """
-    Mapping function to turn correlation scores into
-    trainola scores.
-
-    0 is good, 1 is neutral, inf is bad
-    """
-
-    # fix for floating point
-    x_shifted = x + 1
-    close_to_zero = np.isclose(x_shifted, 0)
-    x_shifted[close_to_zero] = 0
-
-    with np.errstate(divide='ignore'):
-        return np.divide(2, x_shifted) - 1
+    mapped = 1 - x
+    mapped[mapped < 0] = 0
+    return mapped
