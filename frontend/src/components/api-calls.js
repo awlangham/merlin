@@ -17,13 +17,15 @@ const formatDate = (dateTime) => {
 const unformatDate = (dateString, end = false) => {
     const [year, month, date] = dateString.split("-");
     let outputDate = new Date();
-    outputDate.setFullYear(year);
-    outputDate.setMonth(month - 1);
+
     if (end) {
         outputDate.setDate(+date + 1);
     } else {
-        outputDate.setDate(date)
+        outputDate.setDate(date);
     }
+
+    outputDate.setFullYear(year);
+    outputDate.setMonth(month - 1);
     outputDate.setHours(0);
     outputDate.setMinutes(0);
     outputDate.setSeconds(0);
