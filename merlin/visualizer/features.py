@@ -2,7 +2,6 @@ from fastapi import APIRouter, Request, Response
 import orjson
 from joule.utilities import timestamp_to_human as ts2h
 from merlin.utilities import get_joule_node
-
 router = APIRouter()
 
 
@@ -27,6 +26,8 @@ async def features(request: Request, stream_name: str, start_ts: int = None, end
             'C Steady-State Q': event.content['QC_ss'],
             'Total Peak P': event.content['P_pk'],
             'Total Peak Q': event.content['Q_pk'],
+            'ZS in-phase': event.content['I0_i'],
+            'ZS quadrature': event.content['I0_q'],
             'type': event.content['type'] if 'type' in event.content else None,
             'load_family': event.content['load_family'] if 'load_family' in event.content else None,
             'label': event.content['label'] if 'label' in event.content else None
