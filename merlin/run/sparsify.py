@@ -63,7 +63,7 @@ class Sparsifier(FilterModule):
             while True:
                 if start_index + min_window_length > num_rows - 60:
                     # Nothing to see here, consume the data
-                    prep_pipe.consume(num_rows - 60)
+                    prep_pipe.consume(num_rows - 60 - min_window_length)
                     break
 
                 # Check if first window of data is quiet
