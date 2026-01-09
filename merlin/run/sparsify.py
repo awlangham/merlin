@@ -54,29 +54,41 @@ class Sparsifier(FilterModule):
         while not self.stop_requested and not await prep_pipe.is_empty():
             sarray_in = await prep_pipe.read(flatten=True)
             prep_data = sarray_in[:, 1:]
+            num_rows = len(prep_data)
 
-            # Check if first window of data is quiet
-            first_window = prep_data[:min_window_length]
-
-            if self.compute_range(first_window) < threshold:
-                prep_pipe.consume(1)
+            if num_rows < 120:
                 continue
 
-            # We found something interesting, let's see where it stops
-            windows = sliding_window_view(prep_data, min_window_length, axis=0)
-
-            end_index = 0
-            for index, window in enumerate(windows):
-                max_range = self.compute_range(window.T)
-
-                if max_range < threshold:
-                    end_index = index + min_window_length
+            start_index = 0
+            while True:
+                if start_index + min_window_length > num_rows - 60:
+                    # Nothing to see here, consume the data
+                    prep_pipe.consume(num_rows - 60)
                     break
 
-            await transients_pipe.write(sarray_in[:end_index])
-            new_event = await self.create_event(sarray_in[:end_index, 0], sarray_in[:end_index, 1:])
-            await self.node.event_stream_write(self.out_event_stream, [new_event])
-            prep_pipe.consume(end_index)
+                # Check if first window of data is quiet
+                first_window = prep_data[start_index:start_index + min_window_length]
+
+                if self.compute_range(first_window) < threshold:
+                    start_index += 1
+                    continue
+
+                # We found something interesting, let's see where it stops
+                windows = sliding_window_view(prep_data[start_index:], min_window_length, axis=0)
+
+                end_index = start_index + min_window_length
+                for index, window in enumerate(windows):
+                    max_range = self.compute_range(window.T)
+
+                    if max_range < threshold:
+                        end_index += index
+                        break
+
+                await transients_pipe.write(sarray_in[start_index:end_index])
+                new_event = await self.create_event(sarray_in[start_index:end_index, 0], sarray_in[start_index:end_index, 1:])
+                await self.node.event_stream_write(self.out_event_stream, [new_event])
+                prep_pipe.consume(end_index)
+                break
 
     def compute_range(self, window):
         min_values = np.min(window, axis=0)
