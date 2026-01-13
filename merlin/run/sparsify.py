@@ -15,7 +15,7 @@ class Sparsifier(FilterModule):
     def custom_args(self, parser) -> None:
         grp = parser.add_argument_group('Sparsifier', 'Module-specific arguments')
         grp.add_argument('--min_window_length', type=int, required=True, help='Minimum separation between interesting events')
-        grp.add_argument('--threshold', type=int, required=True, help='Threshold on the range of any feature across min_window_length')
+        grp.add_argument('--threshold', type=float, required=True, help='Threshold on the range of any feature across min_window_length')
         grp.add_argument('--output', type=str, required=True, help='Output event stream name')
         grp.add_argument('--method', type=str, required=True, help='Learning method')
 
