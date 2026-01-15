@@ -6,6 +6,8 @@ from scipy.optimize import minimize_scalar
 
 import matplotlib.pyplot as plt
 
+from time import time
+
 min_window_length = 10
 # threshold = 1500
 
@@ -45,7 +47,6 @@ async def main():
     P_total = data[:, 1] + data[:, 9] + data[:, 17]
 
     entire_ss_change = np.mean(P_total[-5:]) - np.mean(P_total[:5])
-    print(entire_ss_change)
 
     def evaluate_threshold(threshold, plot=False):
         mask = np.ones(P_total.shape)  # 0 is flat, 1 is not-flat
@@ -95,7 +96,6 @@ async def main():
             plt.figure()
             plt.plot(timestamps, P_total / 1e3)
 
-        print(len(intervals), ' events')
         total_ss_change = 0
         for (start, end) in intervals:
             if plot:
@@ -116,8 +116,14 @@ async def main():
 
         return np.abs(total_ss_change - entire_ss_change) + sum_of_flat_ranges
 
+    print('Starting optimization...')
     result = minimize_scalar(evaluate_threshold, bounds=(0, 3000))
     print(result)
+
+    start_time = time()
+    evaluate_threshold(result.x, plot=False)
+    duration = time() - start_time
+    print(f'Took {duration} s for one evaluation')
 
     evaluate_threshold(result.x, plot=True)
 
