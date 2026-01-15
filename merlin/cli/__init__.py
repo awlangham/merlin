@@ -7,6 +7,7 @@ from merlin.cli.infer import infer_zero, infer_one, infer_two, infer_three
 from merlin.cli.clear import cli_clear
 from merlin.cli.docs import docs
 from merlin.cli.configuration import configuration
+from merlin.cli.learn_transients import learn_transients
 
 from merlin.cli.load import load
 from merlin.cli.exemplar import exemplar
@@ -33,6 +34,7 @@ main.add_command(infer_three)
 main.add_command(cli_clear)
 main.add_command(docs)
 main.add_command(configuration)
+main.add_command(learn_transients)
 
 main.add_command(load)
 main.add_command(exemplar)
