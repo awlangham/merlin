@@ -1,10 +1,11 @@
 import asyncio
 import click
 from joule.api import get_node
-from joule.utilities import human_to_timestamp as h2ts
+from joule.utilities import human_to_timestamp as h2ts, timestamp_to_human as ts2h
 import numpy as np
 from scipy.optimize import minimize_scalar
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 from merlin.cli.decorators import pass_node_name
 
@@ -20,6 +21,8 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
     ss_window_length = 5
 
     data = asyncio.run(_get_data(node, prep_stream, h2ts(start), h2ts(end)))
+
+    click.echo(f'Optimizing over [ {ts2h(data[0, 0])}-> {ts2h(data[-1, 0])}]')
 
     timestamps = data[:, 0] / 1e6 / 60
     timestamps -= timestamps[0]
@@ -99,9 +102,8 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
 
         return np.abs(total_ss_change - entire_ss_change) + sum_of_flat_ranges
 
-    print('Starting optimization...')
     result = minimize_scalar(evaluate_threshold, bounds=(0, smallest_load))
-    print(result)
+    click.echo(result)
 
     evaluate_threshold(result.x, plot=True)
 
@@ -110,8 +112,17 @@ async def _get_data(node, prep_stream, start_ts, end_ts):
     node = get_node(node)
     pipe = await node.data_read(prep_stream,
                                 start=start_ts,
-                                end=end_ts,
-                                max_rows=int(1e6))
-    data = await pipe.read_all(flatten=True, error_on_overflow=True, maxrows=int(1e6))
+                                end=end_ts
+                                )
+    estimated_num_rows = round(60 * (end_ts - start_ts) / 1e6)
+
+    data = []
+    with tqdm(total=estimated_num_rows, desc='Loading data', unit='rows') as pbar:
+        while not await pipe.is_empty():
+            batch = await pipe.read(flatten=True)
+            data.append(batch)
+            pipe.consume(len(batch))
+            pbar.update(len(batch))
+
     await node.close()
-    return data
+    return np.row_stack(data)
