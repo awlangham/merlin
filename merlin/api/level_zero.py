@@ -2,6 +2,7 @@ from itertools import combinations
 import numpy as np
 from sklearn.cluster import HDBSCAN
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
 from merlin.models import Exemplar, OnOffLoad
 from merlin.utilities import trainola
@@ -59,20 +60,15 @@ async def level_zero(self, start_ts: int, end_ts: int, max_ss_error=500):
         # Find index of representative event for this cluster
         exemplar_event_indices.append(medoid_index)
 
-    plt.figure()
-    plt.scatter(features[:, 0] + features[:, 2] + features[:, 4], features[:, 1] + features[:, 3] + features[:, 5], c=hdbscan.labels_)
-    for exemplar_event_index in exemplar_event_indices:
-        plt.scatter(features[exemplar_event_index, 0] + features[exemplar_event_index, 2] + features[exemplar_event_index, 4],
-                    features[exemplar_event_index, 1] + features[exemplar_event_index, 3] + features[exemplar_event_index, 5], marker='x', color='red')
-    plt.xlabel('Total Steady-State P')
-    plt.ylabel('Total Steady-State Q')
-    plt.grid()
-    plt.show()
-
     # Load inference
     exemplars, loads = [], []
 
+    load_indices = np.zeros(len(hdbscan.labels_))
+    load_index = 1
+
     def _best_matching_pair(cluster_list):
+        nonlocal load_index
+
         if len(cluster_list) < 2:
             return False
 
@@ -129,6 +125,11 @@ async def level_zero(self, start_ts: int, end_ts: int, max_ss_error=500):
         new_load = OnOffLoad(new_load_name, on_ss, family)
         loads.append(new_load)
 
+        load_indices[np.where(hdbscan.labels_ == hdbscan.labels_[best_cluster1])] = load_index
+        load_indices[np.where(hdbscan.labels_ == hdbscan.labels_[best_cluster2])] = load_index
+
+        load_index += 1
+
         on_exemplar = Exemplar(on_start_ts, on_end_ts, [[new_load_name, 'OFF', 'ON']])
         off_exemplar = Exemplar(off_start_ts, off_end_ts, [[new_load_name, 'ON', 'OFF']])
 
@@ -137,8 +138,23 @@ async def level_zero(self, start_ts: int, end_ts: int, max_ss_error=500):
 
         return True
 
+    exemplar_event_indices_backup = exemplar_event_indices.copy()
+
     found_pair = _best_matching_pair(exemplar_event_indices)
     while found_pair:
         found_pair = _best_matching_pair(exemplar_event_indices)
+
+    plt.figure(tight_layout=True)
+    tab10 = plt.get_cmap('tab10')
+    colors = [(0, 0, 0, 1)] + [tab10(i) for i in range(10)]
+    custom_cmap = ListedColormap(colors)
+    plt.scatter(features[:, 0] + features[:, 2] + features[:, 4], features[:, 1] + features[:, 3] + features[:, 5], c=load_indices, cmap=custom_cmap, s=100, alpha=0.5)
+    for exemplar_event_index in exemplar_event_indices_backup:
+        plt.scatter(features[exemplar_event_index, 0] + features[exemplar_event_index, 2] + features[exemplar_event_index, 4],
+                    features[exemplar_event_index, 1] + features[exemplar_event_index, 3] + features[exemplar_event_index, 5], marker='x', color='red')
+    plt.xlabel('Total Steady-State P')
+    plt.ylabel('Total Steady-State Q')
+    plt.grid()
+    plt.show()
 
     return exemplars, loads
