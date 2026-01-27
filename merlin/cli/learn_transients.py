@@ -9,6 +9,11 @@ from tqdm import tqdm
 
 from merlin.cli.decorators import pass_node_name
 
+plt.rc('text', usetex=True)
+plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+plt.rcParams['font.size'] = 16
+plt.rcParams['lines.linewidth'] = 3
+
 
 @click.command(name='learn-transients')
 @click.argument('prep_stream')
@@ -75,7 +80,7 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
         intervals = list(zip(np.where(flat_changes == 1)[0], np.where(flat_changes == -1)[0]))
 
         if plot:
-            plt.figure()
+            plt.figure(tight_layout=True)
             plt.plot(timestamps, P_total / 1e3)
 
         total_ss_change = 0
@@ -94,7 +99,10 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
             total_ss_change += ss_change
 
         if plot:
-            plt.title(f'threshold = {threshold} W, min_window_length = {min_window_length}')
+            f0 = 1 / ((timestamps[1] - timestamps[0]) * 60)
+            T = 1e3 * min_window_length / f0
+
+            plt.title(f'k = {round(threshold)} W, T = {round(T)} ms')
             plt.xlabel('Time (min)')
             plt.ylabel('Total Real Power (kW)')
             plt.xlim(timestamps[0], timestamps[-1])
