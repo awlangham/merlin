@@ -15,7 +15,7 @@ export const colors = [
     "#b8b0ac",
 ];
 
-export const powerFeatures = [
+export const threePhaseFeatures = [
     "Total Steady-State P",
     "Total Steady-State Q",
     "A Steady-State P",
@@ -30,6 +30,13 @@ export const powerFeatures = [
     "ZS quadrature"
 ];
 
+export const singlePhaseFeatures = [
+    "Steady-State P",
+    "Steady-State Q",
+    "Peak P",
+    "Peak Q"
+]
+
 export const labels = {
     "Total Steady-State P": "Total Steady-State Active Power (W)",
     "Total Steady-State Q": "Total Steady-State Reactive Power (Var)",
@@ -42,7 +49,7 @@ export const labels = {
     "Total Peak P": "Total Peak Active Power (W)",
     "Total Peak Q": "Total Peak Reactive Power (Var)",
     "ZS in-phase": "ZS in-phase",
-    "ZS quadrature" : "ZS quadrature"
+    "ZS quadrature": "ZS quadrature"
 };
 
 const baselineLength = 5;

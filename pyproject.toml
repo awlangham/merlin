@@ -20,6 +20,4 @@ dependencies = ["joule", "fastapi", "matplotlib", "numpy", "pandas", "orjson", "
 [project.scripts]
 merlin = "merlin.cli:main"
 merlin-visualizer = "merlin.visualizer.main:run"
-merlin-detect = "merlin.run.detect:main"
-merlin-process-events = "merlin.run.event_processor:main"
 merlin-sparsify = "merlin.run.sparsify:main"

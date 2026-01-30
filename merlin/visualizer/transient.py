@@ -17,17 +17,28 @@ async def transients(request: Request, response: Response, stream_name: str, sta
 
     # Convert from microseconds to seconds
     timestamps = timestamps / 1e6
-    
-    PA, PB, PC = data[:, 0], data[:, 8], data[:, 16]
-    QA, QB, QC = data[:, 1], data[:, 9], data[:, 17]
 
     response.headers['cache-control'] = 'max-age=3600'
-    return {
-        'timestamps': timestamps.tolist(),
-        'PA': PA.tolist(),
-        'PB': PB.tolist(),
-        'PC': PC.tolist(),
-        'QA': QA.tolist(),
-        'QB': QB.tolist(),
-        'QC': QC.tolist()
-    }
+
+    if data.shape[1] == 24:
+        PA, PB, PC = data[:, 0], data[:, 8], data[:, 16]
+        QA, QB, QC = data[:, 1], data[:, 9], data[:, 17]
+
+        return {
+            'timestamps': timestamps.tolist(),
+            'PA': PA.tolist(),
+            'PB': PB.tolist(),
+            'PC': PC.tolist(),
+            'QA': QA.tolist(),
+            'QB': QB.tolist(),
+            'QC': QC.tolist()
+        }
+    else:
+        P = data[:, 0]
+        Q = data[:, 1]
+
+        return {
+            'timestamps': timestamps.tolist(),
+            'P': P.tolist(),
+            'Q': Q.tolist()
+        }

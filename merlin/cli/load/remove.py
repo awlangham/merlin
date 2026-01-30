@@ -1,6 +1,6 @@
 import click
 
-from merlin.api import Installation
+from merlin.api import get_installation
 
 
 @click.command('remove')
@@ -11,7 +11,7 @@ def remove(load_name: str) -> None:
     """
 
     try:
-        Installation(None).remove_load(load_name)
+        get_installation().remove_load(load_name)
         click.echo(f'Removed {load_name} from configuration.')
     except KeyError:
         click.echo(f'No load found named {load_name}.')

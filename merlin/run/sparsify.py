@@ -4,7 +4,7 @@ from joule.client import FilterModule
 from joule.api import Event, EventStream
 from joule.errors import ApiError
 
-from merlin.api import Installation
+from merlin.api import run_installation
 
 
 class Sparsifier(FilterModule):
@@ -48,8 +48,7 @@ class Sparsifier(FilterModule):
         threshold = parsed_args.threshold
         self.method = parsed_args.method
 
-        if parsed_args.method == 'supervised':
-            self.current_installation = Installation(self.node)
+        self.current_installation = run_installation(self.node)
 
         while not self.stop_requested and not await prep_pipe.is_empty():
             sarray_in = await prep_pipe.read(flatten=True)
@@ -97,56 +96,78 @@ class Sparsifier(FilterModule):
         return np.max(ranges)
 
     async def create_event(self, timestamps, window):
-        PA_ss = self._extract_ss(window[:, 0])
-        QA_ss = self._extract_ss(window[:, 1])
+        if self.current_installation.num_phases == 3:
+            PA_ss = self._extract_ss(window[:, 0])
+            QA_ss = self._extract_ss(window[:, 1])
 
-        PB_ss = self._extract_ss(window[:, 8])
-        QB_ss = self._extract_ss(window[:, 9])
+            PB_ss = self._extract_ss(window[:, 8])
+            QB_ss = self._extract_ss(window[:, 9])
 
-        PC_ss = self._extract_ss(window[:, 16])
-        QC_ss = self._extract_ss(window[:, 17])
+            PC_ss = self._extract_ss(window[:, 16])
+            QC_ss = self._extract_ss(window[:, 17])
 
-        PA_pk = self._extract_pk(window[:, 0])
-        QA_pk = self._extract_pk(window[:, 1])
+            PA_pk = self._extract_pk(window[:, 0])
+            QA_pk = self._extract_pk(window[:, 1])
 
-        PB_pk = self._extract_pk(window[:, 8])
-        QB_pk = self._extract_pk(window[:, 9])
+            PB_pk = self._extract_pk(window[:, 8])
+            QB_pk = self._extract_pk(window[:, 9])
 
-        PC_pk = self._extract_pk(window[:, 16])
-        QC_pk = self._extract_pk(window[:, 17])
+            PC_pk = self._extract_pk(window[:, 16])
+            QC_pk = self._extract_pk(window[:, 17])
 
-        I0_i, I0_q = self._extract_zs(window)
+            I0_i, I0_q = self._extract_zs(window)
 
-        event_content = {
-            'PA_ss': float(PA_ss),
-            'QA_ss': float(QA_ss),
+            event_content = {
+                'PA_ss': float(PA_ss),
+                'QA_ss': float(QA_ss),
 
-            'PB_ss': float(PB_ss),
-            'QB_ss': float(QB_ss),
+                'PB_ss': float(PB_ss),
+                'QB_ss': float(QB_ss),
 
-            'PC_ss': float(PC_ss),
-            'QC_ss': float(QC_ss),
+                'PC_ss': float(PC_ss),
+                'QC_ss': float(QC_ss),
 
-            'PA_pk': float(PA_pk),
-            'QA_pk': float(QA_pk),
+                'PA_pk': float(PA_pk),
+                'QA_pk': float(QA_pk),
 
-            'PB_pk': float(PB_pk),
-            'QB_pk': float(QB_pk),
+                'PB_pk': float(PB_pk),
+                'QB_pk': float(QB_pk),
 
-            'PC_pk': float(PC_pk),
-            'QC_pk': float(QC_pk),
+                'PC_pk': float(PC_pk),
+                'QC_pk': float(QC_pk),
 
-            'P_ss': float(PA_ss + PB_ss + PC_ss),
-            'Q_ss': float(QA_ss + QB_ss + QC_ss),
-            'P_pk': float(PA_pk + PB_pk + PC_pk),
-            'Q_pk': float(QA_pk + QB_pk + QC_pk),
+                'P_ss': float(PA_ss + PB_ss + PC_ss),
+                'Q_ss': float(QA_ss + QB_ss + QC_ss),
+                'P_pk': float(PA_pk + PB_pk + PC_pk),
+                'Q_pk': float(QA_pk + QB_pk + QC_pk),
 
-            'I0_i': float(I0_i),
-            'I0_q': float(I0_q)
-        }
+                'I0_i': float(I0_i),
+                'I0_q': float(I0_q)
+            }
+
+            type = 'OFF to ON' if (PA_ss + PB_ss + PC_ss) > 0 else 'ON to OFF'
+        else:
+            P_ss = self._extract_ss(window[:, 0])
+            Q_ss = self._extract_ss(window[:, 1])
+
+            P_pk = self._extract_pk(window[:, 0])
+            Q_pk = self._extract_pk(window[:, 1])
+
+            I0_i, I0_q = 0, 0
+
+            event_content = {
+                'P_ss': float(P_ss),
+                'Q_ss': float(Q_ss),
+                'P_pk': float(P_pk),
+                'Q_pk': float(Q_pk),
+
+                'I0_i': float(I0_i),
+                'I0_q': float(I0_q)
+            }
+            type = 'OFF to ON' if P_ss > 0 else 'ON to OFF'
 
         if self.method == 'unsupervised':
-            event_content['type'] = 'OFF to ON' if (PA_ss + PB_ss + PC_ss) > 0 else 'ON to OFF'
+            event_content['type'] = type
         else:
             # Find closest matching exemplar
             matching_exemplar, match_score = await self.current_installation.find_matching_exemplar(window)

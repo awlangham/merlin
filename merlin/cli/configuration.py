@@ -13,7 +13,7 @@ def configuration() -> None:
     The configuration is stored in config.json in the MERLIN installation folder.
     """
 
-    from merlin.api import Installation
+    from merlin.api import get_installation
 
     config_valid = False
 
@@ -23,7 +23,7 @@ def configuration() -> None:
     load_tree = Tree()
     load_tree.create_node(click.style('Loads', bold=True), 'loads')
 
-    current_installation = Installation(None)
+    current_installation = get_installation()
 
     with current_installation.modify_config() as cf:
         try:

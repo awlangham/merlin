@@ -1,7 +1,7 @@
 import click
 
 from merlin.models import GenericLoad
-from merlin.api import Installation
+from merlin.api import get_installation
 from merlin.cli.utilities import _comma_separated_to_strings, _comma_separated_to_floats
 
 
@@ -27,6 +27,6 @@ def add(load_name: str) -> None:
         states_dict[state_name] = PQ_ss
 
     new_load = GenericLoad(load_name, states_dict)
-    Installation(None).add_load(new_load)
+    get_installation().add_load(new_load)
 
     click.echo(f'Added {load_name} to configuration.')

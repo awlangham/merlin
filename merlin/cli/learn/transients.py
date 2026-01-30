@@ -9,13 +9,13 @@ from tqdm import tqdm
 
 from merlin.cli.decorators import pass_node_name
 
-plt.rc('text', usetex=True)
-plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-plt.rcParams['font.size'] = 16
-plt.rcParams['lines.linewidth'] = 3
+# plt.rc('text', usetex=True)
+# plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+# plt.rcParams['font.size'] = 16
+# plt.rcParams['lines.linewidth'] = 3
 
 
-@click.command(name='learn-transients')
+@click.command(name='transients')
 @click.argument('prep_stream')
 @click.option('--smallest_load', '-l', help='Smallest step change of interest', default=5000)
 @click.option('--start', '-s', help='Timestamp or descriptive string', required=True)

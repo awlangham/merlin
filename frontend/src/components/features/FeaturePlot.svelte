@@ -3,7 +3,8 @@
         unclusteredColor,
         selectedColor,
         colors,
-        powerFeatures,
+        threePhaseFeatures,
+        singlePhaseFeatures,
         labels,
     } from "../../utilities.js";
 
@@ -12,6 +13,7 @@
         eventStore,
         eventIndexStore,
         clusterStore,
+        numPhasesStore,
     } from "../stores";
 
     import { makeSelectionShape, featureConfig } from "./plot-settings";
@@ -32,8 +34,15 @@
             ? $eventStore
             : $eventStore.filter((event) => event.label === $filterStore);
 
+    let powerFeatures;
+    $: if ($numPhasesStore === 3) {
+        powerFeatures = threePhaseFeatures;
+    } else {
+        powerFeatures = singlePhaseFeatures;
+    }
+
     // Set default views upon page load
-    if (sequence == 1) {
+    $: if (sequence == 1) {
         xFeature = powerFeatures[0];
         yFeature = powerFeatures[2];
     } else {

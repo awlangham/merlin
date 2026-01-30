@@ -1,6 +1,11 @@
 <script>
     import { config, layout } from "./plot-settings";
-    import { eventStore, eventIndexStore, datasetStore } from "../stores";
+    import {
+        eventStore,
+        eventIndexStore,
+        datasetStore,
+        numPhasesStore,
+    } from "../stores";
     import { getStartBaseline, getEndBaseline } from "../../utilities";
 
     import Plot from "../Plot.svelte";
@@ -26,59 +31,88 @@
         )
             .then((response) => response.json())
             .then((j) => {
-                transientData = [
-                    { name: "PA", line: { color: "#0072B2" } },
-                    { name: "QA", line: { color: "#E69F00" } },
-                    { name: "PB", line: { color: "#56B4E9" } },
-                    { name: "QB", line: { color: "#F0E442" } },
-                    { name: "PC", line: { color: "#92C5DE" } },
-                    { name: "QC", line: { color: "#D55E00" } },
-                ];
+                if ($numPhasesStore === 3) {
+                    transientData = [
+                        { name: "PA", line: { color: "#0072B2" } },
+                        { name: "QA", line: { color: "#E69F00" } },
+                        { name: "PB", line: { color: "#56B4E9" } },
+                        { name: "QB", line: { color: "#F0E442" } },
+                        { name: "PC", line: { color: "#92C5DE" } },
+                        { name: "QC", line: { color: "#D55E00" } },
+                    ];
 
-                for (const index of Array(6).keys()) {
-                    transientData[index].x = j.timestamps;
-                }
+                    for (const index of Array(6).keys()) {
+                        transientData[index].x = j.timestamps;
+                    }
 
-                if (selectedEvent.type === "ON to OFF") {
-                    transientData[0].y = j.PA.map(
-                        (p) => p - getEndBaseline(j.PA),
-                    );
-                    transientData[2].y = j.PB.map(
-                        (p) => p - getEndBaseline(j.PB),
-                    );
-                    transientData[4].y = j.PC.map(
-                        (p) => p - getEndBaseline(j.PC),
-                    );
+                    if (selectedEvent.type === "ON to OFF") {
+                        transientData[0].y = j.PA.map(
+                            (p) => p - getEndBaseline(j.PA),
+                        );
+                        transientData[2].y = j.PB.map(
+                            (p) => p - getEndBaseline(j.PB),
+                        );
+                        transientData[4].y = j.PC.map(
+                            (p) => p - getEndBaseline(j.PC),
+                        );
 
-                    transientData[1].y = j.QA.map(
-                        (q) => q - getEndBaseline(j.QA),
-                    );
-                    transientData[3].y = j.QB.map(
-                        (q) => q - getEndBaseline(j.QB),
-                    );
-                    transientData[5].y = j.QC.map(
-                        (q) => q - getEndBaseline(j.QC),
-                    );
+                        transientData[1].y = j.QA.map(
+                            (q) => q - getEndBaseline(j.QA),
+                        );
+                        transientData[3].y = j.QB.map(
+                            (q) => q - getEndBaseline(j.QB),
+                        );
+                        transientData[5].y = j.QC.map(
+                            (q) => q - getEndBaseline(j.QC),
+                        );
+                    } else {
+                        transientData[0].y = j.PA.map(
+                            (p) => p - getStartBaseline(j.PA),
+                        );
+                        transientData[2].y = j.PB.map(
+                            (p) => p - getStartBaseline(j.PB),
+                        );
+                        transientData[4].y = j.PC.map(
+                            (p) => p - getStartBaseline(j.PC),
+                        );
+
+                        transientData[1].y = j.QA.map(
+                            (q) => q - getStartBaseline(j.QA),
+                        );
+                        transientData[3].y = j.QB.map(
+                            (q) => q - getStartBaseline(j.QB),
+                        );
+                        transientData[5].y = j.QC.map(
+                            (q) => q - getStartBaseline(j.QC),
+                        );
+                    }
                 } else {
-                    transientData[0].y = j.PA.map(
-                        (p) => p - getStartBaseline(j.PA),
-                    );
-                    transientData[2].y = j.PB.map(
-                        (p) => p - getStartBaseline(j.PB),
-                    );
-                    transientData[4].y = j.PC.map(
-                        (p) => p - getStartBaseline(j.PC),
-                    );
+                    transientData = [
+                        { name: "P", line: { color: "#0072B2" } },
+                        { name: "Q", line: { color: "#E69F00" } },
+                    ];
 
-                    transientData[1].y = j.QA.map(
-                        (q) => q - getStartBaseline(j.QA),
-                    );
-                    transientData[3].y = j.QB.map(
-                        (q) => q - getStartBaseline(j.QB),
-                    );
-                    transientData[5].y = j.QC.map(
-                        (q) => q - getStartBaseline(j.QC),
-                    );
+                    for (const index of Array(2).keys()) {
+                        transientData[index].x = j.timestamps;
+                    }
+
+                    if (selectedEvent.type === "ON to OFF") {
+                        transientData[0].y = j.P.map(
+                            (p) => p - getEndBaseline(j.P),
+                        );
+
+                        transientData[1].y = j.Q.map(
+                            (q) => q - getEndBaseline(j.Q),
+                        );
+                    } else {
+                        transientData[0].y = j.P.map(
+                            (p) => p - getStartBaseline(j.P),
+                        );
+
+                        transientData[1].y = j.Q.map(
+                            (q) => q - getStartBaseline(j.Q),
+                        );
+                    }
                 }
             });
     } else {

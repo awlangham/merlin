@@ -1,5 +1,10 @@
 import { get } from "svelte/store";
-import { datasetStore, eventIndexStore, eventStore, clusterStore, rangeStartStore, rangeEndStore, rangeModeStore as rangeModeStore } from "./stores";
+import {
+    datasetStore, eventIndexStore,
+    eventStore, clusterStore,
+    rangeStartStore, rangeEndStore,
+    rangeModeStore, numPhasesStore
+} from "./stores";
 
 const formatDate = (dateTime) => {
     const year = dateTime.getFullYear();
@@ -46,6 +51,7 @@ export const getEvents = () => {
         .then((j) => {
             eventIndexStore.set(-1);
             eventStore.set(j.events);
+            numPhasesStore.set(j.num_phases);
             rangeStartStore.set(formatDate(new Date(j.events[0].start_ts / 1000)));
             rangeEndStore.set(formatDate(new Date(j.events.at(-1).end_ts / 1000)));
         });

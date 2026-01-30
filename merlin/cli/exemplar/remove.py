@@ -1,6 +1,6 @@
 import click
 
-from merlin.api import Installation
+from merlin.api import get_installation
 
 
 @click.command('remove')
@@ -11,6 +11,6 @@ def remove(exemplar_index: int) -> None:
     """
 
     try:
-        Installation(None).remove_exemplar(exemplar_index)
+        get_installation().remove_exemplar(exemplar_index)
     except IndexError:
         click.echo(f'No exemplar with index {exemplar_index} exists.')

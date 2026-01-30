@@ -1,6 +1,6 @@
 import click
 
-from merlin.api import Installation
+from merlin.api import get_installation
 from merlin.models import Exemplar
 from merlin.cli.utilities import _comma_separated_to_ints, _comma_separated_to_strings, _parse_transition
 
@@ -15,6 +15,6 @@ def add() -> None:
     transitions = _comma_separated_to_strings(click.prompt('Associated state transitions'))
 
     new_exemplar = Exemplar(timestamps[0], timestamps[1], [_parse_transition(t) for t in transitions])
-    Installation(None).add_exemplar(new_exemplar)
+    get_installation().add_exemplar(new_exemplar)
 
     click.echo('Added exemplar to configuration.')

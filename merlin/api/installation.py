@@ -1,34 +1,30 @@
+import asyncio
 import numpy as np
 import json
 from itertools import combinations, product
 from contextlib import contextmanager
 
+from joule.api import get_node
 
-from merlin.api import config_filename
+
 from merlin.utilities import trainola
 from merlin.models import Exemplar, GenericLoad
 
 
 class Installation:
-    def __init__(self, node=None) -> None:
-        self.node = node
-
-        cf = self.read_config()
-        self.stream_name = cf['stream_name']
-
     @contextmanager
     def modify_config(self):
-        with open(config_filename, 'r') as config_file:
+        with open(self.config_filename, 'r') as config_file:
             config_json = json.load(config_file)
 
         try:
             yield config_json
         finally:
-            with open(config_filename, 'w') as config_file:
+            with open(self.config_filename, 'w') as config_file:
                 json.dump(config_json, config_file, indent=4)
 
     def read_config(self):
-        with open(config_filename, 'r') as config_file:
+        with open(self.config_filename, 'r') as config_file:
             config_json = json.load(config_file)
         return config_json
 
@@ -159,7 +155,26 @@ class Installation:
             transients.append(sarray.T)
         return transients
 
-    from merlin.api.level_zero import level_zero
-    from merlin.api.level_one import level_one
-    from merlin.api.level_two import level_two
-    from merlin.api.level_three import level_three
+    from merlin.api.learn_loads import learn_loads
+
+    def close(self):
+        asyncio.run(self.node.close())
+
+
+class OfflineInstallation(Installation):
+    def __init__(self, config_filename, node=None):
+        self.config_filename = config_filename
+        cf = self.read_config()
+        self.node = get_node(cf['node'])
+        self.num_phases = cf['num_phases']
+        self.stream_name = cf['stream_name']
+        super().__init__()
+
+class RealTimeInstallation(Installation):
+    def __init__(self, config_filename, node):
+        self.config_filename = config_filename
+        cf = self.read_config()
+        self.node = node
+        self.num_phases = cf['num_phases']
+        self.stream_name = cf['stream_name']
+        super().__init__()

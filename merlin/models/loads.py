@@ -20,8 +20,11 @@ class OnOffLoad(GenericLoad):
     Simple two-state (OFF and ON) load class.
     """
 
-    def __init__(self, name, on_ss, family=None) -> None:
-        states = {'OFF': [0, 0, 0, 0, 0, 0], 'ON': on_ss.tolist()}
+    def __init__(self, name, on_ss, family=None, num_phases=3) -> None:
+        if num_phases == 3:
+            states = {'OFF': [0, 0, 0, 0, 0, 0], 'ON': on_ss.tolist()}
+        else:
+            states = {'OFF': [0, 0], 'ON': on_ss.tolist()}
         super().__init__(name, states, family)
 
     def __repr__(self):
