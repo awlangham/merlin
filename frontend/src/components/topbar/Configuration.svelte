@@ -74,20 +74,22 @@
 
                     <div class="fw-bold">Loads:</div>
                     <ul class="list-group list-group-flush">
-                        {#each Object.entries(data.loads) as [loadName, loadInfo]}
-                            <li class="list-group-item">
-                                <div>{loadName}</div>
-                                <ul>
-                                    {#each Object.entries(loadInfo.states) as [stateName, stateInfo]}
-                                        <li>
-                                            {stateName}: [{stateInfo.map((x) =>
-                                                x.toFixed(1),
-                                            )}] W
-                                        </li>
-                                    {/each}
-                                </ul>
-                            </li>
-                        {/each}
+                        {#if data.loads}
+                            {#each Object.entries(data.loads) as [loadName, loadInfo]}
+                                <li class="list-group-item">
+                                    <div>{loadName}</div>
+                                    <ul>
+                                        {#each Object.entries(loadInfo.states) as [stateName, stateInfo]}
+                                            <li>
+                                                {stateName}: [{stateInfo.map(
+                                                    (x) => x.toFixed(1),
+                                                )}] W
+                                            </li>
+                                        {/each}
+                                    </ul>
+                                </li>
+                            {/each}
+                        {/if}
                     </ul>
                 {:catch}
                     Connection error
