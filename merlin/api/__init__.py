@@ -14,7 +14,7 @@ def new_installation(stream_name, num_phases, node):
         config['node'] = node
         config['stream_name'] = stream_name
         config['num_phases'] = num_phases
-        config['mode'] = 'unsupervised'
+        config['method'] = 'unsupervised'
         json.dump(config, config_file, indent=4)
 
 

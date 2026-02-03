@@ -35,12 +35,12 @@ def initialize(node) -> None:
     else:
         click.echo(f'Event stream [{selected_folder}/events] already exists')
 
-    click.echo('\nSelect a learning method:')
-    learning_methods = ['Unsupervised', 'Supervised']
-    for index, method in enumerate(learning_methods):
-        click.echo(f'  {index + 1}) {method}')
+    # click.echo('\nSelect a learning method:')
+    # learning_methods = ['Unsupervised', 'Supervised']
+    # for index, method in enumerate(learning_methods):
+    #     click.echo(f'  {index + 1}) {method}')
 
-    value = click.prompt(f'Selection [1-{len(learning_methods)}]', type=int)
+    # value = click.prompt(f'Selection [1-{len(learning_methods)}]', type=int)
     # if learning_methods[value - 1] == 'Supervised':
         # _supervised_setup(selected_folder, node)
 
@@ -56,7 +56,7 @@ def initialize(node) -> None:
     }
     module_config['Arguments'] = {
         'output': f'{selected_folder}/events',
-        'method': learning_methods[value - 1].lower(),
+        # 'method': learning_methods[value - 1].lower(),
         'min_window_length': min_window_length,
         'threshold': threshold
     }

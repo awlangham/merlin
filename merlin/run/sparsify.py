@@ -9,7 +9,7 @@ from merlin.api import run_installation
 
 class Sparsifier(FilterModule):
     """
-    Detect edges in a three-phase prep stream, outputting a sparse stream containing only edge events.
+    Detect edges in a prep stream, outputting a sparse stream containing only edge events.
     """
 
     def custom_args(self, parser) -> None:
@@ -17,7 +17,7 @@ class Sparsifier(FilterModule):
         grp.add_argument('--min_window_length', type=int, required=True, help='Minimum separation between interesting events')
         grp.add_argument('--threshold', type=float, required=True, help='Threshold on the range of any feature across min_window_length')
         grp.add_argument('--output', type=str, required=True, help='Output event stream name')
-        grp.add_argument('--method', type=str, required=True, help='Learning method')
+        # grp.add_argument('--method', type=str, required=True, help='Learning method')
 
     async def _get_output_stream(self, output_stream_path: str) -> EventStream:
         """
@@ -46,9 +46,9 @@ class Sparsifier(FilterModule):
 
         min_window_length = parsed_args.min_window_length
         threshold = parsed_args.threshold
-        self.method = parsed_args.method
 
         self.current_installation = run_installation(self.node)
+        self.method = self.current_installation.method
 
         while not self.stop_requested and not await prep_pipe.is_empty():
             sarray_in = await prep_pipe.read(flatten=True)
@@ -90,8 +90,12 @@ class Sparsifier(FilterModule):
                 break
 
     def compute_range(self, window):
-        min_values = np.min(window, axis=0)
-        max_values = np.max(window, axis=0)
+        if self.current_installation.num_phases == 3:
+            indices = [0, 1, 8, 9, 16, 17]
+        else:
+            indices = [0, 1]
+        min_values = np.min(window[:, indices], axis=0)
+        max_values = np.max(window[:, indices], axis=0)
         ranges = max_values - min_values
         return np.max(ranges)
 

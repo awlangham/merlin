@@ -168,6 +168,7 @@ class OfflineInstallation(Installation):
         self.node = get_node(cf['node'])
         self.num_phases = cf['num_phases']
         self.stream_name = cf['stream_name']
+        self.method = cf['method']
         super().__init__()
 
 class RealTimeInstallation(Installation):
@@ -177,4 +178,5 @@ class RealTimeInstallation(Installation):
         self.node = node
         self.num_phases = cf['num_phases']
         self.stream_name = cf['stream_name']
+        self.method = cf['method']
         super().__init__()
