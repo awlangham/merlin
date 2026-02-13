@@ -40,8 +40,12 @@ def configuration() -> None:
                     load_tree.create_node(f'{load_name} ({load_dict["family"]})', i, parent='loads')
 
                 for state_name in load_dict['states']:
-                    PA, QA, PB, QB, PC, QC = load_dict['states'][state_name]
-                    load_tree.create_node(f'{state_name}: ({round(PA, 2)} W, {round(QA, 2)} Var) [A], ({round(PB, 2)} W, {round(QB, 2)} Var) [B], ({round(PC, 2)} W, {round(QC, 2)} Var) [C]', parent=i)
+                    if cf['num_phases'] == 3:
+                        PA, QA, PB, QB, PC, QC = load_dict['states'][state_name]
+                        load_tree.create_node(f'{state_name}: ({round(PA, 2)} W, {round(QA, 2)} Var) [A], ({round(PB, 2)} W, {round(QB, 2)} Var) [B], ({round(PC, 2)} W, {round(QC, 2)} Var) [C]', parent=i)
+                    else:
+                        P, Q = load_dict['states'][state_name]
+                        load_tree.create_node(f'{state_name}: {round(P, 2)} W, {round(Q, 2)} Var', parent=i)
 
             config_valid = True
         except KeyError:
