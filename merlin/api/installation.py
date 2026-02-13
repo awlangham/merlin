@@ -8,7 +8,6 @@ from joule.api import get_node
 
 
 from merlin.utilities import trainola
-from merlin.models import Exemplar, GenericLoad
 
 
 class Installation:
@@ -28,42 +27,16 @@ class Installation:
             config_json = json.load(config_file)
         return config_json
 
-    async def get_events(self, start: int = None, end: int = None) -> list:
-        """
-        Return a list of all events in the specified stream.
-        """
+    # async def get_events(self, start: int = None, end: int = None) -> list:
+    #     """
+    #     Return a list of all events in the specified stream.
+    #     """
 
-        return await self.node.event_stream_read_list(self.stream_name + '/events', start=start, end=end, limit=2000)
+    #     return await self.node.event_stream_read_list(self.stream_name + '/events', start=start, end=end, limit=2000)
 
-    def add_exemplar(self, exemplar: Exemplar) -> None:
-        with self.modify_config() as cf:
-            cf['exemplars'].append(exemplar.to_json())
+    from merlin.api.exemplars import add_exemplar, remove_exemplar, get_exemplar
 
-    def remove_exemplar(self, index: int) -> None:
-        # index starts at 1
-        with self.modify_config() as cf:
-            del cf['exemplars'][index - 1]
-
-    def add_load(self, new_load: GenericLoad) -> None:
-        with self.modify_config() as cf:
-            cf['loads'][new_load.name] = new_load.to_json()
-
-    def remove_load(self, load_name: str) -> None:
-        with self.modify_config() as cf:
-            del cf['loads'][load_name]
-
-    async def load_exemplar(self, load_name: str, state1: str, state2: str):
-        """
-        Find the exemplar corresponding to
-        the transition load_name::state1->state2
-        """
-
-        cf = self.read_config()
-        exemplars = cf['exemplars']
-
-        for exemplar in exemplars:
-            if exemplar['transitions'] == [[load_name, state1, state2]]:
-                return await self.get_transient(exemplar['start_ts'], exemplar['end_ts'])
+    from merlin.api.loads import add_load, remove_load
 
     async def find_matching_exemplar(self, data, trainola_threshold: float = 0.2):
         """
@@ -137,23 +110,7 @@ class Installation:
         else:
             return None
 
-    async def get_transient(self, start_ts: int, end_ts: int):
-        pipe = await self.node.data_read(self.stream_name + '/transients', start=start_ts, end=end_ts)
-        sarray = await pipe.read_all(flatten=True)
-        return sarray
-
-    async def get_transients(self, intervals: list[list[int]]) -> list:
-        """
-        Return a list of the transients corresponding
-        to the specified intervals in the provided stream.
-        """
-
-        transients = []
-        for interval in intervals:
-            pipe = await self.node.data_read(self.stream_name + '/transients', start=interval[0], end=interval[1])
-            sarray = await pipe.read_all(flatten=True)
-            transients.append(sarray.T)
-        return transients
+    from merlin.api.transients import get_transient, get_transients
 
     from merlin.api.learn_loads import learn_loads
 
@@ -170,6 +127,7 @@ class OfflineInstallation(Installation):
         self.stream_name = cf['stream_name']
         self.method = cf['method']
         super().__init__()
+
 
 class RealTimeInstallation(Installation):
     def __init__(self, config_filename, node):
