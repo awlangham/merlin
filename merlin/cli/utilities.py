@@ -11,11 +11,20 @@ def _comma_separated_to_floats(string) -> list[int]:
 
 
 def _parse_transition(string) -> tuple[str, str, str]:
-    substrings = string.split('::')
-    load_name = substrings[0]
+    try:
+        substrings = string.split('::')
+        load_name = substrings[0]
 
-    substrings = substrings[1].split('->')
-    state1 = substrings[0]
-    state2 = substrings[1]
+        substrings = substrings[1].split('->')
+        state1 = substrings[0]
+        state2 = substrings[1]
+    except IndexError:
+        raise ValueError(f'Invalid transition format: {string}')
+
+    if load_name == "":
+        raise ValueError(f'Load name cannot be blank in: {string}')
+
+    if state1 == "" or state2 == "":
+        raise ValueError(f'State name cannot be blank in: {string}')
 
     return load_name, state1, state2
