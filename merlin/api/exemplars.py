@@ -9,6 +9,9 @@ def add_exemplar(self, exemplar: Exemplar) -> None:
 def remove_exemplar(self, index: int) -> None:
     # index starts at 1
     with self.modify_config() as cf:
+        if index > len(cf['exemplars']) or index <= 0:
+            raise IndexError(f'Invalid exemplar index {index}')
+    
         del cf['exemplars'][index - 1]
 
 

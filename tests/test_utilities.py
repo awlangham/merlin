@@ -11,7 +11,7 @@ from merlin.cli.utilities import _comma_separated_to_ints, _comma_separated_to_s
         ("0,-1,5", [0, -1, 5]),
     ],
 )
-def test_valid_inputs(input_string, expected):
+def test_comma_separated_to_ints_valid(input_string, expected):
     assert _comma_separated_to_ints(input_string) == expected
 
 
@@ -38,7 +38,7 @@ def test_invalid_inputs_raise(bad_input):
         (" a , b , ", ["a", "b", ""]),
     ],
 )
-def test_comma_separated_to_strings(input_string, expected):
+def test_comma_separated_to_ints_invalid(input_string, expected):
     assert _comma_separated_to_strings(input_string) == expected
 
 
