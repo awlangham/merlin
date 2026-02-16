@@ -10,6 +10,12 @@ from merlin.utilities import trainola
 
 
 def learn_loads(self, start_ts: int, end_ts: int, max_ss_error: float = 500):
+    if start_ts >= end_ts:
+        raise ValueError('start_ts must be less than end_ts')
+    
+    if max_ss_error <= 0:
+        raise ValueError('max_ss_error must be >= 0')
+
     async def _learn_loads(start_ts: int, end_ts: int, max_ss_error: float):
         if self.num_phases == 3:
             feature_names = ['PA_ss', 'QA_ss',

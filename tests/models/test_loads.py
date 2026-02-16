@@ -45,14 +45,13 @@ def test_on_off_load_valid():
 
 def test_on_off_load_invalid():
     with pytest.raises(ValueError):
-        OnOffLoad(name="load1", on_ss=np.array(
-            [1, 1, 1, 1]), family=None, num_phases=2)
+        OnOffLoad(name="load1", on_ss=np.array([1, 1, 1, 1]), family=None, num_phases=2)
 
     with pytest.raises(ValueError):
         OnOffLoad(name="", on_ss=np.array([1, 1]), family=None, num_phases=1)
 
 
-def test_onoffload_repr_rounds_correctly():
+def test_on_off_load_repr_rounds_correctly():
     on_ss = np.array([10.1, 20.7, 30.4, 40.9, 50.2, 60.6])
     load = OnOffLoad(name="load1", on_ss=on_ss, family="Machine", num_phases=3)
 
