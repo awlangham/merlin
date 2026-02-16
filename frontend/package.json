@@ -19,8 +19,10 @@
 	"type": "module",
 	"dependencies": {
 		"bootstrap": "^5.3.3",
-		"cookie": "^1.0.2",
 		"esbuild": "^0.25.1",
 		"plotly.js-dist-min": "^3.0.1"
+	},
+	"overrides": {
+		"cookie": "1.0.2"
 	}
 }
