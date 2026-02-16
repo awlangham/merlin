@@ -60,14 +60,12 @@ async def search_for_stream(node_name: str, stream_name: str) -> list:
         root = await node.folder_root()
         traverse_folder(root)
 
-    await node.close()
-
     return stream_names
 
 
 async def read_interval(node_name: str, stream_name: str, interval_start: int, interval_end: int):
     """
-    Cache recently-viewed transients in the back-end program.
+    Read an interval of transient data.
     """
 
     async with get_joule_node(node_name) as node:
@@ -120,12 +118,11 @@ def trainola(a, b):
     a and b are 2-D arrays with the same number of rows,
     but they do not need to have the same number of columns.
 
-    Returns a score within [0, 2] such that
-    0 indicates a match, 1 indicates no correlation,
-    and 2 indicates negative correlation
+    Returns a score such that
+    0 indicates a match and 1 indicates no correlation.
     """
 
-    # Remove min
+    # Remove minimum of each transient along each feature
     a = (a.T - np.min(a, axis=1)).T
     b = (b.T - np.min(b, axis=1)).T
 
@@ -138,9 +135,3 @@ def trainola(a, b):
         distances.append(max(1 - match_score, 0))
 
     return min(distances)
-
-
-def mapping(x):
-    mapped = 1 - x
-    mapped[mapped < 0] = 0
-    return mapped
