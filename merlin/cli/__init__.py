@@ -7,6 +7,7 @@ from merlin.cli.clear import cli_clear
 # from merlin.cli.docs import docs
 from merlin.cli.configuration import configuration
 from merlin.cli.infer import infer
+from merlin.cli.method import method
 
 from merlin.cli.load import load
 from merlin.cli.exemplar import exemplar
@@ -31,6 +32,7 @@ main.add_command(cli_clear)
 # main.add_command(docs)
 main.add_command(configuration)
 main.add_command(infer)
+main.add_command(method)
 
 main.add_command(load)
 main.add_command(exemplar)
