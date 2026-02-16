@@ -12,7 +12,7 @@ class Sparsifier(FilterModule):
     Detect edges in a prep stream, outputting a sparse stream containing only edge events.
     """
 
-    def custom_args(self, parser) -> None:
+    def custom_args(self, parser) -> None:  # pragma: no cover
         grp = parser.add_argument_group('Sparsifier', 'Module-specific arguments')
         grp.add_argument('--min_window_length', type=int, required=True, help='Minimum separation between interesting events')
         grp.add_argument('--threshold', type=float, required=True, help='Threshold on the range of any feature across min_window_length')
@@ -238,10 +238,10 @@ class Sparsifier(FilterModule):
         return I0_i_ss, I0_q_ss
 
 
-def main() -> None:
+def main() -> None:  # pragma: no cover
     sparsifier = Sparsifier()
     sparsifier.start()
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()
