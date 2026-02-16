@@ -49,7 +49,6 @@ async def create_event_stream(node_name: str, path: str) -> bool:
             return True
 
 
-@async_run
 async def search_for_stream(node_name: str, stream_name: str) -> list:
     """
     Return list of Joule folder paths that include a stream named [stream_name].

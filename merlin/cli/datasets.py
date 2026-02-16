@@ -1,3 +1,4 @@
+import asyncio
 import click
 
 from merlin.cli.decorators import pass_node_name
@@ -12,5 +13,5 @@ def datasets(node) -> None:
 
     from merlin.utilities import search_for_stream
 
-    for dataset in search_for_stream(node, 'events'):
+    for dataset in asyncio.run(search_for_stream(node, 'events')):
         click.echo(dataset)

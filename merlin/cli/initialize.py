@@ -1,5 +1,6 @@
 import click
 import configparser
+import asyncio
 
 from merlin.cli.decorators import pass_node_name
 from merlin.api import new_installation
@@ -21,7 +22,7 @@ def initialize(node) -> None:
 
     click.echo('Select a transient source:')
 
-    sources_list = search_for_stream(node, 'transients')
+    sources_list = asyncio.run(search_for_stream(node, 'transients'))
     for index, source in enumerate(sources_list):
         click.echo(f'  {index + 1}) {source}')
 
