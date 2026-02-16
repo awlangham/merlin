@@ -50,16 +50,6 @@ async def create_event_stream(node_name: str, path: str) -> bool:
 
 
 @async_run
-async def get_events(node_name: str, stream_name: str, start: int = None, end: int = None) -> list:
-    """
-    Return a list of all events in the specified stream.
-    """
-
-    async with get_joule_node(node_name) as node:
-        return await node.event_stream_read_list(stream_name + '/events', start=start, end=end, limit=1000)
-
-
-@async_run
 async def search_for_stream(node_name: str, stream_name: str) -> list:
     """
     Return list of Joule folder paths that include a stream named [stream_name].
