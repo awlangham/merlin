@@ -31,7 +31,13 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
 
     timestamps = data[:, 0] / 1e6 / 60
     timestamps -= timestamps[0]
-    P_total = data[:, 1] + data[:, 9] + data[:, 17]
+
+    if data.shape[1] == 25:
+        P_total = data[:, 1] + data[:, 9] + data[:, 17]
+    elif data.shape[1] == 9:
+        P_total = data[:, 1]
+    else:
+        raise ValueError(f'Invalid number of columns: {data.shape[1]}')
 
     entire_ss_change = np.mean(P_total[-ss_window_length:]) - np.mean(P_total[:ss_window_length])
 
