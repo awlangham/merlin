@@ -5,7 +5,7 @@ from merlin.cli.exemplar.remove import remove
 
 
 @click.group()
-def exemplar() -> None:
+def exemplar() -> None:  # pragma: no cover
     """
     Manage exemplars.
     """

@@ -6,7 +6,7 @@ from merlin.cli.learn.transients import learn_transients
 
 
 @click.group()
-def learn() -> None:
+def learn() -> None:  # pragma: no cover
     """
     Learn.
     """

@@ -6,7 +6,7 @@ from merlin.cli.load.rename import rename
 
 
 @click.group()
-def load() -> None:
+def load() -> None:  # pragma: no cover
     """
     Manage loads.
     """
