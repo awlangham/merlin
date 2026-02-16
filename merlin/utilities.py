@@ -158,9 +158,9 @@ def trainola(a, b):
     and 2 indicates negative correlation
     """
 
-    # Remove mean of first 5 samples
-    a = (a.T - np.mean(a[:, :5], axis=1)).T
-    b = (b.T - np.mean(b[:, :5], axis=1)).T
+    # Remove min
+    a = (a.T - np.min(a, axis=1)).T
+    b = (b.T - np.min(b, axis=1)).T
 
     long_array, short_array = (a, b) if a.shape[1] > b.shape[1] else (b, a)
     long_array_slices = sliding_window_view(long_array, short_array.shape)[0]

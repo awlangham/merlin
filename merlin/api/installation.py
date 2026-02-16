@@ -27,18 +27,11 @@ class Installation:
             config_json = json.load(config_file)
         return config_json
 
-    # async def get_events(self, start: int = None, end: int = None) -> list:
-    #     """
-    #     Return a list of all events in the specified stream.
-    #     """
-
-    #     return await self.node.event_stream_read_list(self.stream_name + '/events', start=start, end=end, limit=2000)
-
     from merlin.api.exemplars import add_exemplar, remove_exemplar, get_exemplar
 
     from merlin.api.loads import add_load, remove_load
 
-    async def find_matching_exemplar(self, data, trainola_threshold: float = 0.2):
+    async def find_matching_exemplar(self, data, trainola_threshold: float = 0.5):
         """
         Returns the exemplar in the config file that best
         matches the provided transient, or None if no exemplar
@@ -58,11 +51,8 @@ class Installation:
                                              end=exemplar['end_ts'])
             exemplar_sarray = await pipe.read_all()
             exemplar_PQ = exemplar_sarray['data']
-            exemplar_PQ -= np.mean(exemplar_PQ[:5], axis=0)
 
-            observed_data = data - np.mean(data[:5], axis=0)
-
-            trainola_score = trainola(observed_data.T, exemplar_PQ.T)
+            trainola_score = trainola(data.T, exemplar_PQ.T)
 
             if trainola_score < best_score and trainola_score < trainola_threshold:
                 best_score = trainola_score
@@ -119,7 +109,12 @@ class Installation:
 
 
 class OfflineInstallation(Installation):
-    def __init__(self, config_filename, node=None):
+    """
+    Offline installation class. Reads from a Joule node
+    specified in the installation config.
+    """
+
+    def __init__(self, config_filename):
         self.config_filename = config_filename
         cf = self.read_config()
         self.node = get_node(cf['node'])
@@ -130,6 +125,11 @@ class OfflineInstallation(Installation):
 
 
 class RealTimeInstallation(Installation):
+    """
+    Real-time installation class. Attaches to a provided
+    Joule node being run by the Joule coordinator.
+    """
+
     def __init__(self, config_filename, node):
         self.config_filename = config_filename
         cf = self.read_config()
