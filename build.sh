@@ -1,2 +1,2 @@
-sphinx-build -M html docs docs/_build -E
+# sphinx-build -M html docs docs/_build -E
 hatch build
