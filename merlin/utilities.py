@@ -5,7 +5,6 @@ import joule
 from joule.api import EventStream
 from joule.errors import ApiError
 from contextlib import asynccontextmanager
-import asyncio
 
 
 @asynccontextmanager
@@ -64,15 +63,6 @@ async def search_for_stream(node_name: str, stream_name: str) -> list:
     await node.close()
 
     return stream_names
-
-
-async def clear_stream(node_name: str, stream_name: str) -> None:
-    """
-    Remove all events from the specified stream.
-    """
-
-    async with get_joule_node(node_name) as node:
-        await node.event_stream_remove(stream_name + '/events')
 
 
 async def read_interval(node_name: str, stream_name: str, interval_start: int, interval_end: int):
