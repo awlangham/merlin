@@ -1,4 +1,5 @@
 import click
+import asyncio
 
 from merlin.cli.decorators import pass_node_name
 from merlin.utilities import clear_stream
@@ -12,4 +13,4 @@ def cli_clear(node, event_stream: str) -> None:
     Remove all events from EVENT_STREAM.
     """
 
-    clear_stream(node, event_stream)
+    asyncio.run(clear_stream(node, event_stream))

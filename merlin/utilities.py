@@ -77,7 +77,6 @@ async def search_for_stream(node_name: str, stream_name: str) -> list:
     return stream_names
 
 
-@async_run
 async def clear_stream(node_name: str, stream_name: str) -> None:
     """
     Remove all events from the specified stream.
