@@ -12,6 +12,10 @@ def add(load_name: str) -> None:
     Add a load to the configuration.
     """
 
+    if len(load_name) == 0:
+        click.echo('Load name cannot be empty.')
+        return
+
     state_names = _comma_separated_to_strings(click.prompt('Enter a comma-separated list of states', default='OFF, ON'))
 
     states_dict = {}
