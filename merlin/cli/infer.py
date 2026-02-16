@@ -8,7 +8,11 @@ from merlin.api import get_installation
 @click.command('infer')
 @click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
-def infer(start, end) -> None:
+def infer(start: str, end: str) -> None:
+    """
+    Infer load identity and state change over [start, end].
+    """
+
     try:
         start_ts, end_ts = h2ts(start), h2ts(end)
     except ValueError:

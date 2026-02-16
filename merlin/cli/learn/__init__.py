@@ -8,7 +8,7 @@ from merlin.cli.learn.transients import learn_transients
 @click.group()
 def learn() -> None:  # pragma: no cover
     """
-    Learn.
+    Learn loads and transients.
     """
     pass
 
