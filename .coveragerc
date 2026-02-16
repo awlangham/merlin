@@ -1,3 +1,4 @@
 [run]
 omit =
     hatch_build.py
+    tests/*
