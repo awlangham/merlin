@@ -31,7 +31,7 @@ def initialize(node) -> None:
     selected_folder = sources_list[value - 1]
     click.echo(f'\nTransient source stream: [{selected_folder}/transients]')
 
-    if create_event_stream(node, selected_folder):
+    if asyncio.run(create_event_stream(node, selected_folder)):
         click.echo(f'Created event stream [{selected_folder}/events]')
     else:
         click.echo(f'Event stream [{selected_folder}/events] already exists')

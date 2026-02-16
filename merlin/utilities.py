@@ -22,17 +22,6 @@ async def get_joule_node(node_name: str):
         await node.close()
 
 
-def async_run(func):
-    """
-    Decorator to run a coroutine and block until done.
-    """
-
-    def wrapper(*args, **kwargs):
-        return asyncio.run(func(*args, **kwargs))
-    return wrapper
-
-
-@async_run
 async def create_event_stream(node_name: str, path: str) -> bool:
     """
     Create new event stream at [path]/events and return True.
