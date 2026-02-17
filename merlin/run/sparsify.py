@@ -37,7 +37,7 @@ class Sparsifier(FilterModule):
         """
         Run module, either in real-time or historic mode.
 
-        Must be run from an async function or from the command line with ``merlin-process-events``.
+        Must be run from an async function or from the command line with ``merlin-sparsify``.
         """
 
         prep_pipe = inputs['prep']
