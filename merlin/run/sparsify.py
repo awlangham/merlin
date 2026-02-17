@@ -55,14 +55,14 @@ class Sparsifier(FilterModule):
             prep_data = sarray_in[:, 1:]
             num_rows = len(prep_data)
 
-            if num_rows < 120:
+            if num_rows <= parsed_args.min_window_length:
                 continue
 
             start_index = 0
             while True:
-                if start_index + min_window_length > num_rows - 60:
+                if start_index + min_window_length > num_rows:
                     # Nothing to see here, consume the data
-                    prep_pipe.consume(num_rows - 60 - min_window_length)
+                    prep_pipe.consume(num_rows - 0 - min_window_length)
                     break
 
                 # Check if first window of data is quiet
