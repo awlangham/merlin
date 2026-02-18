@@ -17,11 +17,19 @@ from merlin.cli.decorators import pass_node_name
 
 @click.command(name='transients')
 @click.argument('prep_stream')
-@click.option('--smallest_load', '-l', help='Smallest step change of interest', default=5000)
+@click.option('--smallest_load', '-l', help='Smallest step change of interest', required=True)
 @click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
 @pass_node_name
 def learn_transients(node, prep_stream, start, end, smallest_load):
+    try:
+        start_ts, end_ts = h2ts(start), h2ts(end)
+        if start_ts >= end_ts:
+            raise ValueError
+    except ValueError:
+        click.echo('Invalid start/end time.')
+        return
+
     min_window_length = 10
     ss_window_length = 5
 

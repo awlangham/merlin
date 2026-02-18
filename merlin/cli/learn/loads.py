@@ -10,6 +10,8 @@ from merlin.api import get_installation
 def learn_loads(start, end) -> None:
     try:
         start_ts, end_ts = h2ts(start), h2ts(end)
+        if start_ts >= end_ts:
+            raise ValueError
     except ValueError:
         click.echo('Invalid start/end time.')
         return
