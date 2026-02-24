@@ -17,7 +17,7 @@ from merlin.cli.decorators import pass_node_name
 
 @click.command(name='transients')
 @click.argument('prep_stream')
-@click.option('--smallest_load', '-l', help='Smallest step change of interest', required=True)
+@click.option('--smallest_load', '-l', help='Smallest step change of interest', type=float, required=True)
 @click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
 @pass_node_name
@@ -122,7 +122,10 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
             plt.xlim(timestamps[0], timestamps[-1])
             plt.show()
 
-        return np.abs(total_ss_change - entire_ss_change) + sum_of_flat_ranges
+        loss_ss = np.abs(total_ss_change - entire_ss_change)
+        loss_degen = 1e9 if len(intervals) in [0, 1] else 0
+        total_loss = loss_ss + sum_of_flat_ranges + loss_degen
+        return total_loss
 
     result = minimize_scalar(evaluate_threshold, bounds=(0, smallest_load))
     click.echo(result)
@@ -139,7 +142,7 @@ async def _get_data(node, prep_stream, start_ts, end_ts):
     estimated_num_rows = round(60 * (end_ts - start_ts) / 1e6)
 
     data = []
-    with tqdm(total=estimated_num_rows, desc='Loading data', unit='rows') as pbar:
+    with tqdm(total=estimated_num_rows, desc='Loading data', unit=' rows') as pbar:
         while not await pipe.is_empty():
             batch = await pipe.read(flatten=True)
             data.append(batch)
