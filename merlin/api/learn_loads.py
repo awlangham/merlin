@@ -12,7 +12,7 @@ from merlin.utilities import trainola
 def learn_loads(self, start_ts: int, end_ts: int, max_ss_error: float = 500):
     if start_ts >= end_ts:
         raise ValueError('start_ts must be less than end_ts')
-    
+
     if max_ss_error <= 0:
         raise ValueError('max_ss_error must be >= 0')
 
@@ -53,7 +53,7 @@ def learn_loads(self, start_ts: int, end_ts: int, max_ss_error: float = 500):
             distance_matrix[t1, t2] = pair_distance
             distance_matrix[t2, t1] = pair_distance
 
-        hdbscan = HDBSCAN(min_cluster_size=5, metric='precomputed', cluster_selection_epsilon=0.01, copy=True).fit(distance_matrix)
+        hdbscan = HDBSCAN(min_cluster_size=5, metric='precomputed', copy=True).fit(distance_matrix)
 
         cluster_assignments = hdbscan.labels_
 
