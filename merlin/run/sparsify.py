@@ -45,7 +45,7 @@ class Sparsifier(FilterModule):
         self.out_event_stream = await self._get_output_stream(parsed_args.output)
 
         min_window_length = parsed_args.min_window_length
-        threshold = parsed_args.threshold
+        self.threshold = parsed_args.threshold
 
         self.current_installation = run_installation(self.node)
         self.method = self.current_installation.method
@@ -56,6 +56,7 @@ class Sparsifier(FilterModule):
             num_rows = len(prep_data)
 
             if num_rows < 120:
+                prep_pipe.consume(num_rows)
                 continue
 
             start_index = 0
@@ -68,7 +69,7 @@ class Sparsifier(FilterModule):
                 # Check if first window of data is quiet
                 first_window = prep_data[start_index:start_index + min_window_length]
 
-                if self.compute_range(first_window) < threshold:
+                if self.compute_range(first_window) < self.threshold:
                     start_index += 1
                     continue
 
@@ -79,15 +80,43 @@ class Sparsifier(FilterModule):
                 for index, window in enumerate(windows):
                     max_range = self.compute_range(window.T)
 
-                    if max_range < threshold:
+                    if max_range < self.threshold:
                         end_index += index
                         break
 
-                await transients_pipe.write(sarray_in[start_index:end_index])
+                # await transients_pipe.write(sarray_in[start_index:end_index])
+                # new_event = await self.create_event(sarray_in[start_index:end_index, 0], sarray_in[start_index:end_index, 1:])
+                # await self.node.event_stream_write(self.out_event_stream, [new_event])
+                # prep_pipe.consume(end_index)
+
                 new_event = await self.create_event(sarray_in[start_index:end_index, 0], sarray_in[start_index:end_index, 1:])
-                await self.node.event_stream_write(self.out_event_stream, [new_event])
+                if self.passed_ss_threshold(new_event):
+                    await transients_pipe.write(sarray_in[start_index:end_index])
+                    await self.node.event_stream_write(self.out_event_stream, [new_event])
+
+                # if self.current_installation.num_phases == 3:
+                #     if np.abs(new_event.content['P_ss']) > 3 * threshold:
+                #         await transients_pipe.write(sarray_in[start_index:end_index])
+                #         await self.node.event_stream_write(self.out_event_stream, [new_event])
+                # else:
+                #     if np.abs(new_event.content['P_ss']) > threshold:
+                #         await transients_pipe.write(sarray_in[start_index:end_index])
+                #         await self.node.event_stream_write(self.out_event_stream, [new_event])
+
                 prep_pipe.consume(end_index)
                 break
+
+    def passed_ss_threshold(self, new_event):
+        if self.current_installation.num_phases == 3:
+            PA_ss, QA_ss = new_event.content['PA_ss'], new_event.content['QA_ss']
+            PB_ss, QB_ss = new_event.content['PB_ss'], new_event.content['QB_ss']
+            PC_ss, QC_ss = new_event.content['PC_ss'], new_event.content['QC_ss']
+            ss_features = np.array([PA_ss, QA_ss, PB_ss, QB_ss, PC_ss, QC_ss])
+        else:
+            P_ss, Q_ss = new_event.content['P_ss'], new_event.content['Q_ss']
+            ss_features = np.array([P_ss, Q_ss])
+
+        return np.any(np.abs(ss_features) > self.threshold)
 
     def compute_range(self, window):
         if self.current_installation.num_phases == 3:
@@ -150,6 +179,7 @@ class Sparsifier(FilterModule):
             }
 
             type = 'OFF to ON' if (PA_ss + PB_ss + PC_ss) > 0 else 'ON to OFF'
+            ss_features = np.array([PA_ss, QA_ss, PB_ss, QB_ss, PC_ss, QC_ss])
         else:
             P_ss = self._extract_ss(window[:, 0])
             Q_ss = self._extract_ss(window[:, 1])
@@ -169,6 +199,7 @@ class Sparsifier(FilterModule):
                 'I0_q': float(I0_q)
             }
             type = 'OFF to ON' if P_ss > 0 else 'ON to OFF'
+            ss_features = np.array([P_ss, Q_ss])
 
         if self.method == 'unsupervised':
             event_content['type'] = type
@@ -176,7 +207,13 @@ class Sparsifier(FilterModule):
             # Find closest matching exemplar
             matching_exemplar, match_score = await self.current_installation.find_matching_exemplar(window)
 
-            if matching_exemplar is not None and matching_exemplar['transitions'] is not None:
+            if matching_exemplar is None:
+                comb_match = await self.current_installation.combinatorial_match(ss_features)
+                if comb_match is not None:
+                    event_content['label'] = comb_match[0]
+                    event_content['type'] = comb_match[1]
+                    event_content['distance'] = None
+            elif matching_exemplar is not None and matching_exemplar['transitions'] is not None:
                 # TODO: support multi-transition exemplars
                 if len(matching_exemplar['transitions']) > 1:
                     raise Exception('Multi-transition exemplars not implemented yet.')
