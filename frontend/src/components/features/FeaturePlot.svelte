@@ -23,35 +23,41 @@
 
     const dispatch = createEventDispatcher();
 
-    let { cursor, sequence = 0, brushedPoints } = $props();
+    export let cursor,
+        sequence = 0,
+        brushedPoints;
 
-    let filteredEvents = $derived(
+    let xFeature, yFeature;
+
+    $: filteredEvents =
         $filterStore === ""
             ? $eventStore
-            : $eventStore.filter((event) => event.label === $filterStore),
-    );
+            : $eventStore.filter((event) => event.label === $filterStore);
 
-    let powerFeatures = $derived(
-        $numPhasesStore === 3 ? threePhaseFeatures : singlePhaseFeatures,
-    );
+    let powerFeatures;
+    $: if ($numPhasesStore === 3) {
+        powerFeatures = threePhaseFeatures;
+    } else {
+        powerFeatures = singlePhaseFeatures;
+    }
 
-    let xFeature = $derived(powerFeatures[0]);
-    let yFeature = $derived(
-        sequence === 1 ? powerFeatures[2] : powerFeatures[1],
-    );
+    // Set default views upon page load
+    $: if (sequence == 1) {
+        xFeature = powerFeatures[0];
+        yFeature = powerFeatures[2];
+    } else {
+        xFeature = powerFeatures[0];
+        yFeature = powerFeatures[1];
+    }
 
-    $effect(() => {
-        if ($clusterStore && data) {
-            data[0].marker.color = $clusterStore.map((cluster) =>
-                cluster === -1
-                    ? unclusteredColor
-                    : colors[cluster % colors.length],
-            );
-        }
-    });
+    $: if ($clusterStore && data) {
+        data[0].marker.color = $clusterStore.map((cluster) =>
+            cluster === -1 ? unclusteredColor : colors[cluster % colors.length],
+        );
+    }
 
-    let data = $state(),
-        layout = $state({
+    let data,
+        layout = {
             autosize: true,
             margin: { l: 70, r: 20, b: 40, t: 20 },
             dragmode: "pan",
@@ -59,62 +65,56 @@
             xaxis: { fixedrange: false },
             yaxis: { fixedrange: false },
             showlegend: false,
-        });
+        };
 
-    $effect(() => {
-        if (cursor === "explore") {
-            layout.dragmode = "pan";
-        } else if (cursor === "crossbrush") {
-            layout.dragmode = "lasso";
-        }
-    });
+    $: if (cursor === "explore") {
+        layout.dragmode = "pan";
+    } else if (cursor === "crossbrush") {
+        layout.dragmode = "lasso";
+    }
 
-    let xData = $derived(filteredEvents.map((e) => e[xFeature]));
-    let yData = $derived(filteredEvents.map((e) => e[yFeature]));
+    $: xData = filteredEvents.map((e) => e[xFeature]);
+    $: yData = filteredEvents.map((e) => e[yFeature]);
 
-    $effect(() => {
-        if (xData && yData) {
-            data = [
-                {
-                    selectedpoints: brushedPoints,
-                    name: "Events",
-                    x: xData,
-                    y: yData,
-                    ids: filteredEvents.map(({ id }) => id),
-                    type: "scattergl",
-                    mode: "markers",
-                    selected: {
-                        marker: {
-                            size: 12,
-                            color: selectedColor,
-                            opacity: 0.8,
-                        },
+    $: if (xData && yData) {
+        data = [
+            {
+                selectedpoints: brushedPoints,
+                name: "Events",
+                x: xData,
+                y: yData,
+                ids: filteredEvents.map(({ id }) => id),
+                type: "scattergl",
+                mode: "markers",
+                selected: {
+                    marker: {
+                        size: 12,
+                        color: selectedColor,
+                        opacity: 0.8,
                     },
-                    unselected: {
-                        marker: { opacity: 0.1 },
-                    },
-                    marker: { size: 10, opacity: 0.3 },
                 },
-            ];
+                unselected: {
+                    marker: { opacity: 0.1 },
+                },
+                marker: { size: 10, opacity: 0.3 },
+            },
+        ];
 
-            layout.xaxis.title = { text: labels[xFeature] };
-            layout.yaxis.title = { text: labels[yFeature] };
-        }
-    });
+        layout.xaxis.title = { text: labels[xFeature] };
+        layout.yaxis.title = { text: labels[yFeature] };
+    }
 
-    $effect(() => {
-        if ($eventIndexStore != -1) {
-            const selectedEvent = filteredEvents.find(
-                (e) => e.id === $eventIndexStore,
-            );
-            layout.shapes = makeSelectionShape(
-                selectedEvent[xFeature],
-                selectedEvent[yFeature],
-            );
-        } else {
-            layout.shapes = [];
-        }
-    });
+    $: if ($eventIndexStore != -1) {
+        const selectedEvent = filteredEvents.find(
+            (e) => e.id === $eventIndexStore,
+        );
+        layout.shapes = makeSelectionShape(
+            selectedEvent[xFeature],
+            selectedEvent[yFeature],
+        );
+    } else {
+        layout.shapes = [];
+    }
 </script>
 
 <div>
