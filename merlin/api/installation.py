@@ -31,7 +31,7 @@ class Installation:
 
     from merlin.api.loads import add_load, remove_load
 
-    async def find_matching_exemplar(self, data, trainola_threshold: float = 0.5):
+    async def find_matching_exemplar(self, data, trainola_threshold: float = 0.2):
         """
         Returns the exemplar in the config file that best
         matches the provided transient, or None if no exemplar
@@ -60,7 +60,7 @@ class Installation:
 
         return matching_exemplar, best_score
 
-    async def combinatorial_match(self, P_ss: float, Q_ss: float):
+    async def combinatorial_match(self, ss_features):
         """
         Match the steady-state changes in real and reactive power
         to combinations of two loads in the configuration.
@@ -75,17 +75,12 @@ class Installation:
 
         for load1, load2 in combinations(load_names, 2):
             PA_ss_1, QA_ss_1, PB_ss_1, QB_ss_1, PC_ss_1, QC_ss_1 = cf['loads'][load1]['states']['ON']
-            P_ss_1, Q_ss_1 = PA_ss_1 + PB_ss_1 + PC_ss_1, QA_ss_1 + QB_ss_1 + QC_ss_1
-
             PA_ss_2, QA_ss_2, PB_ss_2, QB_ss_2, PC_ss_2, QC_ss_2 = cf['loads'][load2]['states']['ON']
-            P_ss_2, Q_ss_2 = PA_ss_2 + PB_ss_2 + PC_ss_2, QA_ss_2 + QB_ss_2 + QC_ss_2
 
             for a, b in product([1, -1], repeat=2):
-                P_ss_combo = a * P_ss_1 + b * P_ss_2
-                Q_ss_combo = a * Q_ss_1 + b * Q_ss_2
+                proposed_ss_features = a * np.array([PA_ss_1, QA_ss_1, PB_ss_1, QB_ss_1, PC_ss_1, QC_ss_1]) + b * np.array([PA_ss_2, QA_ss_2, PB_ss_2, QB_ss_2, PC_ss_2, QC_ss_2])
+                error = (np.linalg.norm(ss_features - proposed_ss_features) / np.linalg.norm(proposed_ss_features)) ** 2
 
-                error = (P_ss - P_ss_combo) ** 2 + (Q_ss - Q_ss_combo) ** 2
-                error /= P_ss_combo ** 2 + Q_ss_combo ** 2
                 if error < best_error:
                     best_error = error
                     best_loads = f'{load1},{load2}'
