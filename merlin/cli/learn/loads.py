@@ -25,7 +25,8 @@ def learn_loads(start, end) -> None:
 
     table = []
     for load in inferred_loads:
-        table.append([load.name, load.family, *load.states['ON']])
+        load_states_rounded = [round(state, 1) for state in load.states['ON']]
+        table.append([load.name, load.family] + load_states_rounded)
 
     if num_phases == 3:
         headers = ['Load name', 'Family', 'PA_ss (W)', 'QA_ss (Var)', 'PB_ss (W)', 'QB_ss (Var)', 'PC_ss (W)', 'QC_ss (Var)']
