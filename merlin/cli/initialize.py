@@ -22,7 +22,7 @@ def initialize(node) -> None:
 
     click.echo('Select a transient source:')
 
-    sources_list = asyncio.run(search_for_stream(node, 'transients'))
+    sources_list = asyncio.run(search_for_stream(node, 'prep'))
     for index, source in enumerate(sources_list):
         click.echo(f'  {index + 1}) {source}')
 
