@@ -1,5 +1,10 @@
 <script>
-    import { datasetStore, brushedStore, eventStore } from "../stores";
+    import {
+        datasetStore,
+        brushedStore,
+        eventStore,
+        filterStore,
+    } from "../stores";
     import { getEvents } from "../api-calls";
 
     let newLabelName;
@@ -9,14 +14,20 @@
             return;
         }
 
+        console.log($brushedStore);
+        let filteredEvents =
+            $filterStore === ""
+                ? $eventStore
+                : $eventStore.filter((event) => event.label === $filterStore);
+
         fetch("api/label?stream_name=" + $datasetStore, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 label: newLabelName,
                 intervals: $brushedStore.map((point) => [
-                    $eventStore[point]["start_ts"],
-                    $eventStore[point]["end_ts"],
+                    filteredEvents[point]["start_ts"],
+                    filteredEvents[point]["end_ts"],
                 ]),
             }),
         })
