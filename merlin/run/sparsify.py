@@ -1,10 +1,17 @@
 import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
+from scipy.signal import medfilt
 from joule.client import FilterModule
 from joule.api import Event, EventStream
 from joule.errors import ApiError
 
 from merlin.api import run_installation
+
+
+def rolling_median(data, window):
+    filtered = medfilt(data, [window, 1])
+    bound = int(window / 2)
+    return filtered[bound:-bound]
 
 
 class Sparsifier(FilterModule):
@@ -17,7 +24,6 @@ class Sparsifier(FilterModule):
         grp.add_argument('--min_window_length', type=int, required=True, help='Minimum separation between interesting events')
         grp.add_argument('--threshold', type=float, required=True, help='Threshold on the range of any feature across min_window_length')
         grp.add_argument('--output', type=str, required=True, help='Output event stream name')
-        # grp.add_argument('--method', type=str, required=True, help='Learning method')
 
     async def _get_output_stream(self, output_stream_path: str) -> EventStream:
         """
@@ -52,7 +58,12 @@ class Sparsifier(FilterModule):
 
         while not self.stop_requested and not await prep_pipe.is_empty():
             sarray_in = await prep_pipe.read(flatten=True)
-            prep_data = sarray_in[:, 1:]
+
+            median_window_length = 21
+            if median_window_length > 1:
+                prep_data = rolling_median(sarray_in[:, 1:], median_window_length)
+            else:
+                prep_data = sarray_in[:, 1:]
             num_rows = len(prep_data)
 
             if num_rows < 120:
@@ -84,39 +95,24 @@ class Sparsifier(FilterModule):
                         end_index += index
                         break
 
-                # await transients_pipe.write(sarray_in[start_index:end_index])
-                # new_event = await self.create_event(sarray_in[start_index:end_index, 0], sarray_in[start_index:end_index, 1:])
-                # await self.node.event_stream_write(self.out_event_stream, [new_event])
-                # prep_pipe.consume(end_index)
-
-                new_event = await self.create_event(sarray_in[start_index:end_index, 0], sarray_in[start_index:end_index, 1:])
-                if self.passed_ss_threshold(new_event):
-                    await transients_pipe.write(sarray_in[start_index:end_index])
+                adjusted_start_index = start_index + median_window_length // 2
+                adjusted_end_index = end_index + median_window_length // 2
+                if self.passed_ss_threshold(sarray_in[adjusted_start_index:adjusted_end_index, 1:]):
+                    new_event = await self.create_event(sarray_in[adjusted_start_index:adjusted_end_index, 0], sarray_in[adjusted_start_index:adjusted_end_index, 1:])
+                    await transients_pipe.write(sarray_in[adjusted_start_index:adjusted_end_index])
                     await self.node.event_stream_write(self.out_event_stream, [new_event])
-
-                # if self.current_installation.num_phases == 3:
-                #     if np.abs(new_event.content['P_ss']) > 3 * threshold:
-                #         await transients_pipe.write(sarray_in[start_index:end_index])
-                #         await self.node.event_stream_write(self.out_event_stream, [new_event])
-                # else:
-                #     if np.abs(new_event.content['P_ss']) > threshold:
-                #         await transients_pipe.write(sarray_in[start_index:end_index])
-                #         await self.node.event_stream_write(self.out_event_stream, [new_event])
 
                 prep_pipe.consume(end_index)
                 break
 
-    def passed_ss_threshold(self, new_event):
+    def passed_ss_threshold(self, prep):
         if self.current_installation.num_phases == 3:
-            PA_ss, QA_ss = new_event.content['PA_ss'], new_event.content['QA_ss']
-            PB_ss, QB_ss = new_event.content['PB_ss'], new_event.content['QB_ss']
-            PC_ss, QC_ss = new_event.content['PC_ss'], new_event.content['QC_ss']
-            ss_features = np.array([PA_ss, QA_ss, PB_ss, QB_ss, PC_ss, QC_ss])
+            prep_fundamental = prep[:, (0, 1, 8, 9, 16, 17)]
         else:
-            P_ss, Q_ss = new_event.content['P_ss'], new_event.content['Q_ss']
-            ss_features = np.array([P_ss, Q_ss])
+            prep_fundamental = prep[:, (0, 1)]
 
-        return np.any(np.abs(ss_features) > self.threshold)
+        ss_diff = np.mean(prep_fundamental[-5:], axis=0) - np.mean(prep_fundamental[:5], axis=0)
+        return np.any(np.abs(ss_diff) > self.threshold)
 
     def compute_range(self, window):
         if self.current_installation.num_phases == 3:
@@ -207,13 +203,13 @@ class Sparsifier(FilterModule):
             # Find closest matching exemplar
             matching_exemplar, match_score = await self.current_installation.find_matching_exemplar(window)
 
-            if matching_exemplar is None:
-                comb_match = await self.current_installation.combinatorial_match(ss_features)
-                if comb_match is not None:
-                    event_content['label'] = comb_match[0]
-                    event_content['type'] = comb_match[1]
-                    event_content['distance'] = None
-            elif matching_exemplar is not None and matching_exemplar['transitions'] is not None:
+            # if matching_exemplar is None:
+            #     comb_match = await self.current_installation.combinatorial_match(ss_features)
+            #     if comb_match is not None:
+            #         event_content['label'] = comb_match[0]
+            #         event_content['type'] = comb_match[1]
+            #         event_content['distance'] = None
+            if matching_exemplar is not None and matching_exemplar['transitions'] is not None:
                 # TODO: support multi-transition exemplars
                 if len(matching_exemplar['transitions']) > 1:
                     raise Exception('Multi-transition exemplars not implemented yet.')
