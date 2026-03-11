@@ -27,7 +27,7 @@ class Installation:
             config_json = json.load(config_file)
         return config_json
 
-    from merlin.api.exemplars import add_exemplar, remove_exemplar, get_exemplar
+    from merlin.api.exemplars import add_exemplar, remove_exemplar, remove_exemplar_by_load, get_exemplar
 
     from merlin.api.loads import add_load, remove_load
 

@@ -13,5 +13,8 @@ def remove(load_name: str) -> None:
     try:
         get_installation().remove_load(load_name)
         click.echo(f'Removed {load_name} from configuration.')
+
+        get_installation().remove_exemplar_by_load(load_name)
+        click.echo(f'Removed all {load_name} exemplars.')
     except KeyError:
         click.echo(f'No load found named {load_name}.')

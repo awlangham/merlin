@@ -11,8 +11,17 @@ def remove_exemplar(self, index: int) -> None:
     with self.modify_config() as cf:
         if index > len(cf['exemplars']) or index <= 0:
             raise IndexError(f'Invalid exemplar index {index}')
-    
+
         del cf['exemplars'][index - 1]
+
+
+def remove_exemplar_by_load(self, load_name: str) -> None:
+    with self.modify_config() as cf:
+        exemplars = cf['exemplars'].copy()
+
+        for exemplar in exemplars:
+            if exemplar['transitions'][0][0] == load_name:
+                cf['exemplars'].remove(exemplar)
 
 
 async def get_exemplar(self, load_name: str, state1: str, state2: str):
