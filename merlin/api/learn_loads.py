@@ -161,6 +161,8 @@ def learn_loads(self, start_ts: int, end_ts: int, max_ss_error: float = 500):
             elif total_P_pk > 2 * total_P_ss:
                 # TODO: Refactor this into some sort of classifier that's well documented
                 family = 'Motor'
+            elif total_Q_ss > 0.1 * total_P_ss:
+                family = 'Inductive'
             else:
                 family = None
 
