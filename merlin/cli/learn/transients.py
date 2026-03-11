@@ -3,9 +3,15 @@ import click
 from joule.api import get_node
 from joule.utilities import human_to_timestamp as h2ts, timestamp_to_human as ts2h
 import numpy as np
-from scipy.optimize import minimize_scalar
+from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from scipy.signal import medfilt
+from pymoo.core.problem import ElementwiseProblem
+from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.optimize import minimize
+from pymoo.visualization.scatter import Scatter
+from segment_tree import SegmentTree
 
 from merlin.cli.decorators import pass_node_name
 
@@ -13,6 +19,133 @@ from merlin.cli.decorators import pass_node_name
 # plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
 # plt.rcParams['font.size'] = 16
 # plt.rcParams['lines.linewidth'] = 3
+
+
+def under_threshold(start, end, prep_trees, threshold):
+    for tree in prep_trees:
+        minimum = tree.query(start, end, 'min')
+        maximum = tree.query(start, end, 'max')
+        if (maximum - minimum) >= threshold:
+            return False
+
+    return True
+
+
+def rolling_median(data, window):
+    filtered = medfilt(data, [window, 1])
+    bound = int(window / 2)
+    return filtered[bound:-bound]
+
+
+class LearnTransientsProblem(ElementwiseProblem):
+    def __init__(self, data, min_load):
+        super().__init__(
+            n_var=3, # threshold, median filter length, flat window length
+            n_obj=2, # residual sum of delta ss, total duration of transients
+            xl=[0, 0, 5],
+            xu=[min_load, 10, 60]
+        )
+
+        self.timestamps = data[:, 0]
+        self.prep = data[:, 1:]
+        self.prep_len = {1: len(self.prep)}
+        self.prep_trees = {1: [SegmentTree(self.prep[:, i]) for i in [0, 1, 8, 9, 16, 17]]}
+        self.ss_window_length = 5
+        self.entire_ss_change = np.mean(self.prep[-self.ss_window_length:], axis=0) - np.mean(self.prep[:self.ss_window_length], axis=0)
+
+    def get_prep_trees(self, median_window_length):
+        try:
+            return self.prep_trees[median_window_length]
+        except KeyError:
+            prep_filtered = rolling_median(self.prep, median_window_length)
+            self.prep_len[median_window_length] = len(prep_filtered)
+            self.prep_trees[median_window_length] = [SegmentTree(prep_filtered[:, i]) for i in [0, 1, 8, 9, 16, 17]]
+            return self.prep_trees[median_window_length]
+
+    def _evaluate(self, x, out, *args, **kwargs):
+        plot = kwargs.get('plot', False)
+
+        threshold = x[0]
+        median_window = 2 * round(x[1]) + 1
+        min_window_length = round(x[2])
+
+        print(threshold, median_window, min_window_length)
+
+        prep_trees = self.get_prep_trees(median_window)
+        prep_len = self.prep_len[median_window]
+
+        mask = np.ones(prep_len)  # 0 is flat, 1 is not-flat
+
+        def split(start, end):
+            if end - start < min_window_length:
+                return
+
+            if under_threshold(start, end, prep_trees, threshold):
+                mask[start:end] = 0
+                return
+
+            split_index = (end - start) // 2 + start
+
+            if (split_index - start) > min_window_length // 2 and (end - split_index) > min_window_length // 2:
+                if under_threshold(split_index - min_window_length // 2, split_index + min_window_length // 2, prep_trees, threshold):
+                    # This split is in the middle of something interesting
+                    split_index -= min_window_length // 2
+
+            # Make sure we don't split degeneratively
+            if split_index == start:
+                split_index += 1
+
+            if split_index == end:
+                split_index -= 1
+
+            split(start, split_index)
+            split(split_index, end)
+
+        split(0, prep_len - 1)
+
+        flat_changes = np.diff(np.pad(mask, 1))  # 1 means we went from flat to not-flat, -1 means we went from not-flat to flat
+        intervals = list(zip(np.where(flat_changes == 1)[0], np.where(flat_changes == -1)[0]))
+
+        if plot:
+            plt.figure(tight_layout=True)
+            plt.plot(self.timestamps, self.prep[:, 0] / 1e3)
+            plt.plot(self.timestamps, self.prep[:, 8] / 1e3)
+            plt.plot(self.timestamps, self.prep[:, 16] / 1e3)
+
+        total_ss_change = 0
+        transient_length = 0
+        num_intervals = 0
+        for (start, end) in intervals:
+            # If too close to the start/end of all the data, just discard
+            if start < self.ss_window_length or end > prep_len - self.ss_window_length:
+                continue
+
+            transient_length += (end - start)
+            num_intervals += 1
+
+            if plot:
+                plt.axvspan(self.timestamps[start], self.timestamps[min(end, len(self.timestamps) - 1)], color='green', alpha=0.4)
+
+            # Add [ss_window_length] points to start and end
+            new_start, new_end = start - self.ss_window_length, end + self.ss_window_length
+
+            ss_change = np.mean(self.prep[end:new_end], axis=0) - np.mean(self.prep[new_start:start], axis=0)
+            total_ss_change += ss_change
+
+        if plot:
+            plt.title(f'R = {round(threshold)} W, M = {median_window}, N = {min_window_length}')
+            plt.xlabel('Time (min)')
+            plt.ylabel('Total Real Power (kW)')
+            plt.xlim(self.timestamps[0], self.timestamps[-1])
+            plt.show()
+
+        loss_ss = np.linalg.norm(total_ss_change - self.entire_ss_change)
+
+        output = np.array([loss_ss, transient_length])
+        if num_intervals in [0, 1]:
+            out['F'] = np.array([np.inf, np.inf])
+        else:
+            out['F'] = output
 
 
 @click.command(name='transients')
@@ -30,9 +163,6 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
         click.echo('Invalid start/end time.')
         return
 
-    min_window_length = 10
-    ss_window_length = 5
-
     data = asyncio.run(_get_data(node, prep_stream, h2ts(start), h2ts(end)))
 
     click.echo(f'Optimizing over [ {ts2h(data[0, 0])}-> {ts2h(data[-1, 0])}]')
@@ -40,97 +170,29 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
     timestamps = data[:, 0] / 1e6 / 60
     timestamps -= timestamps[0]
 
-    if data.shape[1] == 25:
-        P_total = data[:, 1] + data[:, 9] + data[:, 17]
-    elif data.shape[1] == 9:
-        P_total = data[:, 1]
-    else:
-        raise ValueError(f'Invalid number of columns: {data.shape[1]}')
+    # if data.shape[1] == 25:
+    #     P_total = data[:, 1] + data[:, 9] + data[:, 17]
+    # elif data.shape[1] == 9:
+    #     P_total = data[:, 1]
+    # else:
+    #     raise ValueError(f'Invalid number of columns: {data.shape[1]}')
 
-    entire_ss_change = np.mean(P_total[-ss_window_length:]) - np.mean(P_total[:ss_window_length])
+    algorithm = NSGA2(pop_size=20)
 
-    def evaluate_threshold(threshold, plot=False):
-        mask = np.ones(P_total.shape)  # 0 is flat, 1 is not-flat
+    learn_transient_problem = LearnTransientsProblem(data, smallest_load)
 
-        sum_of_flat_ranges = 0
+    res = minimize(
+        learn_transient_problem,
+        algorithm,
+        termination=('n_gen', 10),
+        seed=1,
+        verbose=True
+    )
 
-        def split(start, end):
-            nonlocal sum_of_flat_ranges
+    Scatter().add(res.F).show()
 
-            if end - start < min_window_length:
-                return
-
-            x = P_total[start:end]
-
-            if np.max(x) - np.min(x) < threshold:
-                # if compute_range(prep[start:end]) < threshold:
-                mask[start:end] = 0
-                sum_of_flat_ranges += np.max(x) - np.min(x)
-                return
-
-            x_summed = np.cumsum(x - np.min(x))
-            split_index = np.searchsorted(x_summed, x_summed[-1] / 2) + start
-            # split_index = len(x) // 2 + start
-
-            if (split_index - start) > min_window_length // 2 and (end - split_index) > min_window_length // 2:
-                window_around_split = P_total[split_index - min_window_length // 2: split_index + min_window_length // 2]
-                if np.max(window_around_split) - np.min(window_around_split) > threshold:
-                    # This split is in the middle of something interesting
-                    split_index -= min_window_length // 2
-
-            # Make sure we don't split degeneratively
-            if split_index == start:
-                split_index += 1
-
-            if split_index == end:
-                split_index -= 1
-
-            split(start, split_index)
-            split(split_index, end)
-
-        split(0, len(P_total))
-
-        flat_changes = np.diff(np.pad(mask, 1))  # 1 means we went from flat to not-flat, -1 means we went from not-flat to flat
-        intervals = list(zip(np.where(flat_changes == 1)[0], np.where(flat_changes == -1)[0]))
-
-        if plot:
-            plt.figure(tight_layout=True)
-            plt.plot(timestamps, P_total / 1e3)
-
-        total_ss_change = 0
-        for (start, end) in intervals:
-            # If too close to the start/end of all the data, just discard
-            if start < ss_window_length or end > len(P_total) - ss_window_length:
-                continue
-
-            if plot:
-                plt.axvspan(timestamps[start], timestamps[min(end, len(timestamps) - 1)], color='green', alpha=0.4)
-
-            # Add [ss_window_length] points to start and end
-            new_start, new_end = start - ss_window_length, end + ss_window_length
-
-            ss_change = np.mean(P_total[end:new_end]) - np.mean(P_total[new_start:start])
-            total_ss_change += ss_change
-
-        if plot:
-            f0 = 1 / ((timestamps[1] - timestamps[0]) * 60)
-            T = 1e3 * min_window_length / f0
-
-            plt.title(f'k = {round(threshold)} W, T = {round(T)} ms')
-            plt.xlabel('Time (min)')
-            plt.ylabel('Total Real Power (kW)')
-            plt.xlim(timestamps[0], timestamps[-1])
-            plt.show()
-
-        loss_ss = np.abs(total_ss_change - entire_ss_change)
-        loss_degen = 1e9 if len(intervals) in [0, 1] else 0
-        total_loss = loss_ss + sum_of_flat_ranges + loss_degen
-        return total_loss
-
-    result = minimize_scalar(evaluate_threshold, bounds=(0, smallest_load))
-    click.echo(result)
-
-    evaluate_threshold(result.x, plot=True)
+    for x in res.X:
+        learn_transient_problem._evaluate(x, {}, plot=True)
 
 
 async def _get_data(node, prep_stream, start_ts, end_ts):
