@@ -64,6 +64,8 @@ class LearnTransientsProblem(ElementwiseProblem):
 
     def _evaluate(self, x, out, *args, **kwargs):
         plot = kwargs.get('plot', False)
+        relative_timestamps = self.timestamps - self.timestamps[0]
+        relative_timestamps_h = relative_timestamps / (1e6 * 60 * 60)
 
         threshold = x[0]
         median_window = 2 * round(x[1]) + 1
@@ -108,9 +110,9 @@ class LearnTransientsProblem(ElementwiseProblem):
 
         if plot:
             plt.figure(tight_layout=True)
-            plt.plot(self.timestamps, self.prep[:, 0] / 1e3)
-            plt.plot(self.timestamps, self.prep[:, 8] / 1e3)
-            plt.plot(self.timestamps, self.prep[:, 16] / 1e3)
+            plt.plot(relative_timestamps_h, self.prep[:,  0] / 1e3, label='A')
+            plt.plot(relative_timestamps_h, self.prep[:,  8] / 1e3, label='B')
+            plt.plot(relative_timestamps_h, self.prep[:, 16] / 1e3, label='C')
 
         total_ss_change = 0
         transient_length = 0
@@ -124,7 +126,7 @@ class LearnTransientsProblem(ElementwiseProblem):
             num_intervals += 1
 
             if plot:
-                plt.axvspan(self.timestamps[start], self.timestamps[min(end, len(self.timestamps) - 1)], color='green', alpha=0.4)
+                plt.axvspan(relative_timestamps_h[start], relative_timestamps_h[min(end, len(relative_timestamps_h) - 1)], color='green', alpha=0.4)
 
             # Add [ss_window_length] points to start and end
             new_start, new_end = start - self.ss_window_length, end + self.ss_window_length
@@ -135,8 +137,9 @@ class LearnTransientsProblem(ElementwiseProblem):
         if plot:
             plt.title(f'R = {round(threshold)} W, M = {median_window}, N = {min_window_length}')
             plt.xlabel('Time (min)')
-            plt.ylabel('Total Real Power (kW)')
-            plt.xlim(self.timestamps[0], self.timestamps[-1])
+            plt.ylabel('Real Power (kW)')
+            plt.xlim(relative_timestamps_h[0], relative_timestamps_h[-1])
+            plt.legend()
             plt.show()
 
         loss_ss = np.linalg.norm(total_ss_change - self.entire_ss_change)
