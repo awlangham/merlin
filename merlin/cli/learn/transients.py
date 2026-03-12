@@ -10,7 +10,6 @@ from scipy.signal import medfilt
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.optimize import minimize
-from pymoo.visualization.scatter import Scatter
 from segment_tree import SegmentTree
 
 from merlin.cli.decorators import pass_node_name
@@ -40,8 +39,8 @@ def rolling_median(data, window):
 class LearnTransientsProblem(ElementwiseProblem):
     def __init__(self, data, min_load):
         super().__init__(
-            n_var=3, # threshold, median filter length, flat window length
-            n_obj=2, # residual sum of delta ss, total duration of transients
+            n_var=3,  # threshold, median filter length, flat window length
+            n_obj=2,  # residual sum of delta ss, total duration of transients
             xl=[0, 0, 5],
             xu=[min_load, 10, 60]
         )
@@ -57,6 +56,7 @@ class LearnTransientsProblem(ElementwiseProblem):
         try:
             return self.prep_trees[median_window_length]
         except KeyError:
+            print(f'Caching prep tree for median filter length {median_window_length}')
             prep_filtered = rolling_median(self.prep, median_window_length)
             self.prep_len[median_window_length] = len(prep_filtered)
             self.prep_trees[median_window_length] = [SegmentTree(prep_filtered[:, i]) for i in [0, 1, 8, 9, 16, 17]]
@@ -136,7 +136,7 @@ class LearnTransientsProblem(ElementwiseProblem):
 
         if plot:
             plt.title(f'R = {round(threshold)} W, M = {median_window}, N = {min_window_length}')
-            plt.xlabel('Time (min)')
+            plt.xlabel('Time (hr.)')
             plt.ylabel('Real Power (kW)')
             plt.xlim(relative_timestamps_h[0], relative_timestamps_h[-1])
             plt.legend()
@@ -173,14 +173,15 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
     timestamps = data[:, 0] / 1e6 / 60
     timestamps -= timestamps[0]
 
-    # if data.shape[1] == 25:
-    #     P_total = data[:, 1] + data[:, 9] + data[:, 17]
-    # elif data.shape[1] == 9:
-    #     P_total = data[:, 1]
-    # else:
-    #     raise ValueError(f'Invalid number of columns: {data.shape[1]}')
+    pop_size = 20
 
-    algorithm = NSGA2(pop_size=20)
+    # initial_thresholds = np.linspace(0, smallest_load, pop_size + 1)[1:]
+    # initial_median_lengths = np.zeros(pop_size)
+    # initial_flat_lengths = np.linspace(5, 60, pop_size)
+    # initial_population = np.column_stack((initial_thresholds, initial_median_lengths, initial_flat_lengths))
+
+    algorithm = NSGA2(pop_size=pop_size)
+    # algorithm = NSGA2(pop_size=pop_size, sampling=initial_population)
 
     learn_transient_problem = LearnTransientsProblem(data, smallest_load)
 
@@ -192,7 +193,10 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
         verbose=True
     )
 
-    Scatter().add(res.F).show()
+    plt.figure(tight_layout=True)
+    plt.scatter(res.F[:, 0], res.F[:, 1] / (h2ts(end) - h2ts(start)))
+    plt.xlabel('Total Delta P error')
+    plt.ylabel('Transient fraction of data')
 
     for x in res.X:
         learn_transient_problem._evaluate(x, {}, plot=True)
