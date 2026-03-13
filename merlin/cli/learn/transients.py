@@ -10,9 +10,9 @@ from pymoo.core.problem import ElementwiseProblem
 from pymoo.core.variable import Real, Integer
 from pymoo.algorithms.moo.nsga2 import RankAndCrowdingSurvival
 from pymoo.core.mixed import MixedVariableGA
-from pymoo.optimize import minimize
+# from pymoo.optimize import minimize
 from pymoo.core.termination import NoTermination
-from segment_tree import SegmentTree
+# from segment_tree import SegmentTree
 import os
 from datetime import datetime
 import matplotlib
@@ -25,14 +25,19 @@ from merlin.cli.decorators import pass_node_name
 # plt.rcParams['lines.linewidth'] = 3
 
 
-def under_threshold(start, end, prep_trees, threshold):
-    for tree in prep_trees:
-        minimum = tree.query(start, end, 'min')
-        maximum = tree.query(start, end, 'max')
-        if (maximum - minimum) >= threshold:
-            return False
+# def under_threshold(start, end, prep_trees, threshold):
+#     for tree in prep_trees:
+#         minimum = tree.query(start, end, 'min')
+#         maximum = tree.query(start, end, 'max')
+#         if (maximum - minimum) >= threshold:
+#             return False
 
-    return True
+#     return True
+
+def under_threshold(start, end, prep_to_use, threshold):
+    data = prep_to_use[start:end]
+    ranges = np.max(data, axis=0) - np.min(data, axis=0)
+    return np.all(ranges < threshold)
 
 
 def rolling_median(data, window):
@@ -56,19 +61,30 @@ class LearnTransientsProblem(ElementwiseProblem):
         self.timestamps = data[:, 0]
         self.prep = data[:, 1:]
         self.prep_len = {1: len(self.prep)}
-        self.prep_trees = {1: [SegmentTree(self.prep[:, i]) for i in [0, 1, 8, 9, 16, 17]]}
+        # self.prep_trees = {1: [SegmentTree(self.prep[:, i]) for i in [0, 1, 8, 9, 16, 17]]}
+        self.preps = {1: self.prep[:, (0, 1, 8, 9, 16, 17)]}
         self.ss_window_length = 5
         self.entire_ss_change = np.mean(self.prep[-self.ss_window_length:], axis=0) - np.mean(self.prep[:self.ss_window_length], axis=0)
 
-    def get_prep_trees(self, median_window_length):
+    def get_prep(self, median_window_length):
         try:
-            return self.prep_trees[median_window_length]
+            return self.preps[median_window_length]
         except KeyError:
             prep_fundamental = self.prep[:, (0, 1, 8, 9, 16, 17)]
             prep_filtered = rolling_median(prep_fundamental, median_window_length)
             self.prep_len[median_window_length] = len(prep_filtered)
-            self.prep_trees[median_window_length] = [SegmentTree(prep_filtered[:, i]) for i in range(prep_filtered.shape[1])]
-            return self.prep_trees[median_window_length]
+            self.preps[median_window_length] = prep_filtered
+            return self.preps[median_window_length]
+
+    # def get_prep_trees(self, median_window_length):
+    #     try:
+    #         return self.prep_trees[median_window_length]
+    #     except KeyError:
+    #         prep_fundamental = self.prep[:, (0, 1, 8, 9, 16, 17)]
+    #         prep_filtered = rolling_median(prep_fundamental, median_window_length)
+    #         self.prep_len[median_window_length] = len(prep_filtered)
+    #         self.prep_trees[median_window_length] = [SegmentTree(prep_filtered[:, i]) for i in range(prep_filtered.shape[1])]
+    #         return self.prep_trees[median_window_length]
 
     def _evaluate(self, X, out, *args, **kwargs):
         self.count += 1
@@ -82,7 +98,8 @@ class LearnTransientsProblem(ElementwiseProblem):
 
         # print(threshold, median_window, min_window_length)
 
-        prep_trees = self.get_prep_trees(median_window)
+        # prep_trees = self.get_prep_trees(median_window)
+        prep_to_use = self.get_prep(median_window)
         prep_len = self.prep_len[median_window]
 
         mask = np.ones(prep_len)  # 0 is flat, 1 is not-flat
@@ -91,14 +108,14 @@ class LearnTransientsProblem(ElementwiseProblem):
             if end - start < min_window_length:
                 return
 
-            if under_threshold(start, end, prep_trees, threshold):
+            if under_threshold(start, end, prep_to_use, threshold):
                 mask[start:end] = 0
                 return
 
             split_index = (end - start) // 2 + start
 
             if (split_index - start) > min_window_length // 2 and (end - split_index) > min_window_length // 2:
-                if under_threshold(split_index - min_window_length // 2, split_index + min_window_length // 2, prep_trees, threshold):
+                if under_threshold(split_index - min_window_length // 2, split_index + min_window_length // 2, prep_to_use, threshold):
                     # This split is in the middle of something interesting
                     split_index -= min_window_length // 2
 
@@ -203,7 +220,7 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
     try:
         while algorithm.has_next():
             gen_number = algorithm.n_gen if algorithm.n_gen else 1
-            print(f'Gen {gen_number}')
+            click.echo(f'Generation {gen_number}')
             learn_transient_problem.generation = gen_number
             algorithm.next()
 
@@ -211,16 +228,12 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
 
             learn_transient_problem.count = 0
             best_X = algorithm.opt.get('X')
+            click.echo(f'Found {len(best_X)} Pareto-optimal solutions')
             for x in best_X:
                 learn_transient_problem._evaluate(x, {}, plot=True)
     except KeyboardInterrupt:
-        os._exit(130)
-        # best_F = algorithm.opt.get('F')
-        # best_X = algorithm.opt.get('X')
-
-    # print('Results:')
-    # for x in best_X:
-    #     print(x)
+        # os._exit(130)
+        return
 
     # plt.figure(tight_layout=True)
     # plt.scatter(best_F[:, 0], best_F[:, 1] / (h2ts(end) - h2ts(start)))
