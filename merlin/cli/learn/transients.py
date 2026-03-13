@@ -3,14 +3,19 @@ import click
 from joule.api import get_node
 from joule.utilities import human_to_timestamp as h2ts, timestamp_to_human as ts2h
 import numpy as np
-from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from scipy.signal import medfilt
 from pymoo.core.problem import ElementwiseProblem
-from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.core.variable import Real, Integer
+from pymoo.algorithms.moo.nsga2 import RankAndCrowdingSurvival
+from pymoo.core.mixed import MixedVariableGA
 from pymoo.optimize import minimize
+from pymoo.core.termination import NoTermination
 from segment_tree import SegmentTree
+import os
+from datetime import datetime
+import matplotlib
 
 from merlin.cli.decorators import pass_node_name
 
@@ -37,13 +42,16 @@ def rolling_median(data, window):
 
 
 class LearnTransientsProblem(ElementwiseProblem):
-    def __init__(self, data, min_load):
-        super().__init__(
-            n_var=3,  # threshold, median filter length, flat window length
-            n_obj=2,  # residual sum of delta ss, total duration of transients
-            xl=[0, 0, 5],
-            xu=[min_load, 10, 60]
-        )
+    def __init__(self, data, min_load, output_directory, **kwargs):
+        vars = {
+            'threshold': Real(bounds=(0, min_load)),
+            'median_half_length': Integer(bounds=(0, 10)),  # median_length = 2 * median_half_length + 1, so that it's an odd integer
+            'flat_length': Integer(bounds=(5, 60))
+        }
+        super().__init__(vars=vars, n_obj=2, **kwargs)
+        self.count = 1
+        self.generation = 1
+        self.directory_name = output_directory
 
         self.timestamps = data[:, 0]
         self.prep = data[:, 1:]
@@ -56,22 +64,23 @@ class LearnTransientsProblem(ElementwiseProblem):
         try:
             return self.prep_trees[median_window_length]
         except KeyError:
-            print(f'Caching prep tree for median filter length {median_window_length}')
-            prep_filtered = rolling_median(self.prep, median_window_length)
+            prep_fundamental = self.prep[:, (0, 1, 8, 9, 16, 17)]
+            prep_filtered = rolling_median(prep_fundamental, median_window_length)
             self.prep_len[median_window_length] = len(prep_filtered)
-            self.prep_trees[median_window_length] = [SegmentTree(prep_filtered[:, i]) for i in [0, 1, 8, 9, 16, 17]]
+            self.prep_trees[median_window_length] = [SegmentTree(prep_filtered[:, i]) for i in range(prep_filtered.shape[1])]
             return self.prep_trees[median_window_length]
 
-    def _evaluate(self, x, out, *args, **kwargs):
+    def _evaluate(self, X, out, *args, **kwargs):
+        self.count += 1
         plot = kwargs.get('plot', False)
         relative_timestamps = self.timestamps - self.timestamps[0]
         relative_timestamps_h = relative_timestamps / (1e6 * 60 * 60)
 
-        threshold = x[0]
-        median_window = 2 * round(x[1]) + 1
-        min_window_length = round(x[2])
+        threshold = X['threshold']
+        median_window = 2 * X['median_half_length'] + 1
+        min_window_length = X['flat_length']
 
-        print(threshold, median_window, min_window_length)
+        # print(threshold, median_window, min_window_length)
 
         prep_trees = self.get_prep_trees(median_window)
         prep_len = self.prep_len[median_window]
@@ -139,8 +148,9 @@ class LearnTransientsProblem(ElementwiseProblem):
             plt.xlabel('Time (hr.)')
             plt.ylabel('Real Power (kW)')
             plt.xlim(relative_timestamps_h[0], relative_timestamps_h[-1])
-            plt.legend()
-            plt.show()
+            plt.legend(loc='upper right')
+            plt.savefig(f'{self.directory_name}/generation_{self.generation}/solution_{self.count}.pdf')
+            plt.close()
 
         loss_ss = np.linalg.norm(total_ss_change - self.entire_ss_change)
 
@@ -166,40 +176,59 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
         click.echo('Invalid start/end time.')
         return
 
-    data = asyncio.run(_get_data(node, prep_stream, h2ts(start), h2ts(end)))
+    matplotlib.use('Agg')
 
-    click.echo(f'Optimizing over [ {ts2h(data[0, 0])}-> {ts2h(data[-1, 0])}]')
+    data = asyncio.run(_get_data(node, prep_stream, h2ts(start), h2ts(end)))
 
     timestamps = data[:, 0] / 1e6 / 60
     timestamps -= timestamps[0]
 
-    pop_size = 20
+    pop_size = 10
 
     # initial_thresholds = np.linspace(0, smallest_load, pop_size + 1)[1:]
     # initial_median_lengths = np.zeros(pop_size)
     # initial_flat_lengths = np.linspace(5, 60, pop_size)
     # initial_population = np.column_stack((initial_thresholds, initial_median_lengths, initial_flat_lengths))
 
-    algorithm = NSGA2(pop_size=pop_size)
-    # algorithm = NSGA2(pop_size=pop_size, sampling=initial_population)
+    algorithm = MixedVariableGA(pop_size=pop_size, survival=RankAndCrowdingSurvival())
 
-    learn_transient_problem = LearnTransientsProblem(data, smallest_load)
+    directory_name = f'optimization_{datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    os.mkdir(directory_name)
 
-    res = minimize(
-        learn_transient_problem,
-        algorithm,
-        termination=('n_gen', 10),
-        seed=1,
-        verbose=True
-    )
+    learn_transient_problem = LearnTransientsProblem(data, smallest_load, directory_name)
+    algorithm.setup(learn_transient_problem, termination=NoTermination(), seed=1)
 
-    plt.figure(tight_layout=True)
-    plt.scatter(res.F[:, 0], res.F[:, 1] / (h2ts(end) - h2ts(start)))
-    plt.xlabel('Total Delta P error')
-    plt.ylabel('Transient fraction of data')
+    click.echo(f'Optimizing over [ {ts2h(data[0, 0])}-> {ts2h(data[-1, 0])}]')
+    click.echo(f'Saving to {directory_name}')
+    try:
+        while algorithm.has_next():
+            gen_number = algorithm.n_gen if algorithm.n_gen else 1
+            print(f'Gen {gen_number}')
+            learn_transient_problem.generation = gen_number
+            algorithm.next()
 
-    for x in res.X:
-        learn_transient_problem._evaluate(x, {}, plot=True)
+            os.mkdir(f'{directory_name}/generation_{gen_number}')
+
+            learn_transient_problem.count = 0
+            best_X = algorithm.opt.get('X')
+            for x in best_X:
+                learn_transient_problem._evaluate(x, {}, plot=True)
+    except KeyboardInterrupt:
+        os._exit(130)
+        # best_F = algorithm.opt.get('F')
+        # best_X = algorithm.opt.get('X')
+
+    # print('Results:')
+    # for x in best_X:
+    #     print(x)
+
+    # plt.figure(tight_layout=True)
+    # plt.scatter(best_F[:, 0], best_F[:, 1] / (h2ts(end) - h2ts(start)))
+    # plt.xlabel('Total Delta P error')
+    # plt.ylabel('Transient fraction of data')
+
+    # for x in best_X:
+    #     learn_transient_problem._evaluate(x, {}, plot=True)
 
 
 async def _get_data(node, prep_stream, start_ts, end_ts):
