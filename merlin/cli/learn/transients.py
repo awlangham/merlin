@@ -12,29 +12,10 @@ from pymoo.core.problem import ElementwiseProblem
 from pymoo.core.variable import Real, Integer
 from pymoo.algorithms.moo.nsga2 import RankAndCrowdingSurvival
 from pymoo.core.mixed import MixedVariableGA
-# from pymoo.optimize import minimize
 from pymoo.core.termination import NoTermination
-# from segment_tree import SegmentTree
-import os
-from datetime import datetime
-import matplotlib
 
 from merlin.cli.decorators import pass_node_name
 
-# plt.rc('text', usetex=True)
-# plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-# plt.rcParams['font.size'] = 16
-# plt.rcParams['lines.linewidth'] = 3
-
-
-# def under_threshold(start, end, prep_trees, threshold):
-#     for tree in prep_trees:
-#         minimum = tree.query(start, end, 'min')
-#         maximum = tree.query(start, end, 'max')
-#         if (maximum - minimum) >= threshold:
-#             return False
-
-#     return True
 
 def under_threshold(start, end, prep_to_use, threshold):
     data = prep_to_use[start:end]
@@ -49,7 +30,7 @@ def rolling_median(data, window):
 
 
 class LearnTransientsProblem(ElementwiseProblem):
-    def __init__(self, data, min_load, output_directory, node_name, **kwargs):
+    def __init__(self, data, min_load, output_stream, node_name, **kwargs):
         vars = {
             'threshold': Real(bounds=(0, min_load)),
             'median_half_length': Integer(bounds=(0, 10)),  # median_length = 2 * median_half_length + 1, so that it's an odd integer
@@ -58,13 +39,12 @@ class LearnTransientsProblem(ElementwiseProblem):
         super().__init__(vars=vars, n_obj=2, **kwargs)
         self.count = 1
         self.generation = 1
-        self.directory_name = output_directory
+        self.output_stream = output_stream
         self.node_name = node_name
 
         self.timestamps = data[:, 0]
         self.prep = data[:, 1:]
         self.prep_len = {1: len(self.prep)}
-        # self.prep_trees = {1: [SegmentTree(self.prep[:, i]) for i in [0, 1, 8, 9, 16, 17]]}
         self.preps = {1: self.prep[:, (0, 1, 8, 9, 16, 17)]}
         self.ss_window_length = 5
         self.entire_ss_change = np.mean(self.prep[-self.ss_window_length:], axis=0) - np.mean(self.prep[:self.ss_window_length], axis=0)
@@ -79,16 +59,6 @@ class LearnTransientsProblem(ElementwiseProblem):
             self.preps[median_window_length] = prep_filtered
             return self.preps[median_window_length]
 
-    # def get_prep_trees(self, median_window_length):
-    #     try:
-    #         return self.prep_trees[median_window_length]
-    #     except KeyError:
-    #         prep_fundamental = self.prep[:, (0, 1, 8, 9, 16, 17)]
-    #         prep_filtered = rolling_median(prep_fundamental, median_window_length)
-    #         self.prep_len[median_window_length] = len(prep_filtered)
-    #         self.prep_trees[median_window_length] = [SegmentTree(prep_filtered[:, i]) for i in range(prep_filtered.shape[1])]
-    #         return self.prep_trees[median_window_length]
-
     def _evaluate(self, X, out, *args, **kwargs):
         self.count += 1
         plot = kwargs.get('plot', False)
@@ -99,9 +69,6 @@ class LearnTransientsProblem(ElementwiseProblem):
         median_window = 2 * X['median_half_length'] + 1
         min_window_length = X['flat_length']
 
-        # print(threshold, median_window, min_window_length)
-
-        # prep_trees = self.get_prep_trees(median_window)
         prep_to_use = self.get_prep(median_window)
         prep_len = self.prep_len[median_window]
 
@@ -137,12 +104,6 @@ class LearnTransientsProblem(ElementwiseProblem):
         flat_changes = np.diff(np.pad(mask, 1))  # 1 means we went from flat to not-flat, -1 means we went from not-flat to flat
         intervals = list(zip(np.where(flat_changes == 1)[0], np.where(flat_changes == -1)[0]))
 
-        # if plot:
-        #     plt.figure(tight_layout=True)
-        #     plt.plot(relative_timestamps_h, self.prep[:,  0] / 1e3, label='A')
-        #     plt.plot(relative_timestamps_h, self.prep[:,  8] / 1e3, label='B')
-        #     plt.plot(relative_timestamps_h, self.prep[:, 16] / 1e3, label='C')
-
         total_ss_change = 0
         transient_length = 0
         num_intervals = 0
@@ -163,8 +124,7 @@ class LearnTransientsProblem(ElementwiseProblem):
                 }
                 new_event = Event(start_time=self.timestamps[start + median_window // 2],
                                   end_time=self.timestamps[end + median_window // 2],
-                                  content=event_content,
-                                  #   event_stream_id=self.out_event_stream.id
+                                  content=event_content
                                   )
                 new_events.append(new_event)
                 plt.axvspan(relative_timestamps_h[start], relative_timestamps_h[min(end, len(relative_timestamps_h) - 1)], color='green', alpha=0.4)
@@ -176,14 +136,6 @@ class LearnTransientsProblem(ElementwiseProblem):
             total_ss_change += ss_change
 
         if plot:
-            # plt.title(f'R = {round(threshold)} W, M = {median_window}, N = {min_window_length}')
-            # plt.xlabel('Time (hr.)')
-            # plt.ylabel('Real Power (kW)')
-            # plt.xlim(relative_timestamps_h[0], relative_timestamps_h[-1])
-            # plt.legend(loc='upper right')
-            # plt.savefig(f'{self.directory_name}/generation_{self.generation}/solution_{self.count}.pdf')
-            # plt.close()
-
             asyncio.run(self.write_events(new_events))
 
         loss_ss = np.linalg.norm(total_ss_change - self.entire_ss_change)
@@ -197,13 +149,13 @@ class LearnTransientsProblem(ElementwiseProblem):
     async def write_events(self, events):
         try:
             node_handle = get_node(self.node_name)
-            event_stream_path = f'/USCG Sturgeon/Port/learned/g{self.generation}s{self.count}'
             event_stream_name = f'g{self.generation}s{self.count}'
+            event_stream_path = self.output_stream + '/learned/' + event_stream_name
             try:
                 event_stream = await node_handle.event_stream_get(event_stream_path)
             except ApiError:
                 new_stream = EventStream(name=event_stream_name)
-                event_stream = await node_handle.event_stream_create(new_stream, event_stream_path[:-len(event_stream_name) - 1])
+                event_stream = await node_handle.event_stream_create(new_stream, self.output_stream + '/learned')
             await node_handle.event_stream_write(event_stream, events)
             await node_handle.close()
         except KeyboardInterrupt:
@@ -211,12 +163,12 @@ class LearnTransientsProblem(ElementwiseProblem):
 
 
 @click.command(name='transients')
-@click.argument('prep_stream')
+@click.argument('stream_name')
 @click.option('--smallest_load', '-l', help='Smallest step change of interest', type=float, required=True)
 @click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
 @pass_node_name
-def learn_transients(node_name, prep_stream, start, end, smallest_load):
+def learn_transients(node_name, stream_name, start, end, smallest_load):
     try:
         start_ts, end_ts = h2ts(start), h2ts(end)
         if start_ts >= end_ts:
@@ -225,30 +177,22 @@ def learn_transients(node_name, prep_stream, start, end, smallest_load):
         click.echo('Invalid start/end time.')
         return
 
-    matplotlib.use('Agg')
-
-    data = asyncio.run(_get_data(node_name, prep_stream, h2ts(start), h2ts(end)))
+    data = asyncio.run(_get_data(node_name, stream_name, h2ts(start), h2ts(end)))
 
     timestamps = data[:, 0] / 1e6 / 60
     timestamps -= timestamps[0]
 
     pop_size = 10
 
-    # initial_thresholds = np.linspace(0, smallest_load, pop_size + 1)[1:]
-    # initial_median_lengths = np.zeros(pop_size)
-    # initial_flat_lengths = np.linspace(5, 60, pop_size)
-    # initial_population = np.column_stack((initial_thresholds, initial_median_lengths, initial_flat_lengths))
-
     algorithm = MixedVariableGA(pop_size=pop_size, survival=RankAndCrowdingSurvival())
 
-    directory_name = f'optimization_{datetime.now().strftime("%Y%m%d_%H%M%S")}'
-    os.mkdir(directory_name)
+    asyncio.run(_clear_learned_folder(node_name, stream_name))
 
-    learn_transient_problem = LearnTransientsProblem(data, smallest_load, directory_name, node_name)
+    learn_transient_problem = LearnTransientsProblem(data, smallest_load, stream_name, node_name)
     algorithm.setup(learn_transient_problem, termination=NoTermination(), seed=1)
 
     click.echo(f'Optimizing over [ {ts2h(data[0, 0])}-> {ts2h(data[-1, 0])}]')
-    click.echo(f'Saving to {directory_name}')
+    click.echo(f'Saving to {stream_name}/learned')
     try:
         while algorithm.has_next():
             gen_number = algorithm.n_gen if algorithm.n_gen else 1
@@ -256,7 +200,7 @@ def learn_transients(node_name, prep_stream, start, end, smallest_load):
             learn_transient_problem.generation = gen_number
             algorithm.next()
 
-            os.mkdir(f'{directory_name}/generation_{gen_number}')
+            # os.mkdir(f'{directory_name}/generation_{gen_number}')
 
             learn_transient_problem.count = 0
             best_X = algorithm.opt.get('X')
@@ -264,24 +208,24 @@ def learn_transients(node_name, prep_stream, start, end, smallest_load):
             for x in best_X:
                 learn_transient_problem._evaluate(x, {}, plot=True)
     except KeyboardInterrupt:
-        # os._exit(130)
         return
 
-    # plt.figure(tight_layout=True)
-    # plt.scatter(best_F[:, 0], best_F[:, 1] / (h2ts(end) - h2ts(start)))
-    # plt.xlabel('Total Delta P error')
-    # plt.ylabel('Transient fraction of data')
 
-    # for x in best_X:
-    #     learn_transient_problem._evaluate(x, {}, plot=True)
-
-
-async def _get_data(node_name, prep_stream, start_ts, end_ts):
+async def _clear_learned_folder(node_name, stream_name):
     node_handle = get_node(node_name)
-    pipe = await node_handle.data_read(prep_stream,
-                                start=start_ts,
-                                end=end_ts
-                                )
+    try:
+        await node_handle.folder_delete(stream_name + '/learned')
+    except ApiError:
+        pass
+    await node_handle.close()
+
+
+async def _get_data(node_name, stream_name, start_ts, end_ts):
+    node_handle = get_node(node_name)
+    pipe = await node_handle.data_read(stream_name + '/prep',
+                                       start=start_ts,
+                                       end=end_ts
+                                       )
     estimated_num_rows = round(60 * (end_ts - start_ts) / 1e6)
 
     data = []
