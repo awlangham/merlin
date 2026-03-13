@@ -100,14 +100,37 @@ class LearnTransientsProblem(ElementwiseProblem):
 
         split(0, prep_len - 1)
 
-        flat_changes = np.diff(np.pad(mask, 1))  # 1 means we went from flat to not-flat, -1 means we went from not-flat to flat
-        intervals = list(zip(np.where(flat_changes == 1)[0], np.where(flat_changes == -1)[0]))
+        transient_changes = np.diff(np.pad(mask, 1))  # 1 means we went from flat to not-flat, -1 means we went from not-flat to flat
+        transient_intervals = list(zip(np.where(transient_changes == 1)[0], np.where(transient_changes == -1)[0]))
 
-        total_ss_change = 0
+        flat_changes = np.diff(np.pad(mask, 1, constant_values=1))
+        flat_intervals = list(zip(np.where(flat_changes == -1)[0], np.where(flat_changes == 1)[0]))
+
+        sum_of_flat_squared_error = 0
+        for (start, end) in flat_intervals:
+            # trim and shift
+            start += median_window // 2 + self.ss_window_length
+            end += median_window // 2 - self.ss_window_length
+            # plt.axvspan(self.timestamps[start], self.timestamps[end], color='green', alpha=0.5)
+
+            prep_start = self.prep[start]
+            prep_end = self.prep[end]
+
+            if start >= end:
+                # Just give up on this one
+                continue
+
+            interpolated_prep = np.linspace(prep_start, prep_end, end - start + 1)
+            errors = self.prep[start:end+1] - interpolated_prep
+            errors_squared = np.sum(errors ** 2)
+            # errors_squared = np.sum(errors ** 2, axis=1)
+            sum_of_flat_squared_error += errors_squared
+
+        # total_ss_change = 0
         transient_length = 0
         num_intervals = 0
         new_events = []
-        for (start, end) in intervals:
+        for (start, end) in transient_intervals:
             # If too close to the start/end of all the data, just discard
             if start < self.ss_window_length or end > prep_len - self.ss_window_length:
                 continue
@@ -128,17 +151,18 @@ class LearnTransientsProblem(ElementwiseProblem):
                 new_events.append(new_event)
 
             # Add [ss_window_length] points to start and end
-            new_start, new_end = start - self.ss_window_length, end + self.ss_window_length
+            # new_start, new_end = start - self.ss_window_length, end + self.ss_window_length
 
-            ss_change = np.mean(self.prep[end:new_end], axis=0) - np.mean(self.prep[new_start:start], axis=0)
-            total_ss_change += ss_change
+            # ss_change = np.mean(self.prep[end:new_end], axis=0) - np.mean(self.prep[new_start:start], axis=0)
+            # total_ss_change += ss_change
 
         if save:
             asyncio.run(self.write_events(new_events))
 
-        loss_ss = np.linalg.norm(total_ss_change - self.entire_ss_change)
+        # loss_ss = np.linalg.norm(total_ss_change - self.entire_ss_change)
 
-        output = np.array([loss_ss, transient_length])
+        # output = np.array([loss_ss, transient_length])
+        output = np.array([sum_of_flat_squared_error, transient_length])
         if num_intervals in [0, 1]:
             out['F'] = np.array([np.inf, np.inf])
         else:
@@ -182,7 +206,7 @@ def learn_transients(node_name, stream_name, start, end, smallest_load):
     timestamps = data[:, 0] / 1e6 / 60
     timestamps -= timestamps[0]
 
-    pop_size = 10
+    pop_size = 30
 
     algorithm = MixedVariableGA(pop_size=pop_size, survival=RankAndCrowdingSurvival())
 
