@@ -5,7 +5,6 @@ from joule.utilities import human_to_timestamp as h2ts, timestamp_to_human as ts
 from joule.api import Event, EventStream
 from joule.errors import ApiError
 import numpy as np
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 from scipy.signal import medfilt
 from pymoo.core.problem import ElementwiseProblem
@@ -42,6 +41,8 @@ class LearnTransientsProblem(ElementwiseProblem):
         self.output_stream = output_stream
         self.node_name = node_name
 
+        self.pbar = None
+
         self.timestamps = data[:, 0]
         self.prep = data[:, 1:]
         self.prep_len = {1: len(self.prep)}
@@ -61,9 +62,7 @@ class LearnTransientsProblem(ElementwiseProblem):
 
     def _evaluate(self, X, out, *args, **kwargs):
         self.count += 1
-        plot = kwargs.get('plot', False)
-        relative_timestamps = self.timestamps - self.timestamps[0]
-        relative_timestamps_h = relative_timestamps / (1e6 * 60 * 60)
+        save = kwargs.get('save', False)
 
         threshold = X['threshold']
         median_window = 2 * X['median_half_length'] + 1
@@ -116,7 +115,7 @@ class LearnTransientsProblem(ElementwiseProblem):
             transient_length += (end - start)
             num_intervals += 1
 
-            if plot:
+            if save:
                 event_content = {
                     'threshold': float(threshold),
                     'median_length': int(median_window),
@@ -127,7 +126,6 @@ class LearnTransientsProblem(ElementwiseProblem):
                                   content=event_content
                                   )
                 new_events.append(new_event)
-                plt.axvspan(relative_timestamps_h[start], relative_timestamps_h[min(end, len(relative_timestamps_h) - 1)], color='green', alpha=0.4)
 
             # Add [ss_window_length] points to start and end
             new_start, new_end = start - self.ss_window_length, end + self.ss_window_length
@@ -135,7 +133,7 @@ class LearnTransientsProblem(ElementwiseProblem):
             ss_change = np.mean(self.prep[end:new_end], axis=0) - np.mean(self.prep[new_start:start], axis=0)
             total_ss_change += ss_change
 
-        if plot:
+        if save:
             asyncio.run(self.write_events(new_events))
 
         loss_ss = np.linalg.norm(total_ss_change - self.entire_ss_change)
@@ -145,6 +143,8 @@ class LearnTransientsProblem(ElementwiseProblem):
             out['F'] = np.array([np.inf, np.inf])
         else:
             out['F'] = output
+
+        self.pbar.update(1)
 
     async def write_events(self, events):
         try:
@@ -196,17 +196,16 @@ def learn_transients(node_name, stream_name, start, end, smallest_load):
     try:
         while algorithm.has_next():
             gen_number = algorithm.n_gen if algorithm.n_gen else 1
-            click.echo(f'Generation {gen_number}')
             learn_transient_problem.generation = gen_number
-            algorithm.next()
-
-            # os.mkdir(f'{directory_name}/generation_{gen_number}')
+            with tqdm(total=pop_size, desc=f'Generation {gen_number}', unit=' solution') as pbar:
+                learn_transient_problem.pbar = pbar
+                algorithm.next()
 
             learn_transient_problem.count = 0
             best_X = algorithm.opt.get('X')
             click.echo(f'Found {len(best_X)} Pareto-optimal solutions')
             for x in best_X:
-                learn_transient_problem._evaluate(x, {}, plot=True)
+                learn_transient_problem._evaluate(x, {}, save=True)
     except KeyboardInterrupt:
         return
 
