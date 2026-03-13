@@ -21,8 +21,9 @@ class Sparsifier(FilterModule):
 
     def custom_args(self, parser) -> None:  # pragma: no cover
         grp = parser.add_argument_group('Sparsifier', 'Module-specific arguments')
-        grp.add_argument('--min_window_length', type=int, required=True, help='Minimum separation between interesting events')
         grp.add_argument('--threshold', type=float, required=True, help='Threshold on the range of any feature across min_window_length')
+        grp.add_argument('--median_window_length', type=int, required=True, help='Median filter length applied before detection')
+        grp.add_argument('--min_window_length', type=int, required=True, help='Minimum separation between interesting events')
         grp.add_argument('--output', type=str, required=True, help='Output event stream name')
 
     async def _get_output_stream(self, output_stream_path: str) -> EventStream:
@@ -50,8 +51,9 @@ class Sparsifier(FilterModule):
         transients_pipe = outputs['transients']
         self.out_event_stream = await self._get_output_stream(parsed_args.output)
 
-        min_window_length = parsed_args.min_window_length
         self.threshold = parsed_args.threshold
+        median_window_length = parsed_args.median_window_length
+        min_window_length = parsed_args.min_window_length
 
         self.current_installation = run_installation(self.node)
         self.method = self.current_installation.method
@@ -59,7 +61,6 @@ class Sparsifier(FilterModule):
         while not self.stop_requested and not await prep_pipe.is_empty():
             sarray_in = await prep_pipe.read(flatten=True)
 
-            median_window_length = 21
             if median_window_length > 1:
                 prep_data = rolling_median(sarray_in[:, 1:], median_window_length)
             else:
