@@ -2,6 +2,8 @@ import asyncio
 import click
 from joule.api import get_node
 from joule.utilities import human_to_timestamp as h2ts, timestamp_to_human as ts2h
+from joule.api import Event, EventStream
+from joule.errors import ApiError
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -47,7 +49,7 @@ def rolling_median(data, window):
 
 
 class LearnTransientsProblem(ElementwiseProblem):
-    def __init__(self, data, min_load, output_directory, **kwargs):
+    def __init__(self, data, min_load, output_directory, node_name, **kwargs):
         vars = {
             'threshold': Real(bounds=(0, min_load)),
             'median_half_length': Integer(bounds=(0, 10)),  # median_length = 2 * median_half_length + 1, so that it's an odd integer
@@ -57,6 +59,7 @@ class LearnTransientsProblem(ElementwiseProblem):
         self.count = 1
         self.generation = 1
         self.directory_name = output_directory
+        self.node_name = node_name
 
         self.timestamps = data[:, 0]
         self.prep = data[:, 1:]
@@ -134,15 +137,16 @@ class LearnTransientsProblem(ElementwiseProblem):
         flat_changes = np.diff(np.pad(mask, 1))  # 1 means we went from flat to not-flat, -1 means we went from not-flat to flat
         intervals = list(zip(np.where(flat_changes == 1)[0], np.where(flat_changes == -1)[0]))
 
-        if plot:
-            plt.figure(tight_layout=True)
-            plt.plot(relative_timestamps_h, self.prep[:,  0] / 1e3, label='A')
-            plt.plot(relative_timestamps_h, self.prep[:,  8] / 1e3, label='B')
-            plt.plot(relative_timestamps_h, self.prep[:, 16] / 1e3, label='C')
+        # if plot:
+        #     plt.figure(tight_layout=True)
+        #     plt.plot(relative_timestamps_h, self.prep[:,  0] / 1e3, label='A')
+        #     plt.plot(relative_timestamps_h, self.prep[:,  8] / 1e3, label='B')
+        #     plt.plot(relative_timestamps_h, self.prep[:, 16] / 1e3, label='C')
 
         total_ss_change = 0
         transient_length = 0
         num_intervals = 0
+        new_events = []
         for (start, end) in intervals:
             # If too close to the start/end of all the data, just discard
             if start < self.ss_window_length or end > prep_len - self.ss_window_length:
@@ -152,6 +156,17 @@ class LearnTransientsProblem(ElementwiseProblem):
             num_intervals += 1
 
             if plot:
+                event_content = {
+                    'threshold': float(threshold),
+                    'median_length': int(median_window),
+                    'flat_length': int(min_window_length)
+                }
+                new_event = Event(start_time=self.timestamps[start + median_window // 2],
+                                  end_time=self.timestamps[end + median_window // 2],
+                                  content=event_content,
+                                  #   event_stream_id=self.out_event_stream.id
+                                  )
+                new_events.append(new_event)
                 plt.axvspan(relative_timestamps_h[start], relative_timestamps_h[min(end, len(relative_timestamps_h) - 1)], color='green', alpha=0.4)
 
             # Add [ss_window_length] points to start and end
@@ -161,13 +176,15 @@ class LearnTransientsProblem(ElementwiseProblem):
             total_ss_change += ss_change
 
         if plot:
-            plt.title(f'R = {round(threshold)} W, M = {median_window}, N = {min_window_length}')
-            plt.xlabel('Time (hr.)')
-            plt.ylabel('Real Power (kW)')
-            plt.xlim(relative_timestamps_h[0], relative_timestamps_h[-1])
-            plt.legend(loc='upper right')
-            plt.savefig(f'{self.directory_name}/generation_{self.generation}/solution_{self.count}.pdf')
-            plt.close()
+            # plt.title(f'R = {round(threshold)} W, M = {median_window}, N = {min_window_length}')
+            # plt.xlabel('Time (hr.)')
+            # plt.ylabel('Real Power (kW)')
+            # plt.xlim(relative_timestamps_h[0], relative_timestamps_h[-1])
+            # plt.legend(loc='upper right')
+            # plt.savefig(f'{self.directory_name}/generation_{self.generation}/solution_{self.count}.pdf')
+            # plt.close()
+
+            asyncio.run(self.write_events(new_events))
 
         loss_ss = np.linalg.norm(total_ss_change - self.entire_ss_change)
 
@@ -177,6 +194,21 @@ class LearnTransientsProblem(ElementwiseProblem):
         else:
             out['F'] = output
 
+    async def write_events(self, events):
+        try:
+            node_handle = get_node(self.node_name)
+            event_stream_path = f'/USCG Sturgeon/Port/learned/g{self.generation}s{self.count}'
+            event_stream_name = f'g{self.generation}s{self.count}'
+            try:
+                event_stream = await node_handle.event_stream_get(event_stream_path)
+            except ApiError:
+                new_stream = EventStream(name=event_stream_name)
+                event_stream = await node_handle.event_stream_create(new_stream, event_stream_path[:-len(event_stream_name) - 1])
+            await node_handle.event_stream_write(event_stream, events)
+            await node_handle.close()
+        except KeyboardInterrupt:
+            await node_handle.close()
+
 
 @click.command(name='transients')
 @click.argument('prep_stream')
@@ -184,7 +216,7 @@ class LearnTransientsProblem(ElementwiseProblem):
 @click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
 @pass_node_name
-def learn_transients(node, prep_stream, start, end, smallest_load):
+def learn_transients(node_name, prep_stream, start, end, smallest_load):
     try:
         start_ts, end_ts = h2ts(start), h2ts(end)
         if start_ts >= end_ts:
@@ -195,7 +227,7 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
 
     matplotlib.use('Agg')
 
-    data = asyncio.run(_get_data(node, prep_stream, h2ts(start), h2ts(end)))
+    data = asyncio.run(_get_data(node_name, prep_stream, h2ts(start), h2ts(end)))
 
     timestamps = data[:, 0] / 1e6 / 60
     timestamps -= timestamps[0]
@@ -212,7 +244,7 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
     directory_name = f'optimization_{datetime.now().strftime("%Y%m%d_%H%M%S")}'
     os.mkdir(directory_name)
 
-    learn_transient_problem = LearnTransientsProblem(data, smallest_load, directory_name)
+    learn_transient_problem = LearnTransientsProblem(data, smallest_load, directory_name, node_name)
     algorithm.setup(learn_transient_problem, termination=NoTermination(), seed=1)
 
     click.echo(f'Optimizing over [ {ts2h(data[0, 0])}-> {ts2h(data[-1, 0])}]')
@@ -244,9 +276,9 @@ def learn_transients(node, prep_stream, start, end, smallest_load):
     #     learn_transient_problem._evaluate(x, {}, plot=True)
 
 
-async def _get_data(node, prep_stream, start_ts, end_ts):
-    node = get_node(node)
-    pipe = await node.data_read(prep_stream,
+async def _get_data(node_name, prep_stream, start_ts, end_ts):
+    node_handle = get_node(node_name)
+    pipe = await node_handle.data_read(prep_stream,
                                 start=start_ts,
                                 end=end_ts
                                 )
@@ -260,5 +292,5 @@ async def _get_data(node, prep_stream, start_ts, end_ts):
             pipe.consume(len(batch))
             pbar.update(len(batch))
 
-    await node.close()
+    await node_handle.close()
     return np.row_stack(data)
