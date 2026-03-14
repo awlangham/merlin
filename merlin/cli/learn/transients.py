@@ -173,13 +173,13 @@ class LearnTransientsProblem(ElementwiseProblem):
     async def write_events(self, events):
         try:
             node_handle = get_node(self.node_name)
-            event_stream_name = f'g{self.generation}s{self.count}'
-            event_stream_path = self.output_stream + '/learned/' + event_stream_name
+            event_stream_name = f'Solution {self.count}'
+            event_stream_path = self.output_stream + f'/learned/Generation {self.generation}' + event_stream_name
             try:
                 event_stream = await node_handle.event_stream_get(event_stream_path)
             except ApiError:
                 new_stream = EventStream(name=event_stream_name)
-                event_stream = await node_handle.event_stream_create(new_stream, self.output_stream + '/learned')
+                event_stream = await node_handle.event_stream_create(new_stream, self.output_stream + f'/learned/Generation {self.generation}')
             await node_handle.event_stream_write(event_stream, events)
             await node_handle.close()
         except KeyboardInterrupt:
@@ -207,7 +207,6 @@ def learn_transients(node_name, stream_name, start, end, smallest_load):
     timestamps -= timestamps[0]
 
     pop_size = 30
-
     algorithm = MixedVariableGA(pop_size=pop_size, survival=RankAndCrowdingSurvival())
 
     asyncio.run(_clear_learned_folder(node_name, stream_name))
@@ -237,7 +236,7 @@ def learn_transients(node_name, stream_name, start, end, smallest_load):
 async def _clear_learned_folder(node_name, stream_name):
     node_handle = get_node(node_name)
     try:
-        await node_handle.folder_delete(stream_name + '/learned')
+        await node_handle.folder_delete(stream_name + '/learned', recursive=True)
     except ApiError:
         pass
     await node_handle.close()
