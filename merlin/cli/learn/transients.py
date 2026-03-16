@@ -9,8 +9,8 @@ from tqdm import tqdm
 from scipy.signal import medfilt
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.core.variable import Real, Integer
-from pymoo.algorithms.moo.nsga2 import RankAndCrowdingSurvival
-from pymoo.core.mixed import MixedVariableGA
+from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.core.mixed import MixedVariableMating, MixedVariableSampling, MixedVariableDuplicateElimination
 from pymoo.core.termination import NoTermination
 
 from merlin.cli.decorators import pass_node_name
@@ -207,7 +207,13 @@ def learn_transients(node_name, stream_name, start, end, smallest_load):
     timestamps -= timestamps[0]
 
     pop_size = 30
-    algorithm = MixedVariableGA(pop_size=pop_size, survival=RankAndCrowdingSurvival())
+    algorithm = NSGA2(pop_size=pop_size,
+                      sampling=MixedVariableSampling(),
+                      mating=MixedVariableMating(
+                          eliminate_duplicates=MixedVariableDuplicateElimination()
+                      ),
+                      eliminate_duplicates=MixedVariableDuplicateElimination()
+                      )
 
     asyncio.run(_clear_learned_folder(node_name, stream_name))
 
