@@ -173,7 +173,7 @@ class LearnTransientsProblem(ElementwiseProblem):
     async def write_events(self, events):
         try:
             node_handle = get_node(self.node_name)
-            event_stream_name = f'Solution {self.count}'
+            event_stream_name = f'Solution {self.count:02}'
             event_stream_path = self.output_stream + f'/learned/Generation {self.generation}' + event_stream_name
             try:
                 event_stream = await node_handle.event_stream_get(event_stream_path)
