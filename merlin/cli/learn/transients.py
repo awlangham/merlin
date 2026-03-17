@@ -191,8 +191,9 @@ class LearnTransientsProblem(ElementwiseProblem):
 @click.option('--smallest_load', '-l', help='Smallest step change of interest', type=float, required=True)
 @click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
+@click.option('--gens', '-g', help='Maximum number of generations', type=int)
 @pass_node_name
-def learn_transients(node_name, stream_name, start, end, smallest_load):
+def learn_transients(node_name, stream_name, start, end, smallest_load, gens):
     try:
         start_ts, end_ts = h2ts(start), h2ts(end)
         if start_ts >= end_ts:
@@ -235,6 +236,9 @@ def learn_transients(node_name, stream_name, start, end, smallest_load):
             click.echo(f'Found {len(best_X)} Pareto-optimal solutions')
             for x in best_X:
                 learn_transient_problem._evaluate(x, {}, save=True)
+
+            if gens is not None and gen_number == gens:
+                return
     except KeyboardInterrupt:
         return
 
