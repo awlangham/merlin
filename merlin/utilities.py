@@ -122,9 +122,13 @@ def trainola(a, b):
     0 indicates a match and 1 indicates no correlation.
     """
 
-    # Remove minimum of each transient along each feature
-    a = (a.T - np.min(a, axis=1)).T
-    b = (b.T - np.min(b, axis=1)).T
+    # Remove start mean of each transient along each feature
+    a = (a.T - np.mean(a.T[:5], axis=0)).T
+    b = (b.T - np.mean(b.T[:5], axis=0)).T
+
+    pad_length = 5
+    a = np.pad(a, ((0, 0), (pad_length, pad_length)), mode='edge')
+    b = np.pad(b, ((0, 0), (pad_length, pad_length)), mode='edge')
 
     long_array, short_array = (a, b) if a.shape[1] > b.shape[1] else (b, a)
     long_array_slices = sliding_window_view(long_array, short_array.shape)[0]
