@@ -98,6 +98,7 @@ class Installation:
     from merlin.api.transients import get_transient, get_transients
 
     from merlin.api.learn_loads import learn_loads
+    from merlin.api.learn_behavior import learn_behavior
 
     def close(self):
         asyncio.run(self.node.close())
