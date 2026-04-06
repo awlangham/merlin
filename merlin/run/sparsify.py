@@ -68,7 +68,7 @@ class Sparsifier(FilterModule):
             num_rows = len(prep_data)
 
             if num_rows < 120:
-                prep_pipe.consume(num_rows)
+                # prep_pipe.consume(num_rows)
                 continue
 
             start_index = 0

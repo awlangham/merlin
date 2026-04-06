@@ -47,8 +47,8 @@ def initialize(node) -> None:
 
     default_min_window_length = 15
     min_window_length = click.prompt(f'Enter the minimum flat window length', type=int, default=default_min_window_length)
-
-    threshold = click.prompt(f'Enter transient threshold', type=float)
+    threshold = click.prompt('Enter transient threshold', type=float)
+    median_length = click.prompt('Enter median filter length', type=int)
 
     module_config = configparser.ConfigParser()
     module_config['Main'] = {
@@ -59,7 +59,8 @@ def initialize(node) -> None:
         'output': f'{selected_folder}/events',
         # 'method': learning_methods[value - 1].lower(),
         'min_window_length': min_window_length,
-        'threshold': threshold
+        'threshold': threshold,
+        'median_window_length': median_length
     }
     module_config['Inputs'] = {
         'prep': f'{selected_folder}/prep'
@@ -71,6 +72,30 @@ def initialize(node) -> None:
     module_config_filename = f'{selected_folder[1:].replace('/', '_').replace(' ', '_')}_sparsify.conf'
     with open(module_config_filename, 'w') as module_config_file:
         module_config.write(module_config_file)
+
+    stream_config_filename = f'{selected_folder[1:].replace('/', '_').replace(' ', '_')}_transients.conf'
+    stream_config = configparser.ConfigParser()
+    stream_config['Main'] = {
+        'name': 'transients',
+        'path': selected_folder,
+        'datatype': 'float32'
+    }
+
+    element_number = 1
+    for phase in ['A', 'B', 'C']:
+        for harm in [1, 3, 5, 7]:
+            stream_config[f'Element{element_number}'] = {
+                'name': f'P{harm}{phase}'
+            }
+            element_number += 1
+
+            stream_config[f'Element{element_number}'] = {
+                'name': f'Q{harm}{phase}'
+            }
+            element_number += 1
+
+    with open(stream_config_filename, 'w') as stream_config_file:
+        stream_config.write(stream_config_file)
 
     click.echo(f'\nCreated {module_config_filename}')
 
