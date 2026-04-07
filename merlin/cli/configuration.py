@@ -9,8 +9,6 @@ from merlin.cli.decorators import pass_node_name
 def configuration() -> None:
     """
     Show current Merlin configuration, including loads, exemplars, transitions, and states.
-
-    The configuration is stored in config.json in the MERLIN installation folder.
     """
 
     from merlin.api import get_installation

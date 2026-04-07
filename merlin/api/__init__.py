@@ -1,11 +1,12 @@
 import json
+from importlib.resources import files
+from pathlib import Path
 
 from .installation import OfflineInstallation, RealTimeInstallation
 import merlin
-from importlib.resources import files
 
-
-config_filename = str(files(merlin) / 'config.json')
+default_path = Path('/opt/configs')
+config_filename = str(default_path / 'merlin.json') if default_path.exists() else str(files(merlin) / 'merlin.json')
 
 
 def new_installation(stream_name, num_phases, node):

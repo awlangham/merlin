@@ -100,7 +100,7 @@ def initialize(node) -> None:
     click.echo(f'\nCreated {module_config_filename}')
 
     new_installation(selected_folder, num_phases, node)
-    click.echo('Created new config.json')
+    click.echo('Created new configuration.')
 
     click.echo('Complete installation by either adding loads/exemplars or running merlin learn loads')
 
