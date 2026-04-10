@@ -7,7 +7,8 @@ from merlin.api import get_installation
 @click.command('loads')
 @click.option('--start', '-s', help='Timestamp or descriptive string', required=True)
 @click.option('--end', '-e', help='Timestamp or descriptive string', required=True)
-def learn_loads(start, end) -> None:
+@click.option('--min_cluster_size', '-m', help='Minimum number of transients to form a cluster', type=int, required=True)
+def learn_loads(start, end, min_cluster_size) -> None:
     try:
         start_ts, end_ts = h2ts(start), h2ts(end)
         if start_ts >= end_ts:
@@ -20,7 +21,7 @@ def learn_loads(start, end) -> None:
 
     installation = get_installation()
     num_phases = installation.num_phases
-    inferred_exemplars, inferred_loads = installation.learn_loads(start_ts, end_ts)
+    inferred_exemplars, inferred_loads = installation.learn_loads(start_ts, end_ts, min_cluster_size)
     installation.close()
 
     table = []

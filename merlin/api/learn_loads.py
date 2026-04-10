@@ -2,14 +2,14 @@ import asyncio
 from itertools import combinations
 import numpy as np
 from sklearn.cluster import HDBSCAN
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
+# import matplotlib.pyplot as plt
+# from matplotlib.colors import ListedColormap
 
 from merlin.models import Exemplar, OnOffLoad
 from merlin.utilities import trainola
 
 
-def learn_loads(self, start_ts: int, end_ts: int, max_ss_error: float = 500):
+def learn_loads(self, start_ts: int, end_ts: int, min_cluster_size: int, max_ss_error: float = 500):
     if start_ts >= end_ts:
         raise ValueError('start_ts must be less than end_ts')
 
@@ -53,7 +53,7 @@ def learn_loads(self, start_ts: int, end_ts: int, max_ss_error: float = 500):
             distance_matrix[t1, t2] = pair_distance
             distance_matrix[t2, t1] = pair_distance
 
-        hdbscan = HDBSCAN(min_cluster_size=5, metric='precomputed', copy=True).fit(distance_matrix)
+        hdbscan = HDBSCAN(min_cluster_size=min_cluster_size, metric='precomputed', copy=True).fit(distance_matrix)
 
         cluster_assignments = hdbscan.labels_
 
@@ -188,27 +188,27 @@ def learn_loads(self, start_ts: int, end_ts: int, max_ss_error: float = 500):
         while found_pair:
             found_pair = _best_matching_pair(exemplar_event_indices)
 
-        plt.figure(tight_layout=True)
-        tab10 = plt.get_cmap('tab10')
-        colors = [(0, 0, 0, 1)] + [tab10(i) for i in range(10)]
-        custom_cmap = ListedColormap(colors)
+        # plt.figure(tight_layout=True)
+        # tab10 = plt.get_cmap('tab10')
+        # colors = [(0, 0, 0, 1)] + [tab10(i) for i in range(10)]
+        # custom_cmap = ListedColormap(colors)
 
-        if self.num_phases == 3:
-            plt.scatter(features[:, 0] + features[:, 2] + features[:, 4], features[:, 1] + features[:, 3] + features[:, 5], c=load_indices,
-                        cmap=custom_cmap, s=100, alpha=0.5)
-        else:
-            plt.scatter(features[:, 0], features[:, 1], c=load_indices, cmap=custom_cmap, s=100, alpha=0.5)
+        # if self.num_phases == 3:
+            # plt.scatter(features[:, 0] + features[:, 2] + features[:, 4], features[:, 1] + features[:, 3] + features[:, 5], c=load_indices,
+                        # cmap=custom_cmap, s=100, alpha=0.5)
+        # else:
+            # plt.scatter(features[:, 0], features[:, 1], c=load_indices, cmap=custom_cmap, s=100, alpha=0.5)
 
-        for exemplar_event_index in exemplar_event_indices_backup:
-            if self.num_phases == 3:
-                plt.scatter(features[exemplar_event_index, 0] + features[exemplar_event_index, 2] + features[exemplar_event_index, 4],
-                            features[exemplar_event_index, 1] + features[exemplar_event_index, 3] + features[exemplar_event_index, 5], marker='x', color='red')
-            else:
-                plt.scatter(features[exemplar_event_index, 0], features[exemplar_event_index, 1], marker='x', color='red')
-        plt.xlabel('Total Steady-State P')
-        plt.ylabel('Total Steady-State Q')
-        plt.grid()
-        plt.show()
+        # for exemplar_event_index in exemplar_event_indices_backup:
+        #     if self.num_phases == 3:
+        #         plt.scatter(features[exemplar_event_index, 0] + features[exemplar_event_index, 2] + features[exemplar_event_index, 4],
+        #                     features[exemplar_event_index, 1] + features[exemplar_event_index, 3] + features[exemplar_event_index, 5], marker='x', color='red')
+        #     else:
+        #         plt.scatter(features[exemplar_event_index, 0], features[exemplar_event_index, 1], marker='x', color='red')
+        # plt.xlabel('Total Steady-State P')
+        # plt.ylabel('Total Steady-State Q')
+        # plt.grid()
+        # plt.show()
 
         return exemplars, loads
 
