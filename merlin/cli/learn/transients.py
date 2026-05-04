@@ -109,32 +109,22 @@ class LearnTransientsProblem(ElementwiseProblem):
         sum_of_flat_squared_error = 0
         for (start, end) in flat_intervals:
             # trim and shift
-            start += median_window // 2 + self.ss_window_length
-            end += median_window // 2 - self.ss_window_length
+            start += median_window // 2  # + self.ss_window_length
+            end += median_window // 2  # - self.ss_window_length
             # plt.axvspan(self.timestamps[start], self.timestamps[end], color='green', alpha=0.5)
 
             prep_start = self.prep[start]
             prep_end = self.prep[end]
 
-            if start >= end:
-                # Just give up on this one
-                continue
-
             interpolated_prep = np.linspace(prep_start, prep_end, end - start + 1)
             errors = self.prep[start:end+1] - interpolated_prep
             errors_squared = np.sum(errors ** 2)
-            # errors_squared = np.sum(errors ** 2, axis=1)
             sum_of_flat_squared_error += errors_squared
 
-        # total_ss_change = 0
         transient_length = 0
         num_intervals = 0
         new_events = []
         for (start, end) in transient_intervals:
-            # If too close to the start/end of all the data, just discard
-            if start < self.ss_window_length or end > prep_len - self.ss_window_length:
-                continue
-
             transient_length += (end - start)
             num_intervals += 1
 
@@ -144,24 +134,19 @@ class LearnTransientsProblem(ElementwiseProblem):
                     'median_length': int(median_window),
                     'flat_length': int(min_window_length)
                 }
-                new_event = Event(start_time=self.timestamps[start + median_window // 2],
-                                  end_time=self.timestamps[end + median_window // 2],
-                                  content=event_content
-                                  )
-                new_events.append(new_event)
 
-            # Add [ss_window_length] points to start and end
-            # new_start, new_end = start - self.ss_window_length, end + self.ss_window_length
-
-            # ss_change = np.mean(self.prep[end:new_end], axis=0) - np.mean(self.prep[new_start:start], axis=0)
-            # total_ss_change += ss_change
+                event_start = start + median_window // 2
+                event_end = min(end + median_window // 2, len(self.timestamps) - 1)
+                if event_end != event_start:
+                    new_event = Event(start_time=self.timestamps[event_start],
+                                    end_time=self.timestamps[event_end],
+                                    content=event_content
+                                    )
+                    new_events.append(new_event)
 
         if save:
             asyncio.run(self.write_events(new_events))
 
-        # loss_ss = np.linalg.norm(total_ss_change - self.entire_ss_change)
-
-        # output = np.array([loss_ss, transient_length])
         output = np.array([sum_of_flat_squared_error, transient_length])
         if num_intervals in [0, 1]:
             out['F'] = np.array([np.inf, np.inf])
@@ -233,6 +218,8 @@ def learn_transients(node_name, stream_name, start, end, smallest_load, gens):
 
             learn_transient_problem.count = 0
             best_X = algorithm.opt.get('X')
+            # all_F = algorithm.pop.get('F')
+            # np.savetxt(f'gen_{gen_number}.txt', all_F)
             click.echo(f'Found {len(best_X)} Pareto-optimal solutions')
             for x in best_X:
                 learn_transient_problem._evaluate(x, {}, save=True)
