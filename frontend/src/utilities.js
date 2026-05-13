@@ -25,9 +25,7 @@ export const threePhaseFeatures = [
     "C Steady-State P",
     "C Steady-State Q",
     "Total Peak P",
-    "Total Peak Q",
-    "ZS in-phase",
-    "ZS quadrature"
+    "Total Peak Q"
 ];
 
 export const singlePhaseFeatures = [
@@ -48,8 +46,6 @@ export const labels = {
     "C Steady-State Q": "C Steady-State Reactive Power (Var)",
     "Total Peak P": "Total Peak Active Power (W)",
     "Total Peak Q": "Total Peak Reactive Power (Var)",
-    "ZS in-phase": "ZS in-phase",
-    "ZS quadrature": "ZS quadrature"
 };
 
 const baselineLength = 5;

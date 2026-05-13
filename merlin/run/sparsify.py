@@ -145,8 +145,6 @@ class Sparsifier(FilterModule):
             PC_pk = self._extract_pk(window[:, 16])
             QC_pk = self._extract_pk(window[:, 17])
 
-            I0_i, I0_q = self._extract_zs(window)
-
             event_content = {
                 'PA_ss': float(PA_ss),
                 'QA_ss': float(QA_ss),
@@ -170,13 +168,10 @@ class Sparsifier(FilterModule):
                 'Q_ss': float(QA_ss + QB_ss + QC_ss),
                 'P_pk': float(PA_pk + PB_pk + PC_pk),
                 'Q_pk': float(QA_pk + QB_pk + QC_pk),
-
-                'I0_i': float(I0_i),
-                'I0_q': float(I0_q)
             }
 
             type = 'OFF to ON' if (PA_ss + PB_ss + PC_ss) > 0 else 'ON to OFF'
-            ss_features = np.array([PA_ss, QA_ss, PB_ss, QB_ss, PC_ss, QC_ss])
+            # ss_features = np.array([PA_ss, QA_ss, PB_ss, QB_ss, PC_ss, QC_ss])
         else:
             P_ss = self._extract_ss(window[:, 0])
             Q_ss = self._extract_ss(window[:, 1])
@@ -184,19 +179,14 @@ class Sparsifier(FilterModule):
             P_pk = self._extract_pk(window[:, 0])
             Q_pk = self._extract_pk(window[:, 1])
 
-            I0_i, I0_q = 0, 0
-
             event_content = {
                 'P_ss': float(P_ss),
                 'Q_ss': float(Q_ss),
                 'P_pk': float(P_pk),
                 'Q_pk': float(Q_pk),
-
-                'I0_i': float(I0_i),
-                'I0_q': float(I0_q)
             }
             type = 'OFF to ON' if P_ss > 0 else 'ON to OFF'
-            ss_features = np.array([P_ss, Q_ss])
+            # ss_features = np.array([P_ss, Q_ss])
 
         if self.method == 'unsupervised':
             event_content['type'] = type
@@ -239,37 +229,6 @@ class Sparsifier(FilterModule):
 
     def _extract_pk(self, x: np.array):
         return np.max(x) - np.mean(x[:5])
-
-    def _extract_zs(self, x: np.array):
-        # v_rms = parsed_args.rms_voltage
-        v_rms = 120  # TO DO: make parameter
-
-        alpha = np.exp(2 * np.pi * 1j / 3)
-        A_inverse = np.ones((3, 3), dtype=complex)
-
-        # TO DO: make parameter
-        # if parsed_args.sequence == 'acb':
-        #     alpha = 1 / alpha
-
-        A_inverse[1, 1] = alpha
-        A_inverse[2, 2] = alpha
-        A_inverse[1, 2] = alpha ** 2
-        A_inverse[2, 1] = alpha ** 2
-
-        PA, QA, PB, QB, PC, QC = x[:, (1, 2, 9, 10, 17, 18)].T
-        IA = (PA - QA * 1j) / v_rms
-        IB = (PB - QB * 1j) / (v_rms * alpha)
-        IC = (PC - QC * 1j) / (v_rms * alpha ** 2)
-
-        I_phase = np.array([IA, IB, IC])
-        I_sequence = (A_inverse @ I_phase).T / 3
-
-        I0_i, I0_q = np.real(I_sequence[:, 0]), np.imag(I_sequence[:, 0])
-
-        I0_i_ss = np.mean(I0_i[-5:]) - np.mean(I0_i[:5])
-        I0_q_ss = np.mean(I0_q[-5:]) - np.mean(I0_q[:5])
-
-        return I0_i_ss, I0_q_ss
 
 
 def main() -> None:  # pragma: no cover
