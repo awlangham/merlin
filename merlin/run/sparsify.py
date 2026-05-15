@@ -58,6 +58,8 @@ class Sparsifier(FilterModule):
         self.current_installation = run_installation(self.node)
         self.method = self.current_installation.method
 
+        historic = (parsed_args.start_time is not None)
+
         while not self.stop_requested and not await prep_pipe.is_empty():
             sarray_in = await prep_pipe.read(flatten=True)
 
@@ -68,7 +70,8 @@ class Sparsifier(FilterModule):
             num_rows = len(prep_data)
 
             if num_rows < 120:
-                # prep_pipe.consume(num_rows)
+                if historic:
+                    prep_pipe.consume(len(sarray_in))
                 continue
 
             start_index = 0
