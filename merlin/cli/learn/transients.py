@@ -45,8 +45,10 @@ class LearnTransientsProblem(ElementwiseProblem):
 
         self.timestamps = data[:, 0]
         self.prep = data[:, 1:]
+
+        self.num_phases = 3 if self.prep.shape[1] == 24 else 1
         self.prep_len = {1: len(self.prep)}
-        self.preps = {1: self.prep[:, (0, 1, 8, 9, 16, 17)]}
+        self.preps = {1: self.prep[:, (0, 1, 8, 9, 16, 17)]} if self.num_phases == 3 else {1: self.prep[:, (0, 1)]}
         self.ss_window_length = 5
         self.entire_ss_change = np.mean(self.prep[-self.ss_window_length:], axis=0) - np.mean(self.prep[:self.ss_window_length], axis=0)
 
@@ -54,7 +56,7 @@ class LearnTransientsProblem(ElementwiseProblem):
         try:
             return self.preps[median_window_length]
         except KeyError:
-            prep_fundamental = self.prep[:, (0, 1, 8, 9, 16, 17)]
+            prep_fundamental = self.prep[:, (0, 1, 8, 9, 16, 17)] if self.num_phases == 3 else self.prep[:, (0, 1)]
             prep_filtered = rolling_median(prep_fundamental, median_window_length)
             self.prep_len[median_window_length] = len(prep_filtered)
             self.preps[median_window_length] = prep_filtered
