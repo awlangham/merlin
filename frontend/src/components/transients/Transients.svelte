@@ -1,5 +1,5 @@
 <script>
-    import { eventStore } from "../stores";
+    import { eventStore, filterStore } from "../stores";
 
     import TransientListItem from "./TransientListItem.svelte";
 
@@ -42,7 +42,9 @@
         {#if $eventStore}
             <div class="list">
                 {#each $eventStore as item}
-                    <TransientListItem eventData={item} />
+                    {#if $filterStore == "" || item.label == $filterStore}
+                        <TransientListItem eventData={item} />
+                    {/if}
                 {/each}
             </div>
         {/if}

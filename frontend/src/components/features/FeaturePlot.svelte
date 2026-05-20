@@ -94,7 +94,7 @@
                     },
                 },
                 unselected: {
-                    marker: { opacity: 0.1 },
+                    marker: { opacity: 0.3 },
                 },
                 marker: { size: 10, opacity: 0.3 },
             },
