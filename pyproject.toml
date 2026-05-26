@@ -9,7 +9,7 @@ exclude = ["start_dev.sh", "start_dev.py"]
 
 [project]
 name = "merlin"
-version = "0.7.3"
+version = "0.7.4"
 authors = [
   { name="Aaron Langham", email="alangham@mit.edu" },
 ]

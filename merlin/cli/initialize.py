@@ -45,8 +45,7 @@ def initialize(node) -> None:
     # if learning_methods[value - 1] == 'Supervised':
         # _supervised_setup(selected_folder, node)
 
-    default_min_window_length = 15
-    min_window_length = click.prompt(f'Enter the minimum flat window length', type=int, default=default_min_window_length)
+    min_window_length = click.prompt(f'Enter the minimum flat window length', type=int)
     threshold = click.prompt('Enter transient threshold', type=float)
     median_length = click.prompt('Enter median filter length', type=int)
 
@@ -81,8 +80,9 @@ def initialize(node) -> None:
         'datatype': 'float32'
     }
 
+    phases = ['A', 'B', 'C'] if num_phases == 3 else ['A']
     element_number = 1
-    for phase in ['A', 'B', 'C']:
+    for phase in phases:
         for harm in [1, 3, 5, 7]:
             stream_config[f'Element{element_number}'] = {
                 'name': f'P{harm}{phase}'
